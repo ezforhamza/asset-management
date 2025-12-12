@@ -2,10 +2,7 @@ import { type PropsWithChildren, createContext, useContext, useMemo, useState } 
 
 export enum LoginStateEnum {
 	LOGIN = 0,
-	REGISTER = 1,
-	RESET_PASSWORD = 2,
-	MOBILE = 3,
-	QR_CODE = 4,
+	FORGOT_PASSWORD = 1,
 }
 
 interface LoginStateContextType {
@@ -13,6 +10,7 @@ interface LoginStateContextType {
 	setLoginState: (loginState: LoginStateEnum) => void;
 	backToLogin: () => void;
 }
+
 const LoginStateContext = createContext<LoginStateContextType>({
 	loginState: LoginStateEnum.LOGIN,
 	setLoginState: () => {},

@@ -1,0 +1,342 @@
+Software Requirements Specification
+Asset Verification Application
+
+Version 1.0
+December 7, 2025
+
+Cross-Platform Mobile App + Web Customer Portal + Admin Panel
+Backend: Node.js + MongoDB
+
+Table of Contents
+
+1. Introduction
+     1.1 Purpose
+     1.2 Scope
+     1.3 Definitions and Acronyms
+2. System Overview
+     2.1 Value Proposition
+     2.2 Key Capabilities
+3. System Architecture
+     3.1 High-Level Architecture
+     3.2 Technology Stack
+4. Mobile Application Requirements
+     4.1 QR Code Scanning
+     4.2 Asset Registration Flow
+     4.3 Asset Verification Flow
+     4.4 GPS Proximity Verification
+     4.5 Offline-First Architecture
+     4.6 Device Permissions
+     4.7 Investigation Workflow
+5. Customer Portal Requirements
+     5.1 Two Main Pages
+          5.1.1 Report Page (List/Table View)
+          5.1.2 Map Page (Visual Overview)
+     5.2 Configuration Features
+     5.3 Audit Trail
+     5.4 Notifications and Escalation
+6. Admin Panel Requirements
+     6.1 Company Management (Multi-Tenant)
+     6.2 QR Inventory Management
+     6.3 Global Settings
+     6.4 System Monitoring
+7. Technical Requirements
+     7.1 Timezone and Timestamp Handling
+     7.2 Photo Management
+     7.3 Offline Conflict Resolution
+     7.4 Security Requirements
+     7.5 Performance Requirements
+8. MongoDB Data Models
+     8.1 Core Collections
+     8.2 Geospatial Implementation
+9. Additional Considerations
+     9.1 Asset Lifecycle Management
+     9.2 Platform Compatibility
+     9.3 Deployment Architecture
+Document Control
+
+1. Introduction
+1.1 Purpose
+This Software Requirements Specification (SRS) document defines the complete functional and non-functional requirements for the Asset Verification Application. The system enables companies to register, track, and verify physical assets using QR codes, GPS proximity verification, and photo documentation.
+1.2 Scope
+The Asset Verification Application is a comprehensive cross-platform solution consisting of:
+	•	Mobile Application (Android, iOS, Huawei): Offline-capable field verification tool for scanning QR codes, capturing GPS coordinates, and documenting asset conditions
+	•	Customer Portal (Web): Asset management interface with interactive map, reporting, and configuration capabilities
+	•	Admin Panel (Web): Multi-tenant system administration for company management and QR inventory control
+1.3 Definitions and Acronyms
+Term
+Definition
+Asset
+Physical item registered in the system with a unique QR code identifier
+Verification
+Scheduled field inspection confirming an asset's presence, location, and operational status
+Geofence
+GPS-based proximity boundary (default 20 meters) used to validate asset location
+Offline-first
+Mobile architecture pattern enabling full functionality without internet connectivity
+UTC
+Coordinated Universal Time - standard time format for all stored timestamps
+MFA
+Multi-Factor Authentication - additional security layer for admin accounts
+
+2. System Overview
+2.1 Value Proposition
+The Asset Verification Application provides companies with a digital solution to replace manual, paper-based asset tracking processes. The system enables field workers to scan QR codes, verify asset locations via GPS proximity checks, capture photographic evidence, and report asset conditions - all while maintaining full offline capability. Administrators gain real-time visibility through interactive maps and comprehensive reports showing completed, due, and overdue asset verifications.
+2.2 Key Capabilities
+	•	Asset registration with QR code assignment and GPS location capture
+	•	GPS proximity verification with 20-meter geofence threshold
+	•	Offline-first mobile operation with automatic synchronization
+	•	Photo compression (80-90%) and documentation workflow
+	•	Interactive color-coded map visualization (green/orange/red status indicators)
+	•	Configurable verification frequencies and automated email notifications
+	•	Multi-tenant architecture with company profile isolation
+	•	Complete audit trail for compliance and investigation workflows
+
+3. System Architecture
+3.1 High-Level Architecture
+┌─────────────────────────────────────────────────────────────┐
+│                     CLIENT LAYER                             │
+├──────────────┬──────────────────┬───────────────────────────┤
+│  Mobile App  │  Customer Portal │    Admin Panel            │
+│  (Flutter)   │  (React.js)      │    (React.js)             │
+└──────┬───────┴────────┬─────────┴──────────┬────────────────┘
+       │                │                    │
+       │         HTTPS/REST API              │
+       │                │                    │
+┌──────▼────────────────▼────────────────────▼────────────────┐
+│                   API GATEWAY LAYER                          │
+│              (Node.js + Express.js)                          │
+│   ┌──────────────────────────────────────────────────┐      │
+│   │  Authentication & Authorization (JWT)            │      │
+│   │  Rate Limiting & Request Validation              │      │
+│   │  Multi-tenant Routing                            │      │
+│   └──────────────────────────────────────────────────┘      │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+┌──────────────────────▼───────────────────────────────────────┐
+│                  APPLICATION LAYER                           │
+│                   (Node.js Services)                         │
+├──────────────┬────────────────┬──────────────┬──────────────┤
+│   Asset      │  Verification  │   User       │   QR Code    │
+│   Service    │    Service     │  Service     │   Service    │
+├──────────────┼────────────────┼──────────────┼──────────────┤
+│   Report     │  Notification  │   Sync       │   Image      │
+│   Service    │    Service     │  Service     │  Processing  │
+└──────┬───────┴────────┬───────┴──────┬───────┴──────┬───────┘
+       │                │              │              │
+┌──────▼────────────────▼──────────────▼──────────────▼───────┐
+│                    DATA LAYER                                │
+├──────────────────────┬───────────────────────────────────────┤
+│   MongoDB            │   Redis Cache/Queue                   │
+│   (Primary DB)       │   (Session, Sync Queue)               │
+│   (Replica Set)      │   (Bull Queue)                        │
+└──────────────────────┴───────────────────────────────────────┘
+       │                              │
+┌──────▼──────────────────────────────▼───────────────────────┐
+│              EXTERNAL SERVICES                               │
+├──────────────────────┬───────────────────────────────────────┤
+│   AWS S3             │   Email Service (SendGrid/SES)        │
+│   (Photo Storage)    │   Push Notifications (FCM/APNS)       │
+└──────────────────────┴───────────────────────────────────────┘
+
+3.2 Technology Stack
+Component
+Technologies
+Mobile App
+Flutter 3.16+, Dart 3.0+, SQLite (offline storage), image_picker (photos), geolocator (GPS), qr_code_scanner (QR codes)
+Backend API
+Node.js 18+ LTS, Express.js 4.18+, Socket.io (real-time), JWT (authentication), Mongoose 7+ (MongoDB ODM)
+Database
+MongoDB 6+ with 2dsphere geospatial indexes, Redis 6+ (caching and job queues)
+Web Portal
+React 18+ with TypeScript, Material-UI / Ant Design, Leaflet / Google Maps API, Recharts
+File Storage
+AWS S3 / MinIO (photo storage), Sharp (image compression and processing)
+DevOps
+Docker, GitHub Actions / GitLab CI, PM2, Winston (logging), Bull (background jobs)
+
+4. Mobile Application Requirements
+4.1 QR Code Scanning
+	•	Camera-based QR code scanning with visual feedback
+	•	Detection of unlinked QR codes triggers asset registration flow
+	•	Detection of linked QR codes triggers asset verification flow
+	•	QR codes must be allocatable from customer portal inventory
+4.2 Asset Registration Flow
+When scanning a QR code not yet linked to an asset:
+	•	Collect asset serial number, make, and model
+	•	Capture 1-3 initial photographs
+	•	Record initial GPS coordinates with device-reported accuracy
+	•	Store all data locally if offline; sync when connectivity restored
+4.3 Asset Verification Flow
+When scanning a QR code already linked to an asset:
+	•	Capture 1-2 verification photographs (compressed 80-90%)
+	•	Complete short checklist: condition status, operational status
+	•	Optional repair notes field
+	•	If technical repair needed: send questionnaire data to 2-3 configured email addresses immediately
+4.4 GPS Proximity Verification
+Core Requirement: Compare device GPS at scan time to registered asset GPS location
+	•	Distance > 20 meters: Show retry/error message
+	•	After 3 failed attempts: Allow override option
+	•	Override captures: Current GPS coordinates and marks verification for investigation
+	•	Store for audit: Device GPS, device-reported accuracy, computed distance to registered asset location
+4.5 Offline-First Architecture
+	•	Allow scanning and data entry while offline
+	•	Queue uploads and photo transfers in local storage
+	•	Automatic synchronization when connectivity detected
+	•	Show sync status indicator and pending upload count
+	•	Handle offline conflict resolution for duplicate QR registrations
+4.6 Device Permissions
+	•	Camera access (QR scanning and photo capture)
+	•	Location services (GPS coordinates)
+	•	File storage (offline database and photo cache)
+4.7 Investigation Workflow
+For flagged scans (GPS override, suspicious activity):
+	•	Provide internal status tracking: Open / Investigating / Resolved
+	•	Allow authorized users to add investigation comments
+	•	Maintain complete audit trail of status changes
+
+5. Customer Portal Requirements
+5.1 Two Main Pages
+5.1.1 Report Page (List/Table View)
+	•	Display all asset verifications in tabular format with filters
+	•	Show verification status, repair flags, distance at scan, verifier name, timestamps
+	•	Include photo thumbnails with click-to-open functionality
+	•	Clicking single asset verification line opens detailed survey form with all answers and photos
+	•	Filter capabilities: status, date range, asset category, verified by user
+5.1.2 Map Page (Visual Overview)
+	•	Color-coded pins: Green (verified on schedule), Orange (due soon), Red (overdue)
+	•	Click pin to display asset details in popup
+	•	Map clustering for dense asset areas
+	•	Filter by status, category, date range
+5.2 Configuration Features
+	•	Configure verification frequency per asset or per asset group
+	•	Export reports as CSV/PDF formats
+	•	Schedule automated emailed reports (daily/weekly/monthly)
+	•	Upload and allocate QR code batches via CSV import
+	•	Assign QR codes to assets from inventory
+	•	Bulk asset import via CSV with validation
+5.3 Audit Trail
+	•	Log all asset edits with user identification and timestamps
+	•	Track all verification activities with GPS data retention
+	•	Record investigation workflow status changes and comments
+5.4 Notifications and Escalation
+	•	Email/push notifications when verification overdue by X days (configurable)
+	•	Escalation rules for progressive notification to supervisors and managers
+	•	Immediate email alerts to 2-3 configured addresses for technical repair needs
+
+6. Admin Panel Requirements
+6.1 Company Management (Multi-Tenant)
+	•	Create and manage company profiles (tenants) with complete data isolation
+	•	Create and assign customer superusers with appropriate permission levels
+	•	Configure company-specific branding and settings
+6.2 QR Inventory Management
+	•	Mass QR code import via CSV (up to 100,000 codes per batch)
+	•	Bulk allocation of QR codes to specific companies
+	•	Track QR code lifecycle: Available / Allocated / Used / Retired
+	•	Search and filter QR inventory globally across all companies
+6.3 Global Settings
+	•	Set default verification frequencies (daily/weekly/monthly/custom)
+	•	Configure geofence threshold (default 20 meters, adjustable 10-100m)
+	•	Define GPS override policy (allow/disallow, require approval)
+	•	Set image retention rules (days to retain old verification photos)
+6.4 System Monitoring
+	•	Monitor queued uploads awaiting synchronization
+	•	Track failed synchronization attempts with error details
+	•	View flagged items requiring investigation
+	•	System health dashboard with API response times and database performance
+
+7. Technical Requirements
+7.1 Timezone and Timestamp Handling
+	•	Storage: All timestamps stored in UTC format
+	•	Display: Show timestamps in user's local timezone
+	•	Audit Requirement: Critical for compliance reporting and investigation workflows
+7.2 Photo Management
+	•	Compression: 80-90% JPEG quality to minimize bandwidth usage
+	•	Upload: 1-2 photos per verification event
+	•	Storage: AWS S3 or compatible object storage with CDN delivery
+	•	Retention: Configurable per company (default 365 days)
+7.3 Offline Conflict Resolution
+Scenario: Two users register the same QR code while offline
+	•	Server-side duplicate detection during synchronization
+	•	First upload wins; subsequent attempts rejected with notification
+	•	Admin review queue for rejected registrations
+	•	Complete audit trail of conflict resolution decisions
+7.4 Security Requirements
+	•	Data Encryption: TLS 1.3 in transit, AES-256 at rest
+	•	Authentication: JWT tokens (15-minute access, 7-day refresh)
+	•	MFA: Required for all superuser accounts
+	•	Authorization: Role-based access control with permission checks on every API request
+	•	Input Validation: Server-side validation and NoSQL injection prevention
+7.5 Performance Requirements
+	•	API response time: < 500ms for 95% of requests
+	•	QR scan recognition: < 2 seconds
+	•	Photo upload: < 30 seconds on 4G connection
+	•	Map rendering: < 5 seconds for 1,000 assets
+	•	System uptime: 99.5% availability excluding scheduled maintenance
+
+8. MongoDB Data Models
+8.1 Core Collections
+Collection
+Description
+companies
+Tenant records with settings: geofence threshold, verification frequencies, override policies
+users
+User accounts with authentication credentials, roles (field worker, supervisor, admin), and permissions
+qr_codes
+QR inventory tracking: code, batch number, allocation status, company assignment, asset linkage
+assets
+Asset master data: serial, make, model, GeoJSON location (2dsphere index), verification frequency, QR linkage
+verifications
+Verification events: GeoJSON location, distance calculation, photos, checklist responses, investigation status
+photos
+Photo metadata with S3 URLs, thumbnails, compression details, upload timestamps
+audit_logs
+Complete audit trail: user actions, entity changes, timestamps, IP addresses, old/new values
+
+8.2 Geospatial Implementation
+MongoDB's 2dsphere indexes enable efficient GPS proximity queries:
+	•	GeoJSON Point format stores latitude/longitude as [longitude, latitude] arrays
+	•	2dsphere spatial indexes support distance calculations and proximity searches
+	•	$near operator finds assets within specified radius for verification checks
+	•	Haversine distance formula calculates great-circle distance for 20-meter geofence validation
+
+9. Additional Considerations
+9.1 Asset Lifecycle Management
+	•	Decommission Flow: Mark assets as retired while preserving historical verification data
+	•	Transfer Flow: Move assets between locations or transfer to another company with audit trail
+	•	Asset Grouping: Allow asset types with templated verification checklists for standardization
+9.2 Platform Compatibility
+	•	Mobile Platforms: Android 8.0+, iOS 13.0+, HarmonyOS 2.0+ (Huawei AppGallery)
+	•	Web Browsers: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+	•	Screen Sizes: Responsive design supporting tablets (7-13 inches) and phones (4-7 inches)
+9.3 Deployment Architecture
+	•	Containerized deployment using Docker with Docker Compose
+	•	MongoDB replica set with minimum 3 nodes for high availability
+	•	Redis cluster for session management and background job queues
+	•	Load balancer (Nginx or AWS ALB) for horizontal scaling
+	•	CI/CD pipeline with automated testing and blue-green deployment
+
+Document Control
+Document Title
+Software Requirements Specification - Asset Verification Application
+Version
+1.0
+Date
+December 7, 2025
+Prepared By
+Development Team
+Status
+Final - Pending Approval
+
+Approval Signatures
+Product Owner
+Signature: _________________________
+Date: _________________________
+Technical Lead
+Signature: _________________________
+Date: _________________________
+QA Lead
+Signature: _________________________
+Date: _________________________
+Client Representative
+Signature: _________________________
+Date: _________________________

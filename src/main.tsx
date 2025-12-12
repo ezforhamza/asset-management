@@ -4,21 +4,20 @@ import "./locales/i18n";
 import ReactDOM from "react-dom/client";
 import { Outlet, RouterProvider, createBrowserRouter } from "react-router";
 import App from "./App";
-import { worker } from "./_mock";
-import menuService from "./api/services/menuService";
 import { registerLocalIcons } from "./components/icon";
 import { GLOBAL_CONFIG } from "./global-config";
 import ErrorBoundary from "./routes/components/error-boundary";
 import { routesSection } from "./routes/sections";
-import { urlJoin } from "./utils";
 
 await registerLocalIcons();
-await worker.start({
-	onUnhandledRequest: "bypass",
-	serviceWorker: { url: urlJoin(GLOBAL_CONFIG.publicPath, "mockServiceWorker.js") },
-});
-if (GLOBAL_CONFIG.routerMode === "backend") {
-	await menuService.getMenuList();
+
+// Enable MSW in development if configured
+if (import.meta.env.DEV && import.meta.env.VITE_APP_ENABLE_MSW === "true") {
+	const { worker } = await import("./_mock");
+	await worker.start({
+		onUnhandledRequest: "bypass",
+	});
+	console.log("[MSW] Mock Service Worker started");
 }
 
 const router = createBrowserRouter(

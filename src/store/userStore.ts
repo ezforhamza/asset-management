@@ -6,7 +6,7 @@ import userService, { type SignInReq } from "@/api/services/userService";
 
 import { toast } from "sonner";
 import type { UserInfo, UserToken } from "#/entity";
-import { StorageEnum } from "#/enum";
+import { StorageEnum, UserRole } from "#/enum";
 
 type UserStore = {
 	userInfo: Partial<UserInfo>;
@@ -37,8 +37,8 @@ const useUserStore = create<UserStore>()(
 			},
 		}),
 		{
-			name: "userStore", // name of the item in the storage (must be unique)
-			storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
+			name: "userStore",
+			storage: createJSONStorage(() => localStorage),
 			partialize: (state) => ({
 				[StorageEnum.UserInfo]: state.userInfo,
 				[StorageEnum.UserToken]: state.userToken,
@@ -53,11 +53,17 @@ export const useUserPermissions = () => useUserStore((state) => state.userInfo.p
 export const useUserRoles = () => useUserStore((state) => state.userInfo.roles || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
 
+// Check if user is customer admin
+export const useIsCustomerAdmin = () => useUserStore((state) => state.userInfo.role === UserRole.CUSTOMER_ADMIN);
+
+// Check if user needs to change password
+export const useMustChangePassword = () => useUserStore((state) => state.userInfo.mustChangePassword === true);
+
 export const useSignIn = () => {
 	const { setUserToken, setUserInfo } = useUserActions();
 
 	const signInMutation = useMutation({
-		mutationFn: userService.signin,
+		mutationFn: userService.login,
 	});
 
 	const signIn = async (data: SignInReq) => {
@@ -66,8 +72,10 @@ export const useSignIn = () => {
 			const { user, accessToken, refreshToken } = res;
 			setUserToken({ accessToken, refreshToken });
 			setUserInfo(user);
-		} catch (err) {
-			toast.error(err.message, {
+			return { mustChangePassword: user.mustChangePassword };
+		} catch (err: unknown) {
+			const error = err as Error;
+			toast.error(error.message || "Login failed", {
 				position: "top-center",
 			});
 			throw err;
@@ -75,6 +83,17 @@ export const useSignIn = () => {
 	};
 
 	return signIn;
+};
+
+export const useSignOut = () => {
+	const { clearUserInfoAndToken } = useUserActions();
+
+	const signOut = () => {
+		clearUserInfoAndToken();
+		window.location.href = "/login";
+	};
+
+	return signOut;
 };
 
 export default useUserStore;

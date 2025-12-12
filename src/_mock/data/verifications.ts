@@ -1,0 +1,315 @@
+import type { Verification, RecentActivity, DashboardStats } from "#/entity";
+import { VerificationStatus, ConditionStatus, OperationalStatus, InvestigationStatus } from "#/enum";
+import { MOCK_ASSETS } from "./assets";
+import { MOCK_COMPANY_ID } from "./users";
+
+// Helper to generate dates
+const daysAgo = (days: number) => {
+	const date = new Date();
+	date.setDate(date.getDate() - days);
+	return date.toISOString();
+};
+
+const hoursAgo = (hours: number) => {
+	const date = new Date();
+	date.setHours(date.getHours() - hours);
+	return date.toISOString();
+};
+
+export const MOCK_VERIFICATIONS: Verification[] = [
+	{
+		_id: "ver_001",
+		assetId: "asset_001",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_002",
+		verifiedByName: "Ali Ahmed",
+		verifiedAt: daysAgo(5),
+		scanLocation: { latitude: 24.8608, longitude: 67.0012 },
+		scanLocationAccuracy: 4.5,
+		distanceFromAsset: 12.5,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver1_photo1.jpg", "/mock/ver1_photo2.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(5),
+		asset: MOCK_ASSETS[0],
+	},
+	{
+		_id: "ver_002",
+		assetId: "asset_002",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_003",
+		verifiedByName: "Sara Khan",
+		verifiedAt: daysAgo(25),
+		scanLocation: { latitude: 24.8616, longitude: 67.0026 },
+		scanLocationAccuracy: 5.2,
+		distanceFromAsset: 8.3,
+		gpsCheckPassed: true,
+		gpsRetryCount: 1,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver2_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.FAIR,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "Minor wear on tracks",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(25),
+		asset: MOCK_ASSETS[1],
+	},
+	{
+		_id: "ver_003",
+		assetId: "asset_003",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_002",
+		verifiedByName: "Ali Ahmed",
+		verifiedAt: daysAgo(35),
+		scanLocation: { latitude: 24.8592, longitude: 67.0038 },
+		scanLocationAccuracy: 6.8,
+		distanceFromAsset: 25.7,
+		gpsCheckPassed: false,
+		gpsRetryCount: 3,
+		gpsOverrideUsed: true,
+		photos: ["/mock/ver3_photo1.jpg", "/mock/ver3_photo2.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.POOR,
+			operationalStatus: OperationalStatus.NEEDS_REPAIR,
+			repairNotes: "Hydraulic leak detected. Needs immediate attention.",
+		},
+		repairNeeded: true,
+		repairEmailSent: true,
+		investigationStatus: InvestigationStatus.OPEN,
+		investigationComments: ["GPS override used - investigating location discrepancy"],
+		createdAt: daysAgo(35),
+		asset: MOCK_ASSETS[2],
+	},
+	{
+		_id: "ver_004",
+		assetId: "asset_004",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_005",
+		verifiedByName: "Fatima Malik",
+		verifiedAt: daysAgo(2),
+		scanLocation: { latitude: 24.8626, longitude: 67.0019 },
+		scanLocationAccuracy: 3.2,
+		distanceFromAsset: 5.8,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver4_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(2),
+		asset: MOCK_ASSETS[3],
+	},
+	{
+		_id: "ver_005",
+		assetId: "asset_005",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_003",
+		verifiedByName: "Sara Khan",
+		verifiedAt: daysAgo(28),
+		scanLocation: { latitude: 24.8581, longitude: 67.0041 },
+		scanLocationAccuracy: 4.5,
+		distanceFromAsset: 10.2,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver5_photo1.jpg", "/mock/ver5_photo2.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(28),
+		asset: MOCK_ASSETS[4],
+	},
+	{
+		_id: "ver_006",
+		assetId: "asset_007",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_005",
+		verifiedByName: "Fatima Malik",
+		verifiedAt: daysAgo(10),
+		scanLocation: { latitude: 24.8601, longitude: 67.0051 },
+		scanLocationAccuracy: 4.1,
+		distanceFromAsset: 7.5,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver6_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(10),
+		asset: MOCK_ASSETS[6],
+	},
+	{
+		_id: "ver_007",
+		assetId: "asset_008",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_003",
+		verifiedByName: "Sara Khan",
+		verifiedAt: daysAgo(12),
+		scanLocation: { latitude: 24.8646, longitude: 67.0031 },
+		scanLocationAccuracy: 3.5,
+		distanceFromAsset: 6.2,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver7_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.FAIR,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "Bucket shows normal wear",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: daysAgo(12),
+		asset: MOCK_ASSETS[7],
+	},
+	{
+		_id: "ver_008",
+		assetId: "asset_001",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_003",
+		verifiedByName: "Sara Khan",
+		verifiedAt: hoursAgo(3),
+		scanLocation: { latitude: 24.8607, longitude: 67.001 },
+		scanLocationAccuracy: 3.8,
+		distanceFromAsset: 4.2,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver8_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: hoursAgo(3),
+		asset: MOCK_ASSETS[0],
+	},
+	{
+		_id: "ver_009",
+		assetId: "asset_004",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_002",
+		verifiedByName: "Ali Ahmed",
+		verifiedAt: hoursAgo(8),
+		scanLocation: { latitude: 24.8624, longitude: 67.0017 },
+		scanLocationAccuracy: 4.2,
+		distanceFromAsset: 9.1,
+		gpsCheckPassed: true,
+		gpsRetryCount: 0,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver9_photo1.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: hoursAgo(8),
+		asset: MOCK_ASSETS[3],
+	},
+	{
+		_id: "ver_010",
+		assetId: "asset_007",
+		companyId: MOCK_COMPANY_ID,
+		verifiedBy: "user_005",
+		verifiedByName: "Fatima Malik",
+		verifiedAt: hoursAgo(24),
+		scanLocation: { latitude: 24.8599, longitude: 67.0049 },
+		scanLocationAccuracy: 5.0,
+		distanceFromAsset: 11.3,
+		gpsCheckPassed: true,
+		gpsRetryCount: 1,
+		gpsOverrideUsed: false,
+		photos: ["/mock/ver10_photo1.jpg", "/mock/ver10_photo2.jpg"],
+		checklist: {
+			conditionStatus: ConditionStatus.GOOD,
+			operationalStatus: OperationalStatus.OPERATIONAL,
+			repairNotes: "",
+		},
+		repairNeeded: false,
+		repairEmailSent: false,
+		investigationStatus: null,
+		investigationComments: [],
+		createdAt: hoursAgo(24),
+		asset: MOCK_ASSETS[6],
+	},
+];
+
+export const getRecentActivity = (limit = 10): RecentActivity[] => {
+	return MOCK_VERIFICATIONS.slice(0, limit).map((ver) => {
+		const asset = MOCK_ASSETS.find((a) => a._id === ver.assetId);
+		return {
+			_id: ver._id,
+			assetSerialNumber: asset?.serialNumber || "Unknown",
+			assetMake: asset?.make || "Unknown",
+			assetModel: asset?.model || "Unknown",
+			verifiedBy: ver.verifiedByName || "Unknown",
+			verifiedAt: ver.verifiedAt,
+			status: asset?.verificationStatus || VerificationStatus.ON_TIME,
+			distance: ver.distanceFromAsset,
+		};
+	});
+};
+
+export const getDashboardStats = (): DashboardStats => {
+	const totalAssets = MOCK_ASSETS.length;
+	const dueSoon = MOCK_ASSETS.filter((a) => a.verificationStatus === VerificationStatus.DUE_SOON).length;
+	const overdue = MOCK_ASSETS.filter((a) => a.verificationStatus === VerificationStatus.OVERDUE).length;
+
+	// Count verifications this month
+	const now = new Date();
+	const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+	const verifiedThisMonth = MOCK_VERIFICATIONS.filter((v) => new Date(v.verifiedAt) >= startOfMonth).length;
+
+	return {
+		totalAssets,
+		verifiedThisMonth,
+		verifiedPercentage: Math.round((verifiedThisMonth / totalAssets) * 100),
+		dueSoon,
+		overdue,
+	};
+};

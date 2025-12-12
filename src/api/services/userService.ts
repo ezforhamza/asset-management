@@ -1,33 +1,127 @@
 import apiClient from "../apiClient";
 
-import type { UserInfo, UserToken } from "#/entity";
+import type { UserInfo } from "#/entity";
+
+// ============================================
+// Auth Types
+// ============================================
 
 export interface SignInReq {
-	username: string;
+	email: string;
 	password: string;
 }
 
-export interface SignUpReq extends SignInReq {
+export interface SignInRes {
+	success: boolean;
+	accessToken: string;
+	refreshToken: string;
+	user: UserInfo;
+}
+
+export interface ForgotPasswordReq {
 	email: string;
 }
-export type SignInRes = UserToken & { user: UserInfo };
 
-export enum UserApi {
-	SignIn = "/auth/signin",
-	SignUp = "/auth/signup",
-	Logout = "/auth/logout",
-	Refresh = "/auth/refresh",
-	User = "/user",
+export interface ResetPasswordReq {
+	resetToken: string;
+	newPassword: string;
 }
 
-const signin = (data: SignInReq) => apiClient.post<SignInRes>({ url: UserApi.SignIn, data });
-const signup = (data: SignUpReq) => apiClient.post<SignInRes>({ url: UserApi.SignUp, data });
-const logout = () => apiClient.get({ url: UserApi.Logout });
-const findById = (id: string) => apiClient.get<UserInfo[]>({ url: `${UserApi.User}/${id}` });
+export interface ChangePasswordReq {
+	currentPassword: string;
+	newPassword: string;
+}
+
+// ============================================
+// User Management Types (Customer Admin)
+// ============================================
+
+export interface CreateUserReq {
+	name: string;
+	email: string;
+	role: "field_user" | "customer_admin";
+}
+
+export interface CreateUserRes {
+	success: boolean;
+	userId: string;
+	temporaryPassword: string;
+	message: string;
+}
+
+export interface UpdateUserReq {
+	name?: string;
+	role?: "field_user" | "customer_admin";
+}
+
+export interface UsersListRes {
+	success: boolean;
+	users: UserInfo[];
+}
+
+// ============================================
+// API Endpoints
+// ============================================
+
+enum AuthApi {
+	Login = "/auth/login",
+	Refresh = "/auth/refresh",
+	ForgotPassword = "/auth/forgot-password",
+	ResetPassword = "/auth/reset-password",
+	ChangePassword = "/auth/change-password",
+}
+
+enum UserApi {
+	Users = "/users",
+	CreateFieldWorker = "/users/create-field-worker",
+}
+
+// ============================================
+// Auth Service
+// ============================================
+
+const login = (data: SignInReq) => apiClient.post<SignInRes>({ url: AuthApi.Login, data });
+
+const forgotPassword = (data: ForgotPasswordReq) =>
+	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ForgotPassword, data });
+
+const resetPassword = (data: ResetPasswordReq) =>
+	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ResetPassword, data });
+
+const changePassword = (data: ChangePasswordReq) =>
+	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ChangePassword, data });
+
+// ============================================
+// User Management Service (Customer Admin)
+// ============================================
+
+const getUsers = (params?: { role?: string; status?: string }) =>
+	apiClient.get<UserInfo[]>({ url: UserApi.Users, params });
+
+const createFieldWorker = (data: CreateUserReq) =>
+	apiClient.post<CreateUserRes>({ url: UserApi.CreateFieldWorker, data });
+
+const updateUser = (userId: string, data: UpdateUserReq) =>
+	apiClient.put<{ success: boolean; message: string }>({ url: `${UserApi.Users}/${userId}`, data });
+
+const deactivateUser = (userId: string) =>
+	apiClient.put<{ success: boolean; message: string }>({ url: `${UserApi.Users}/${userId}/deactivate` });
+
+const resetUserPassword = (userId: string) =>
+	apiClient.post<{ success: boolean; temporaryPassword: string; message: string }>({
+		url: `${UserApi.Users}/${userId}/reset-password`,
+	});
 
 export default {
-	signin,
-	signup,
-	findById,
-	logout,
+	// Auth
+	login,
+	forgotPassword,
+	resetPassword,
+	changePassword,
+	// User Management
+	getUsers,
+	createFieldWorker,
+	updateUser,
+	deactivateUser,
+	resetUserPassword,
 };

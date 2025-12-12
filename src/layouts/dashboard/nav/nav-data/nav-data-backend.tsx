@@ -1,4 +1,3 @@
-import { DB_MENU } from "@/_mock/assets_backup";
 import { Icon } from "@/components/icon";
 import type { NavItemDataProps, NavProps } from "@/components/nav";
 import type { MenuTree } from "@/types/entity";
@@ -29,4 +28,5 @@ const convert = (menuTree: MenuTree[]): NavProps["data"] => {
 	}));
 };
 
-export const backendNavData: NavProps["data"] = convert(convertFlatToTree(DB_MENU));
+// Backend nav data will be populated from API when using backend routing mode
+export const backendNavData: NavProps["data"] = convert(convertFlatToTree([]));

@@ -1,0 +1,143 @@
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import type { DateRange } from "react-day-picker";
+import type { Verification } from "#/entity";
+import reportService from "@/api/services/reportService";
+import { Button } from "@/ui/button";
+import { ExportButtons } from "./components/ExportButtons";
+import { ReportFilters } from "./components/ReportFilters";
+import { ReportTable } from "./components/ReportTable";
+import { VerificationDetail } from "./components/VerificationDetail";
+
+export default function ReportsPage() {
+	// Filter state
+	const [dateRange, setDateRange] = useState<DateRange | undefined>();
+	const [status, setStatus] = useState("all");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [page, setPage] = useState(1);
+	const limit = 20;
+
+	// Detail modal state
+	const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
+	const [detailOpen, setDetailOpen] = useState(false);
+
+	// Build query params
+	const queryParams = useMemo(() => {
+		const params: Record<string, string | number> = { page, limit };
+
+		if (dateRange?.from) {
+			params.startDate = format(dateRange.from, "yyyy-MM-dd");
+		}
+		if (dateRange?.to) {
+			params.endDate = format(dateRange.to, "yyyy-MM-dd");
+		}
+		if (status !== "all") {
+			params.status = status;
+		}
+
+		return params;
+	}, [dateRange, status, page, limit]);
+
+	// Fetch verifications
+	const { data, isLoading } = useQuery({
+		queryKey: ["reports", "verifications", queryParams],
+		queryFn: () => reportService.getVerificationReport(queryParams),
+	});
+
+	// Client-side search filter
+	const filteredData = useMemo(() => {
+		if (!data?.data) return [];
+		if (!searchQuery) return data.data;
+
+		const query = searchQuery.toLowerCase();
+		return data.data.filter((v) => {
+			const asset = v.asset;
+			return (
+				asset?.serialNumber?.toLowerCase().includes(query) ||
+				asset?.make?.toLowerCase().includes(query) ||
+				asset?.model?.toLowerCase().includes(query) ||
+				v.verifiedByName?.toLowerCase().includes(query)
+			);
+		});
+	}, [data?.data, searchQuery]);
+
+	const handleViewDetails = (verification: Verification) => {
+		setSelectedVerification(verification);
+		setDetailOpen(true);
+	};
+
+	const handleClearFilters = () => {
+		setDateRange(undefined);
+		setStatus("all");
+		setSearchQuery("");
+		setPage(1);
+	};
+
+	const totalPages = data?.pagination?.pages || 1;
+
+	return (
+		<div className="h-full flex flex-col overflow-hidden">
+			{/* Header */}
+			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/50">
+				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+					<div>
+						<h1 className="text-xl font-semibold">Reports</h1>
+						<p className="text-sm text-muted-foreground">View and export verification reports</p>
+					</div>
+					<ExportButtons
+						startDate={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
+						endDate={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
+					/>
+				</div>
+			</div>
+
+			{/* Filters */}
+			<div className="flex-shrink-0 px-6 py-4 border-b">
+				<ReportFilters
+					dateRange={dateRange}
+					setDateRange={setDateRange}
+					status={status}
+					setStatus={setStatus}
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+					onClearFilters={handleClearFilters}
+				/>
+			</div>
+
+			{/* Results count & Pagination */}
+			<div className="flex-shrink-0 flex items-center justify-between px-6 py-2 bg-muted/30">
+				<p className="text-sm text-muted-foreground">
+					{isLoading ? "Loading..." : `Showing ${filteredData.length} of ${data?.pagination?.total || 0} verifications`}
+				</p>
+				{totalPages > 1 && (
+					<div className="flex items-center gap-2">
+						<Button variant="ghost" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+							<ChevronLeft className="h-4 w-4" />
+						</Button>
+						<span className="text-sm text-muted-foreground">
+							{page} / {totalPages}
+						</span>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+							disabled={page === totalPages}
+						>
+							<ChevronRight className="h-4 w-4" />
+						</Button>
+					</div>
+				)}
+			</div>
+
+			{/* Table - Scrollable area */}
+			<div className="flex-1 overflow-hidden px-6 py-4">
+				<ReportTable data={filteredData} isLoading={isLoading} onViewDetails={handleViewDetails} />
+			</div>
+
+			{/* Detail Modal */}
+			<VerificationDetail verification={selectedVerification} open={detailOpen} onClose={() => setDetailOpen(false)} />
+		</div>
+	);
+}

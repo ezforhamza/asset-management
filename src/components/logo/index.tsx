@@ -1,15 +1,22 @@
-import { cn } from "@/utils";
 import { NavLink } from "react-router";
-import { Icon } from "../icon";
+import { cn } from "@/utils";
 
 interface Props {
 	size?: number | string;
 	className?: string;
 }
-function Logo({ size = 50, className }: Props) {
+
+function Logo({ size = 40, className }: Props) {
+	const sizeNum = typeof size === "string" ? parseInt(size, 10) : size;
+
 	return (
-		<NavLink to="/" className={cn(className)}>
-			<Icon icon="local:ic-logo-badge" size={size} color="var(--colors-palette-primary-default)" />
+		<NavLink to="/" className={cn("flex items-center gap-2", className)}>
+			<img
+				src="/Asset Guard Favicon Logo BLACK and ORANGE Large.png"
+				alt="Asset Guard"
+				style={{ height: sizeNum, width: sizeNum }}
+				className="object-contain"
+			/>
 		</NavLink>
 	);
 }

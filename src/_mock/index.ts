@@ -1,9 +1,10 @@
 import { setupWorker } from "msw/browser";
-import { mockTokenExpired } from "./handlers/_demo";
-import { menuList } from "./handlers/_menu";
-import { signIn, userList } from "./handlers/_user";
+import { authHandlers } from "./handlers/auth";
+import { dashboardHandlers } from "./handlers/dashboard";
+import { userHandlers } from "./handlers/users";
+import { reportHandlers } from "./handlers/reports";
+import { assetHandlers } from "./handlers/assets";
 
-const handlers = [signIn, userList, mockTokenExpired, menuList];
-const worker = setupWorker(...handlers);
+const handlers = [...authHandlers, ...dashboardHandlers, ...userHandlers, ...reportHandlers, ...assetHandlers];
 
-export { worker };
+export const worker = setupWorker(...handlers);

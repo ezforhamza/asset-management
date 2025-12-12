@@ -1,4 +1,3 @@
-import { DB_MENU } from "@/_mock/assets_backup";
 import type { MenuMetaInfo, MenuTree } from "@/types/entity";
 import { PermissionType } from "@/types/enum";
 import { convertFlatToTree } from "@/utils/tree";
@@ -92,6 +91,7 @@ const convertToRoute = (items: MenuTree[], parent?: MenuTree): RouteObject[] => 
 };
 
 export function getBackendDashboardRoutes() {
-	const backendDashboardRoutes = convertToRoute(convertFlatToTree(DB_MENU));
+	// Backend routes will be populated from API when using backend routing mode
+	const backendDashboardRoutes = convertToRoute(convertFlatToTree([]));
 	return backendDashboardRoutes;
 }

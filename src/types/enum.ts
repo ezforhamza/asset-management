@@ -3,6 +3,48 @@ export enum BasicStatus {
 	ENABLE = 1,
 }
 
+// Asset Guard - Verification Status
+export enum VerificationStatus {
+	ON_TIME = "on_time",
+	DUE_SOON = "due_soon",
+	OVERDUE = "overdue",
+}
+
+// Asset Guard - User Roles
+export enum UserRole {
+	FIELD_USER = "field_user",
+	CUSTOMER_ADMIN = "customer_admin",
+	SYSTEM_ADMIN = "system_admin",
+}
+
+// Asset Guard - Asset Status
+export enum AssetStatus {
+	ACTIVE = "active",
+	RETIRED = "retired",
+	TRANSFERRED = "transferred",
+}
+
+// Asset Guard - Condition Status
+export enum ConditionStatus {
+	GOOD = "good",
+	FAIR = "fair",
+	POOR = "poor",
+}
+
+// Asset Guard - Operational Status
+export enum OperationalStatus {
+	OPERATIONAL = "operational",
+	NEEDS_REPAIR = "needs_repair",
+	NON_OPERATIONAL = "non_operational",
+}
+
+// Asset Guard - Investigation Status
+export enum InvestigationStatus {
+	OPEN = "open",
+	INVESTIGATING = "investigating",
+	RESOLVED = "resolved",
+}
+
 export enum ResultStatus {
 	SUCCESS = 0,
 	ERROR = -1,

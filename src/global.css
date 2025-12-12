@@ -5,7 +5,6 @@
 /* editor */
 @import "react-quill/dist/quill.snow.css";
 
-
 /* import tailwind */
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -21,16 +20,17 @@
   ::backdrop,
   ::file-selector-button {
     /* https://tailwindcss.com/docs/upgrade-guide#default-border-color */
-    border-color: rgba(var(--colors-palette-gray-500Channel) / var(--opacity-border)) ;
+    border-color: rgba(
+      var(--colors-palette-gray-500Channel) / var(--opacity-border)
+    );
   }
 
   body {
     background-color: var(--background);
   }
-
 }
 
-@theme  {
+@theme {
   --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
   --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
   @keyframes collapsible-down {
@@ -54,7 +54,7 @@
   --animate-slow-spin: spin 4s linear infinite;
   @keyframes spin {
     from {
-      transform: rotate(0deg);  
+      transform: rotate(0deg);
     }
     to {
       transform: rotate(360deg);
@@ -73,15 +73,15 @@
   --popover-foreground: var(--colors-common-black);
   --primary: var(--colors-palette-primary-default);
   --primary-foreground: var(--colors-palette-primary-lighter);
-  --secondary:var(--colors-palette-gray-200);
+  --secondary: var(--colors-palette-gray-200);
   --secondary-foreground: var(--colors-palette-gray-600);
   --muted: var(--colors-palette-gray-200);
   --muted-foreground: var(--colors-palette-gray-500);
   --accent: var(--colors-palette-gray-200);
   --accent-foreground: var(--colors-palette-gray-600);
   --destructive: var(--colors-palette-error-default);
-  --border: rgba(var(--colors-palette-gray-500Channel)/ var(--opacity-border));
-  --input: rgba(var(--colors-palette-gray-500Channel)/ var(--opacity-border));
+  --border: rgba(var(--colors-palette-gray-500Channel) / var(--opacity-border));
+  --input: rgba(var(--colors-palette-gray-500Channel) / var(--opacity-border));
   --ring: var(--colors-palette-primary-default);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -115,8 +115,8 @@
   --accent: var(--colors-background-neutral);
   --accent-foreground: var(--colors-palette-gray-500);
   --destructive: var(--colors-palette-error-default);
-  --border: rgba(var(--colors-palette-gray-500Channel)/ var(--opacity-border));
-  --input: rgba(var(--colors-palette-gray-500Channel)/ var(--opacity-border));
+  --border: rgba(var(--colors-palette-gray-500Channel) / var(--opacity-border));
+  --input: rgba(var(--colors-palette-gray-500Channel) / var(--opacity-border));
   --ring: var(--colors-palette-primary-default);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
@@ -129,15 +129,76 @@
   --sidebar-primary-foreground: var(--colors-palette-primary-darker);
   --sidebar-accent: var(--colors-background-neutral);
   --sidebar-accent-foreground: var(--colors-common-white);
-  --sidebar-border: rgba(var(--colors-palette-gray-500Channel)/ var(--opacity-border));
+  --sidebar-border: rgba(
+    var(--colors-palette-gray-500Channel) / var(--opacity-border)
+  );
   --sidebar-ring: var(--colors-palette-primary-default);
 }
 
 /* slash layout */
-:root{
+:root {
   --layout-nav-width: 260px;
   --layout-nav-width-mini: 88px;
   --layout-nav-height-horizontal: 48px;
   --layout-header-height: 64px;
   --layout-multi-tabs-height: 48px;
+}
+
+/* Leaflet map z-index fixes */
+.leaflet-container {
+  z-index: 1 !important;
+}
+
+.leaflet-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 400 !important;
+}
+
+.leaflet-popup {
+  z-index: 500 !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+}
+
+.leaflet-popup-tip {
+  display: none;
+}
+
+.custom-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Global clickable cursor */
+button,
+a,
+[role="button"],
+[role="menuitem"],
+[role="tab"],
+[role="option"],
+.cursor-pointer,
+input[type="checkbox"],
+input[type="radio"],
+select {
+  cursor: pointer !important;
+}
+
+/* Prevent page scrolling - SPA style */
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
 }
