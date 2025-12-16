@@ -27,6 +27,35 @@ export interface UpdateAssetReq {
 	verificationFrequency?: number;
 }
 
+export interface BulkImportAssetReq {
+	assets: Array<{
+		serialNumber: string;
+		make: string;
+		model: string;
+		verificationFrequency?: number;
+		location?: string;
+		notes?: string;
+	}>;
+}
+
+export interface BulkImportAssetRes {
+	success: boolean;
+	imported: number;
+	failed: number;
+	errors: Array<{ row: number; error: string }>;
+}
+
+export interface TransferAssetReq {
+	assetId: string;
+	toCompanyId: string;
+	reason?: string;
+}
+
+export interface TransferAssetRes {
+	success: boolean;
+	message: string;
+}
+
 // ============================================
 // Verification Types
 // ============================================
@@ -63,6 +92,18 @@ const getAssetById = (assetId: string) => apiClient.get<Asset>({ url: `${AssetAp
 const updateAsset = (assetId: string, data: UpdateAssetReq) =>
 	apiClient.put<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}`, data });
 
+const bulkImportAssets = (data: BulkImportAssetReq) =>
+	apiClient.post<BulkImportAssetRes>({ url: `${AssetApi.Assets}/bulk-import`, data });
+
+const transferAsset = (data: TransferAssetReq) =>
+	apiClient.post<TransferAssetRes>({ url: `${AssetApi.Assets}/transfer`, data });
+
+const retireAsset = (assetId: string, reason?: string) =>
+	apiClient.post<{ success: boolean; message: string }>({
+		url: `${AssetApi.Assets}/${assetId}/retire`,
+		data: { reason },
+	});
+
 // ============================================
 // Verification Service
 // ============================================
@@ -81,6 +122,9 @@ export default {
 	getAssets,
 	getAssetById,
 	updateAsset,
+	bulkImportAssets,
+	transferAsset,
+	retireAsset,
 	// Verifications
 	getVerificationHistory,
 	updateInvestigation,

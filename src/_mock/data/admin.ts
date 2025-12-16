@@ -1,0 +1,71 @@
+// Mock sync queue data
+export const MOCK_SYNC_QUEUE = [
+	{
+		_id: "sync_001",
+		userId: "user_002",
+		userName: "Ali Ahmed",
+		deviceId: "device_abc123",
+		queueData: { type: "verification", assetId: "asset_001", serialNumber: "CAT-320E-001" },
+		syncStatus: "pending",
+		attempts: 0,
+		createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+	},
+	{
+		_id: "sync_002",
+		userId: "user_003",
+		userName: "Sara Khan",
+		deviceId: "device_def456",
+		queueData: { type: "registration", serialNumber: "NEW-ASSET-001" },
+		syncStatus: "failed",
+		attempts: 3,
+		error: "Network timeout",
+		createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+	},
+	{
+		_id: "sync_003",
+		userId: "user_005",
+		userName: "Fatima Malik",
+		deviceId: "device_ghi789",
+		queueData: { type: "verification", assetId: "asset_004", serialNumber: "VOL-EC220-004" },
+		syncStatus: "pending",
+		attempts: 1,
+		createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+	},
+];
+
+// Mock audit logs
+export const MOCK_AUDIT_LOGS = [
+	{
+		_id: "audit_001",
+		entityType: "asset",
+		entityId: "asset_001",
+		action: "updated",
+		performedBy: "user_001",
+		performedByName: "John Admin",
+		changes: { verificationFrequency: { old: 30, new: 14 } },
+		timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+		ipAddress: "192.168.1.100",
+	},
+	{
+		_id: "audit_002",
+		entityType: "user",
+		entityId: "user_004",
+		action: "created",
+		performedBy: "user_001",
+		performedByName: "John Admin",
+		changes: { name: { old: null, new: "Ahmed Hassan" }, role: { old: null, new: "field_user" } },
+		timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+		ipAddress: "192.168.1.100",
+	},
+	{
+		_id: "audit_003",
+		entityType: "company",
+		entityId: "company_001",
+		action: "updated",
+		performedBy: "user_001",
+		performedByName: "John Admin",
+		changes: { "settings.geofenceThreshold": { old: 25, new: 20 } },
+		timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+		ipAddress: "192.168.1.100",
+	},
+];

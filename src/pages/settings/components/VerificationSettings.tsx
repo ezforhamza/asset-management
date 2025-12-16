@@ -1,11 +1,14 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, Loader2, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import companyService from "@/api/services/companyService";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
+import { Skeleton } from "@/ui/skeleton";
 import { Switch } from "@/ui/switch";
 
 interface VerificationSettingsForm {
@@ -16,7 +19,12 @@ interface VerificationSettingsForm {
 }
 
 export function VerificationSettings() {
-	const [loading, setLoading] = useState(false);
+	const queryClient = useQueryClient();
+
+	const { data: settings, isLoading } = useQuery({
+		queryKey: ["company", "settings"],
+		queryFn: companyService.getSettings,
+	});
 
 	const form = useForm<VerificationSettingsForm>({
 		defaultValues: {
@@ -27,18 +35,51 @@ export function VerificationSettings() {
 		},
 	});
 
-	const handleSubmit = async (_values: VerificationSettingsForm) => {
-		setLoading(true);
-		try {
-			// Mock API call
-			await new Promise((resolve) => setTimeout(resolve, 500));
-			toast.success("Verification settings saved");
-		} catch {
-			toast.error("Failed to save settings");
-		} finally {
-			setLoading(false);
+	// Update form when data loads
+	useEffect(() => {
+		if (settings) {
+			form.reset({
+				verificationFrequency: settings.verificationFrequency || 30,
+				geofenceThreshold: settings.geofenceThreshold || 20,
+				allowGPSOverride: settings.allowGPSOverride ?? true,
+				dueSoonDays: settings.dueSoonDays || 7,
+			});
 		}
+	}, [settings, form]);
+
+	const mutation = useMutation({
+		mutationFn: companyService.updateSettings,
+		onSuccess: () => {
+			toast.success("Verification settings saved");
+			queryClient.invalidateQueries({ queryKey: ["company", "settings"] });
+		},
+		onError: () => {
+			toast.error("Failed to save settings");
+		},
+	});
+
+	const handleSubmit = (values: VerificationSettingsForm) => {
+		mutation.mutate(values);
 	};
+
+	if (isLoading) {
+		return (
+			<Card>
+				<CardHeader>
+					<Skeleton className="h-6 w-48" />
+					<Skeleton className="h-4 w-72 mt-2" />
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="grid gap-6 md:grid-cols-2">
+						<Skeleton className="h-16 w-full" />
+						<Skeleton className="h-16 w-full" />
+						<Skeleton className="h-16 w-full" />
+						<Skeleton className="h-16 w-full" />
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>
@@ -115,8 +156,8 @@ export function VerificationSettings() {
 						</div>
 					</div>
 
-					<Button type="submit" disabled={loading}>
-						{loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+					<Button type="submit" disabled={mutation.isPending}>
+						{mutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
 						Save Changes
 					</Button>
 				</form>

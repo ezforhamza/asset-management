@@ -5,7 +5,7 @@ import { MOCK_VERIFICATIONS } from "../data/verifications";
 export const assetHandlers = [
 	// Get all assets
 	http.get("/api/assets", async ({ request }) => {
-		await delay(400);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const status = url.searchParams.get("status");
@@ -35,7 +35,7 @@ export const assetHandlers = [
 
 	// Get single asset
 	http.get("/api/assets/:assetId", async ({ params }) => {
-		await delay(300);
+		await delay(100);
 
 		const { assetId } = params;
 		const asset = MOCK_ASSETS.find((a) => a._id === assetId);
@@ -49,7 +49,7 @@ export const assetHandlers = [
 
 	// Update asset
 	http.put("/api/assets/:assetId", async ({ params }) => {
-		await delay(400);
+		await delay(100);
 
 		const { assetId } = params;
 
@@ -61,7 +61,7 @@ export const assetHandlers = [
 
 	// Get verification history for asset
 	http.get("/api/verifications/asset/:assetId", async ({ params }) => {
-		await delay(400);
+		await delay(100);
 
 		const { assetId } = params;
 		const verifications = MOCK_VERIFICATIONS.filter((v) => v.assetId === assetId);
@@ -71,11 +71,56 @@ export const assetHandlers = [
 
 	// Update investigation status
 	http.put("/api/verifications/:verificationId/investigate", async () => {
-		await delay(400);
+		await delay(100);
 
 		return HttpResponse.json({
 			success: true,
 			message: "Investigation status updated",
+		});
+	}),
+
+	// Bulk import assets
+	http.post("/api/assets/bulk-import", async ({ request }) => {
+		await delay(200);
+
+		const body = (await request.json()) as { assets: Array<{ serialNumber: string }> };
+		const totalAssets = body.assets?.length || 0;
+
+		// Simulate some failures for realism
+		const failedCount = Math.floor(totalAssets * 0.1);
+		const importedCount = totalAssets - failedCount;
+
+		const errors = failedCount > 0 ? [{ row: 3, error: "Duplicate serial number" }] : [];
+
+		return HttpResponse.json({
+			success: true,
+			imported: importedCount,
+			failed: failedCount,
+			errors,
+		});
+	}),
+
+	// Transfer asset to another company
+	http.post("/api/assets/transfer", async ({ request }) => {
+		await delay(100);
+
+		const body = (await request.json()) as { assetId: string; toCompanyId: string };
+
+		return HttpResponse.json({
+			success: true,
+			message: `Asset ${body.assetId} transferred to company ${body.toCompanyId}`,
+		});
+	}),
+
+	// Retire asset
+	http.post("/api/assets/:assetId/retire", async ({ params }) => {
+		await delay(100);
+
+		const { assetId } = params;
+
+		return HttpResponse.json({
+			success: true,
+			message: `Asset ${assetId} has been retired`,
 		});
 	}),
 ];

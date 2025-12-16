@@ -4,7 +4,7 @@ import { MOCK_USERS } from "../data/users";
 export const userHandlers = [
 	// Get all users
 	http.get("/api/users", async ({ request }) => {
-		await delay(400);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const role = url.searchParams.get("role");
@@ -25,7 +25,7 @@ export const userHandlers = [
 
 	// Create field worker
 	http.post("/api/users/create-field-worker", async ({ request }) => {
-		await delay(600);
+		await delay(100);
 
 		const body = (await request.json()) as { name: string; email: string; role: string };
 
@@ -45,7 +45,7 @@ export const userHandlers = [
 
 	// Update user
 	http.put("/api/users/:userId", async ({ params }) => {
-		await delay(400);
+		await delay(100);
 
 		const { userId } = params;
 
@@ -57,7 +57,7 @@ export const userHandlers = [
 
 	// Deactivate user
 	http.put("/api/users/:userId/deactivate", async ({ params }) => {
-		await delay(400);
+		await delay(100);
 
 		const { userId } = params;
 
@@ -69,7 +69,7 @@ export const userHandlers = [
 
 	// Reset user password
 	http.post("/api/users/:userId/reset-password", async () => {
-		await delay(500);
+		await delay(100);
 
 		return HttpResponse.json({
 			success: true,

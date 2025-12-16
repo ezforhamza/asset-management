@@ -33,6 +33,25 @@ export interface ChangePasswordReq {
 }
 
 // ============================================
+// MFA Types
+// ============================================
+
+export interface MFAStatusRes {
+	enabled: boolean;
+	passwordLastChanged?: string;
+}
+
+export interface MFASetupRes {
+	qrCodeUrl: string;
+	secret: string;
+	backupCodes: string[];
+}
+
+export interface MFAVerifyReq {
+	code: string;
+}
+
+// ============================================
 // User Management Types (Customer Admin)
 // ============================================
 
@@ -74,6 +93,7 @@ enum AuthApi {
 enum UserApi {
 	Users = "/users",
 	CreateFieldWorker = "/users/create-field-worker",
+	MFA = "/users/mfa",
 }
 
 // ============================================
@@ -112,6 +132,18 @@ const resetUserPassword = (userId: string) =>
 		url: `${UserApi.Users}/${userId}/reset-password`,
 	});
 
+// ============================================
+// MFA Service
+// ============================================
+
+const getMFAStatus = () => apiClient.get<MFAStatusRes>({ url: `${UserApi.MFA}/status` });
+
+const setupMFA = () => apiClient.post<MFASetupRes>({ url: `${UserApi.MFA}/setup` });
+
+const verifyMFA = (data: MFAVerifyReq) => apiClient.post<{ success: boolean }>({ url: `${UserApi.MFA}/verify`, data });
+
+const disableMFA = () => apiClient.delete<{ success: boolean }>({ url: UserApi.MFA });
+
 export default {
 	// Auth
 	login,
@@ -124,4 +156,9 @@ export default {
 	updateUser,
 	deactivateUser,
 	resetUserPassword,
+	// MFA
+	getMFAStatus,
+	setupMFA,
+	verifyMFA,
+	disableMFA,
 };

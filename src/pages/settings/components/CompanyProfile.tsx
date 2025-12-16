@@ -1,11 +1,14 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Building2, Loader2, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import companyService from "@/api/services/companyService";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { Skeleton } from "@/ui/skeleton";
 
 interface CompanyProfileForm {
 	companyName: string;
@@ -15,28 +18,67 @@ interface CompanyProfileForm {
 }
 
 export function CompanyProfile() {
-	const [loading, setLoading] = useState(false);
+	const queryClient = useQueryClient();
+
+	const { data: profile, isLoading } = useQuery({
+		queryKey: ["company", "profile"],
+		queryFn: companyService.getProfile,
+	});
 
 	const form = useForm<CompanyProfileForm>({
 		defaultValues: {
-			companyName: "Asset Guard Industries",
-			contactEmail: "admin@assetguard.com",
-			phone: "+92 300 1234567",
-			address: "123 Business Park, Karachi, Pakistan",
+			companyName: "",
+			contactEmail: "",
+			phone: "",
+			address: "",
 		},
 	});
 
-	const handleSubmit = async (_values: CompanyProfileForm) => {
-		setLoading(true);
-		try {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-			toast.success("Company profile updated");
-		} catch {
-			toast.error("Failed to update profile");
-		} finally {
-			setLoading(false);
+	// Update form when data loads
+	useEffect(() => {
+		if (profile) {
+			form.reset({
+				companyName: profile.companyName || "",
+				contactEmail: profile.contactEmail || "",
+				phone: profile.phone || "",
+				address: profile.address || "",
+			});
 		}
+	}, [profile, form]);
+
+	const mutation = useMutation({
+		mutationFn: companyService.updateProfile,
+		onSuccess: () => {
+			toast.success("Company profile updated");
+			queryClient.invalidateQueries({ queryKey: ["company", "profile"] });
+		},
+		onError: () => {
+			toast.error("Failed to update profile");
+		},
+	});
+
+	const handleSubmit = (values: CompanyProfileForm) => {
+		mutation.mutate(values);
 	};
+
+	if (isLoading) {
+		return (
+			<Card>
+				<CardHeader>
+					<Skeleton className="h-6 w-48" />
+					<Skeleton className="h-4 w-64 mt-2" />
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<div className="grid gap-4 md:grid-cols-2">
+						<Skeleton className="h-10 w-full" />
+						<Skeleton className="h-10 w-full" />
+						<Skeleton className="h-10 w-full" />
+						<Skeleton className="h-10 w-full" />
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>
@@ -110,8 +152,12 @@ export function CompanyProfile() {
 							/>
 						</div>
 
-						<Button type="submit" disabled={loading}>
-							{loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+						<Button type="submit" disabled={mutation.isPending}>
+							{mutation.isPending ? (
+								<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+							) : (
+								<Save className="h-4 w-4 mr-2" />
+							)}
 							Save Changes
 						</Button>
 					</form>

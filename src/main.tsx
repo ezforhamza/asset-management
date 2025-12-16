@@ -14,10 +14,23 @@ await registerLocalIcons();
 // Enable MSW in development if configured
 if (import.meta.env.DEV && import.meta.env.VITE_APP_ENABLE_MSW === "true") {
 	const { worker } = await import("./_mock");
+	const { startKeepalive } = await import("./_mock/keepalive");
+
 	await worker.start({
 		onUnhandledRequest: "bypass",
+		serviceWorker: {
+			url: "/mockServiceWorker.js",
+			options: {
+				scope: "/",
+			},
+		},
+		quiet: false,
 	});
-	console.log("[MSW] Mock Service Worker started");
+
+	// Start keepalive to prevent service worker from becoming inactive
+	startKeepalive(15000); // Ping every 15 seconds
+
+	console.log("[MSW] Mock Service Worker started with keepalive");
 }
 
 const router = createBrowserRouter(

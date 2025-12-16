@@ -1,11 +1,14 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Loader2, Plus, Save, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import companyService from "@/api/services/companyService";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
+import { Skeleton } from "@/ui/skeleton";
 import { Switch } from "@/ui/switch";
 
 interface NotificationSettingsForm {
@@ -16,14 +19,19 @@ interface NotificationSettingsForm {
 }
 
 export function NotificationSettings() {
-	const [loading, setLoading] = useState(false);
+	const queryClient = useQueryClient();
+
+	const { data: settings, isLoading } = useQuery({
+		queryKey: ["company", "settings"],
+		queryFn: companyService.getSettings,
+	});
 
 	const form = useForm<NotificationSettingsForm>({
 		defaultValues: {
 			emailNotifications: true,
 			overdueAlerts: true,
 			repairAlerts: true,
-			notificationEmails: [{ email: "admin@assetguard.com" }, { email: "manager@assetguard.com" }],
+			notificationEmails: [],
 		},
 	});
 
@@ -32,17 +40,52 @@ export function NotificationSettings() {
 		name: "notificationEmails",
 	});
 
-	const handleSubmit = async (_values: NotificationSettingsForm) => {
-		setLoading(true);
-		try {
-			await new Promise((resolve) => setTimeout(resolve, 500));
-			toast.success("Notification settings saved");
-		} catch {
-			toast.error("Failed to save settings");
-		} finally {
-			setLoading(false);
+	// Update form when data loads
+	useEffect(() => {
+		if (settings?.repairNotificationEmails) {
+			form.reset({
+				emailNotifications: true,
+				overdueAlerts: true,
+				repairAlerts: true,
+				notificationEmails: settings.repairNotificationEmails.map((email) => ({ email })),
+			});
 		}
+	}, [settings, form]);
+
+	const mutation = useMutation({
+		mutationFn: (values: NotificationSettingsForm) => {
+			return companyService.updateSettings({
+				repairNotificationEmails: values.notificationEmails.map((e) => e.email).filter(Boolean),
+			});
+		},
+		onSuccess: () => {
+			toast.success("Notification settings saved");
+			queryClient.invalidateQueries({ queryKey: ["company", "settings"] });
+		},
+		onError: () => {
+			toast.error("Failed to save settings");
+		},
+	});
+
+	const handleSubmit = (values: NotificationSettingsForm) => {
+		mutation.mutate(values);
 	};
+
+	if (isLoading) {
+		return (
+			<Card>
+				<CardHeader>
+					<Skeleton className="h-6 w-48" />
+					<Skeleton className="h-4 w-64 mt-2" />
+				</CardHeader>
+				<CardContent className="space-y-4">
+					<Skeleton className="h-16 w-full" />
+					<Skeleton className="h-16 w-full" />
+					<Skeleton className="h-16 w-full" />
+				</CardContent>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>
@@ -122,8 +165,8 @@ export function NotificationSettings() {
 						)}
 					</div>
 
-					<Button type="submit" disabled={loading}>
-						{loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+					<Button type="submit" disabled={mutation.isPending}>
+						{mutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
 						Save Changes
 					</Button>
 				</form>

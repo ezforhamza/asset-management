@@ -4,6 +4,18 @@ import { UserRole } from "#/enum";
 export const MOCK_COMPANY_ID = "company_001";
 
 export const MOCK_USERS: UserInfo[] = [
+	// System Admin (Asset Guard employee)
+	{
+		id: "user_000",
+		email: "sysadmin@assetguard.com",
+		username: "sysadmin",
+		name: "System Administrator",
+		role: UserRole.SYSTEM_ADMIN,
+		companyId: undefined, // System admin doesn't belong to a company
+		mustChangePassword: false,
+		lastLogin: "2025-01-10T16:00:00Z",
+	},
+	// Customer Admin (Company manager)
 	{
 		id: "user_001",
 		email: "admin@assetguard.com",
@@ -56,7 +68,20 @@ export const MOCK_USERS: UserInfo[] = [
 	},
 ];
 
+// Customer Admin credentials
 export const MOCK_CREDENTIALS = {
 	email: "admin@assetguard.com",
 	password: "admin123",
+};
+
+// Field User credentials (for testing field user role)
+export const MOCK_FIELD_USER_CREDENTIALS = {
+	email: "ali@assetguard.com",
+	password: "field123",
+};
+
+// System Admin credentials (for admin panel)
+export const MOCK_SYSADMIN_CREDENTIALS = {
+	email: "sysadmin@assetguard.com",
+	password: "sysadmin123",
 };

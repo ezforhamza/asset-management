@@ -23,7 +23,7 @@ export interface UserInfo {
 	password?: string;
 	avatar?: string;
 	role: UserRole;
-	companyId: string;
+	companyId?: string; // Optional for system_admin who doesn't belong to a company
 	status?: BasicStatus;
 	mustChangePassword?: boolean;
 	lastLogin?: string;
@@ -195,4 +195,96 @@ export interface MapAsset {
 	location: GeoLocation;
 	status: VerificationStatus;
 	lastVerified: string | null;
+}
+
+// ============================================
+// Admin Panel Entities
+// ============================================
+
+export interface CompanySettings {
+	verificationFrequency: number;
+	geofenceThreshold: number;
+	allowGPSOverride: boolean;
+	imageRetentionDays: number;
+	repairNotificationEmails: string[];
+	dueSoonDays?: number;
+}
+
+export interface Company {
+	_id: string;
+	companyName: string;
+	contactEmail: string;
+	phone?: string;
+	address?: string;
+	settings: CompanySettings;
+	isActive: boolean;
+	createdAt: string;
+	updatedAt?: string;
+	// Computed fields for admin panel
+	totalAssets?: number;
+	totalUsers?: number;
+}
+
+export enum QRCodeStatus {
+	AVAILABLE = "available",
+	ALLOCATED = "allocated",
+	USED = "used",
+	RETIRED = "retired",
+}
+
+export interface QRCode {
+	_id: string;
+	qrCode: string;
+	companyId: string | null;
+	companyName?: string;
+	assetId: string | null;
+	assetSerialNumber?: string;
+	status: QRCodeStatus;
+	allocatedAt: string | null;
+	linkedAt: string | null;
+	createdAt: string;
+}
+
+export enum SyncStatus {
+	PENDING = "pending",
+	PROCESSING = "processing",
+	COMPLETED = "completed",
+	FAILED = "failed",
+}
+
+export interface SyncQueueItem {
+	_id: string;
+	userId: string;
+	userName?: string;
+	deviceId: string;
+	queueData: {
+		type: "registration" | "verification";
+		assetId?: string;
+		serialNumber?: string;
+	};
+	syncStatus: SyncStatus;
+	attempts: number;
+	error?: string;
+	createdAt: string;
+	processedAt?: string;
+}
+
+export interface SystemMonitoringStats {
+	queuedUploads: number;
+	failedSyncs: number;
+	flaggedVerifications: number;
+	apiResponseTime: number;
+	dbConnections: number;
+}
+
+export interface AuditLog {
+	_id: string;
+	entityType: "asset" | "verification" | "qr_code" | "user" | "company";
+	entityId: string;
+	action: "created" | "updated" | "deleted" | "status_changed";
+	performedBy: string;
+	performedByName?: string;
+	changes: Record<string, { old: unknown; new: unknown }>;
+	timestamp: string;
+	ipAddress?: string;
 }

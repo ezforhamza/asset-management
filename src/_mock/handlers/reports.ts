@@ -6,7 +6,7 @@ import { VerificationStatus } from "#/enum";
 export const reportHandlers = [
 	// Get verification reports
 	http.get("/api/reports/verifications", async ({ request }) => {
-		await delay(500);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const startDate = url.searchParams.get("startDate");
@@ -54,7 +54,7 @@ export const reportHandlers = [
 
 	// Export report (mock - just returns success)
 	http.get("/api/reports/export", async ({ request }) => {
-		await delay(800);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const format = url.searchParams.get("format") || "csv";
@@ -69,7 +69,7 @@ export const reportHandlers = [
 
 	// Create scheduled report
 	http.post("/api/reports/schedules", async () => {
-		await delay(500);
+		await delay(100);
 
 		return HttpResponse.json({
 			success: true,
@@ -80,7 +80,7 @@ export const reportHandlers = [
 
 	// Get scheduled reports
 	http.get("/api/reports/schedules", async () => {
-		await delay(300);
+		await delay(100);
 
 		return HttpResponse.json([
 			{
@@ -110,7 +110,7 @@ export const reportHandlers = [
 
 	// Delete scheduled report
 	http.delete("/api/reports/schedules/:scheduleId", async () => {
-		await delay(300);
+		await delay(100);
 
 		return HttpResponse.json({
 			success: true,
@@ -120,7 +120,7 @@ export const reportHandlers = [
 
 	// Get map assets
 	http.get("/api/map/assets", async ({ request }) => {
-		await delay(400);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const status = url.searchParams.get("status") as VerificationStatus | null;

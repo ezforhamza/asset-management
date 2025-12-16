@@ -1,72 +1,67 @@
 import type { NavItemDataProps } from "@/components/nav/types";
 import { GLOBAL_CONFIG } from "@/global-config";
-import { useUserPermissions } from "@/store/userStore";
-import { checkAny } from "@/utils";
+import { useUserInfo } from "@/store/userStore";
+import { UserRole } from "#/enum";
 import { useMemo } from "react";
 import { backendNavData } from "./nav-data-backend";
-import { frontendNavData } from "./nav-data-frontend";
-
-const navData = GLOBAL_CONFIG.routerMode === "backend" ? backendNavData : frontendNavData;
+import { clientNavData, adminNavData } from "./nav-data-frontend";
 
 /**
- * 递归处理导航数据，过滤掉没有权限的项目
- * @param items 导航项目数组
- * @param permissions 权限列表
- * @returns 过滤后的导航项目数组
+ * Get nav data based on user role
+ * - System Admin sees admin panel navigation
+ * - Customer Admin / Field User sees client panel navigation
  */
-const filterItems = (items: NavItemDataProps[], permissions: string[]) => {
-	return items.filter((item) => {
-		// 检查当前项目是否有权限
-		const hasPermission = item.auth ? checkAny(item.auth, permissions) : true;
+const getNavDataForRole = (userRole: string | undefined) => {
+	if (GLOBAL_CONFIG.routerMode === "backend") {
+		return backendNavData;
+	}
 
-		// 如果有子项目，递归处理
-		if (item.children?.length) {
-			const filteredChildren = filterItems(item.children, permissions);
-			// 如果子项目都被过滤掉了，则过滤掉当前项目
-			if (filteredChildren.length === 0) {
-				return false;
-			}
-			// 更新子项目
-			item.children = filteredChildren;
-		}
+	// System admin gets admin panel navigation
+	if (userRole === UserRole.SYSTEM_ADMIN) {
+		return adminNavData;
+	}
 
-		return hasPermission;
-	});
+	// Customer admin and field user get client panel navigation
+	return clientNavData;
 };
 
 /**
- *
- * 根据权限过滤导航数据
- * @param permissions 权限列表
- * @returns 过滤后的导航数据
+ * Filter nav items based on user role
  */
-const filterNavData = (permissions: string[]) => {
+const filterItemsByRole = (items: NavItemDataProps[], userRole: string | undefined): NavItemDataProps[] => {
+	return items
+		.filter((item) => {
+			if (!item.roles || item.roles.length === 0) return true;
+			if (!userRole) return false;
+			return item.roles.includes(userRole);
+		})
+		.map((item) => {
+			if (item.children?.length) {
+				return { ...item, children: filterItemsByRole(item.children, userRole) };
+			}
+			return item;
+		});
+};
+
+/**
+ * Filter navigation data based on user role
+ */
+const filterNavDataByRole = (userRole: string | undefined) => {
+	const navData = getNavDataForRole(userRole);
 	return navData
 		.map((group) => {
-			// 过滤组内的项目
-			const filteredItems = filterItems(group.items, permissions);
-
-			// 如果组内没有项目了，返回 null
-			if (filteredItems.length === 0) {
-				return null;
-			}
-
-			// 返回过滤后的组
-			return {
-				...group,
-				items: filteredItems,
-			};
+			const filteredItems = filterItemsByRole(group.items, userRole);
+			if (filteredItems.length === 0) return null;
+			return { ...group, items: filteredItems };
 		})
-		.filter((group): group is NonNullable<typeof group> => group !== null); // 过滤掉空组
+		.filter((group): group is NonNullable<typeof group> => group !== null);
 };
 
 /**
- * Hook to get filtered navigation data based on user permissions
- * @returns Filtered navigation data
+ * Hook to get filtered navigation data based on user role
  */
 export const useFilteredNavData = () => {
-	const permissions = useUserPermissions();
-	const permissionCodes = useMemo(() => permissions.map((p) => p.code), [permissions]);
-	const filteredNavData = useMemo(() => filterNavData(permissionCodes), [permissionCodes]);
+	const userInfo = useUserInfo();
+	const filteredNavData = useMemo(() => filterNavDataByRole(userInfo.role), [userInfo.role]);
 	return filteredNavData;
 };

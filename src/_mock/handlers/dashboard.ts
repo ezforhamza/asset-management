@@ -4,7 +4,7 @@ import { getDashboardStats, getRecentActivity } from "../data/verifications";
 export const dashboardHandlers = [
 	// Get dashboard stats
 	http.get("/api/dashboard/stats", async () => {
-		await delay(300);
+		await delay(100);
 
 		const stats = getDashboardStats();
 		return HttpResponse.json(stats);
@@ -12,7 +12,7 @@ export const dashboardHandlers = [
 
 	// Get recent activity
 	http.get("/api/dashboard/recent-activity", async ({ request }) => {
-		await delay(400);
+		await delay(100);
 
 		const url = new URL(request.url);
 		const limit = Number(url.searchParams.get("limit")) || 10;

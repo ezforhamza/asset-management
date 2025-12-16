@@ -1,19 +1,49 @@
 import type { RouteObject } from "react-router";
 import { Navigate } from "react-router";
+import { UserRole } from "#/enum";
+import { RoleGuard } from "@/routes/guards/RoleGuard";
 import { Component } from "./utils";
 
 export function getFrontendDashboardRoutes(): RouteObject[] {
 	const frontendDashboardRoutes: RouteObject[] = [
-		// Main pages
+		// ============================================
+		// Client Panel Pages (Customer Admin & Field User)
+		// ============================================
 		{ path: "dashboard", element: Component("/pages/dashboard") },
 		{ path: "reports", element: Component("/pages/reports") },
 		{ path: "map", element: Component("/pages/map") },
 
 		// Management pages (Customer Admin only)
-		{ path: "users", element: Component("/pages/users") },
-		{ path: "settings", element: Component("/pages/settings") },
+		{
+			path: "users",
+			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users")}</RoleGuard>,
+		},
+		{
+			path: "settings",
+			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/settings")}</RoleGuard>,
+		},
 
-		// Auth pages
+		// ============================================
+		// Admin Panel Pages (System Admin only)
+		// ============================================
+		{
+			path: "admin",
+			element: <RoleGuard allowedRoles={[UserRole.SYSTEM_ADMIN]} />,
+			children: [
+				{ index: true, element: <Navigate to="dashboard" replace /> },
+				{ path: "dashboard", element: Component("/pages/admin/dashboard") },
+				{ path: "companies", element: Component("/pages/admin/companies") },
+				{ path: "companies/:companyId", element: Component("/pages/admin/companies/detail") },
+				{ path: "qr-inventory", element: Component("/pages/admin/qr-inventory") },
+				{ path: "monitoring", element: Component("/pages/admin/monitoring") },
+				{ path: "audit-logs", element: Component("/pages/admin/audit-logs") },
+				{ path: "settings", element: Component("/pages/admin/settings") },
+			],
+		},
+
+		// ============================================
+		// Common Pages
+		// ============================================
 		{ path: "change-password", element: Component("/pages/sys/change-password") },
 
 		// Error pages
