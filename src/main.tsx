@@ -11,8 +11,8 @@ import { routesSection } from "./routes/sections";
 
 await registerLocalIcons();
 
-// Enable MSW in development if configured
-if (import.meta.env.DEV && import.meta.env.VITE_APP_ENABLE_MSW === "true") {
+// Enable MSW if configured
+if (import.meta.env.VITE_APP_ENABLE_MSW === "true") {
 	const { worker } = await import("./_mock");
 	const { startKeepalive } = await import("./_mock/keepalive");
 
