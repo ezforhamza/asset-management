@@ -1,9 +1,9 @@
-import { Button } from "@/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import reportService from "@/api/services/reportService";
+import { Button } from "@/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 
 interface ExportButtonsProps {
 	startDate?: string;
@@ -16,12 +16,17 @@ export function ExportButtons({ startDate, endDate }: ExportButtonsProps) {
 	const handleExport = async (format: "csv" | "pdf") => {
 		setExporting(true);
 		try {
-			reportService.exportReport({ format, startDate, endDate });
+			reportService.exportReport({
+				format,
+				reportType: "verifications",
+				startDate,
+				endDate,
+			});
 			toast.success(`Report exported as ${format.toUpperCase()}`);
 		} catch {
 			toast.error("Failed to export report");
 		} finally {
-			setExporting(false);
+			setTimeout(() => setExporting(false), 1000);
 		}
 	};
 

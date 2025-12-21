@@ -1,8 +1,10 @@
-import { Check, Copy, Loader2, UserPlus } from "lucide-react";
-import { useState } from "react";
+import { Camera, Check, Copy, Loader2, UserPlus } from "lucide-react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import uploadService from "@/api/services/uploadService";
 import userService from "@/api/services/userService";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
@@ -26,6 +28,9 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 	const [loading, setLoading] = useState(false);
 	const [tempPassword, setTempPassword] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
 	const form = useForm<CreateUserForm>({
 		defaultValues: {
@@ -35,13 +40,44 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 		},
 	});
 
+	const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		if (!file.type.startsWith("image/")) {
+			toast.error("Please select an image file");
+			return;
+		}
+
+		if (file.size > 5 * 1024 * 1024) {
+			toast.error("Image size must be less than 5MB");
+			return;
+		}
+
+		setSelectedFile(file);
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			setPreviewUrl(reader.result as string);
+		};
+		reader.readAsDataURL(file);
+	};
+
 	const handleSubmit = async (values: CreateUserForm) => {
 		setLoading(true);
 		try {
+			let profilePicUrl = "";
+
+			// If a file was selected, upload it first
+			if (selectedFile) {
+				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
+				profilePicUrl = uploadResponse.url;
+			}
+
 			const result = await userService.createFieldWorker({
 				name: values.name,
 				email: values.email,
 				role: values.role as "field_user" | "customer_admin",
+				profilePic: profilePicUrl,
 			});
 
 			setTempPassword(result.temporaryPassword);
@@ -65,6 +101,8 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 		form.reset();
 		setTempPassword(null);
 		setCopied(false);
+		setSelectedFile(null);
+		setPreviewUrl(null);
 		onClose();
 		if (tempPassword) {
 			onSuccess();
@@ -115,6 +153,31 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 				) : (
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+							{/* Profile Picture Section */}
+							<div className="flex items-center gap-4 pb-4 border-b">
+								<Avatar className="h-16 w-16">
+									<AvatarImage src={previewUrl || undefined} alt="Profile" />
+									<AvatarFallback className="text-lg">
+										<UserPlus className="h-6 w-6" />
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex-1">
+									<p className="text-sm font-medium mb-1">Profile Picture (Optional)</p>
+									<input
+										ref={fileInputRef}
+										type="file"
+										accept="image/*"
+										onChange={handleImageSelect}
+										className="hidden"
+									/>
+									<Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+										<Camera className="h-4 w-4 mr-2" />
+										Choose Picture
+									</Button>
+									{selectedFile && <p className="text-xs text-muted-foreground mt-1">Selected: {selectedFile.name}</p>}
+								</div>
+							</div>
+
 							<FormField
 								control={form.control}
 								name="name"

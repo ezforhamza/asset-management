@@ -103,14 +103,12 @@ const getCompanies = (params?: GetCompaniesParams) =>
 const getCompanyById = (companyId: string) =>
 	apiClient.get<CompanyWithStats>({ url: `${CompanyApi.Companies}/${companyId}` });
 
-const createCompany = (data: CreateCompanyReq) =>
-	apiClient.post<CreateCompanyRes>({ url: CompanyApi.Companies, data });
+const createCompany = (data: CreateCompanyReq) => apiClient.post<CreateCompanyRes>({ url: CompanyApi.Companies, data });
 
 const updateCompany = (companyId: string, data: UpdateCompanyReq) =>
 	apiClient.patch<Company>({ url: `${CompanyApi.Companies}/${companyId}`, data });
 
-const deleteCompany = (companyId: string) =>
-	apiClient.delete<void>({ url: `${CompanyApi.Companies}/${companyId}` });
+const deleteCompany = (companyId: string) => apiClient.delete<void>({ url: `${CompanyApi.Companies}/${companyId}` });
 
 const getCompanySettings = (companyId: string) =>
 	apiClient.get<CompanySettings>({ url: `${CompanyApi.Companies}/${companyId}/settings` });

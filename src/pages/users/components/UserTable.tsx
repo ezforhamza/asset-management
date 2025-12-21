@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { Edit, KeyRound, Mail, MoreHorizontal, UserX } from "lucide-react";
 import type { UserInfo } from "#/entity";
 import { UserRole } from "#/enum";
-import { Avatar, AvatarFallback } from "@/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
@@ -89,6 +89,7 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 							<TableCell>
 								<div className="flex items-center gap-3">
 									<Avatar className="h-10 w-10">
+										<AvatarImage src={user.profilePic || undefined} alt={user.name} />
 										<AvatarFallback className="bg-primary/10 text-primary font-medium">
 											{getInitials(user.name)}
 										</AvatarFallback>

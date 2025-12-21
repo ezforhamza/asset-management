@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import type { Verification } from "#/entity";
+import type { VerificationReportItem } from "#/report";
 import reportService from "@/api/services/reportService";
 import { Button } from "@/ui/button";
 import { ExportButtons } from "./components/ExportButtons";
@@ -20,7 +20,7 @@ export default function ReportsPage() {
 	const limit = 20;
 
 	// Detail modal state
-	const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
+	const [selectedVerification, setSelectedVerification] = useState<VerificationReportItem | null>(null);
 	const [detailOpen, setDetailOpen] = useState(false);
 
 	// Build query params
@@ -48,22 +48,21 @@ export default function ReportsPage() {
 
 	// Client-side search filter
 	const filteredData = useMemo(() => {
-		if (!data?.data) return [];
-		if (!searchQuery) return data.data;
+		if (!data?.results) return [];
+		if (!searchQuery) return data.results;
 
 		const query = searchQuery.toLowerCase();
-		return data.data.filter((v) => {
-			const asset = v.asset;
+		return data.results.filter((v) => {
 			return (
-				asset?.serialNumber?.toLowerCase().includes(query) ||
-				asset?.make?.toLowerCase().includes(query) ||
-				asset?.model?.toLowerCase().includes(query) ||
-				v.verifiedByName?.toLowerCase().includes(query)
+				v.serialNumber?.toLowerCase().includes(query) ||
+				v.make?.toLowerCase().includes(query) ||
+				v.model?.toLowerCase().includes(query) ||
+				v.makeModel?.toLowerCase().includes(query)
 			);
 		});
-	}, [data?.data, searchQuery]);
+	}, [data?.results, searchQuery]);
 
-	const handleViewDetails = (verification: Verification) => {
+	const handleViewDetails = (verification: VerificationReportItem) => {
 		setSelectedVerification(verification);
 		setDetailOpen(true);
 	};
@@ -75,7 +74,7 @@ export default function ReportsPage() {
 		setPage(1);
 	};
 
-	const totalPages = data?.pagination?.pages || 1;
+	const totalPages = data?.totalPages || 1;
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -109,7 +108,7 @@ export default function ReportsPage() {
 			{/* Results count & Pagination */}
 			<div className="flex-shrink-0 flex items-center justify-between px-6 py-2 bg-muted/30">
 				<p className="text-sm text-muted-foreground">
-					{isLoading ? "Loading..." : `Showing ${filteredData.length} of ${data?.pagination?.total || 0} verifications`}
+					{isLoading ? "Loading..." : `Showing ${filteredData.length} of ${data?.totalResults || 0} verifications`}
 				</p>
 				{totalPages > 1 && (
 					<div className="flex items-center gap-2">

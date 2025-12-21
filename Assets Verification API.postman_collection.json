@@ -35,15 +35,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/register",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"register"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "register"]
 						},
 						"description": "⚠️ DISABLED - Public registration is disabled. Users are created by admins only:\\n- system_admin: Hardcoded (only one)\\n- customer_admin: Created when company is created\\n- field_user: Created by customer_admin via POST /users"
 					},
@@ -73,15 +66,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/login",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"login"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "login"]
 						},
 						"description": "**Purpose:** Login with email and password\n\n**Who Uses it:** registered user (any)\n\n**When to call it:** on login.\n\n**Response:**\n\n``` json\n{\n    \"user\": {\n        \"role\": \"system_admin\",\n        \"isEmailVerified\": false,\n        \"status\": \"active\",\n        \"mustChangePassword\": false,\n        \"devicePlatform\": null,\n        \"mfaEnabled\": false,\n        \"name\": \"System administrator\",\n        \"email\": \"systemadministrator@example.com\",\n        \"id\": \"693b65ca7d3db2621ce74b7f\"\n    },\n    \"tokens\": {\n        \"access\": {\n            \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTNiNjVjYTdkM2RiMjYyMWNlNzRiN2YiLCJpYXQiOjE3NjU5MTIwOTksImV4cCI6MTc2NTkxMzg5OSwidHlwZSI6ImFjY2VzcyJ9.n4xS7mW4CDtdRP5jSjUZ3548azKsGIq-5KtEqe0u2XM\",\n            \"expires\": \"2025-12-16T19:38:19.531Z\"\n        },\n        \"refresh\": {\n            \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTNiNjVjYTdkM2RiMjYyMWNlNzRiN2YiLCJpYXQiOjE3NjU5MTIwOTksImV4cCI6MTc2ODUwNDA5OSwidHlwZSI6InJlZnJlc2gifQ.S33BES5tdq6EQ6zoH8uNcofZPtIUeX6K4A0WaAXZSek\",\n            \"expires\": \"2026-01-15T19:08:19.534Z\"\n        }\n    }\n}\n\n ```"
 					},
@@ -108,15 +94,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/logout",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"logout"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "logout"]
 						},
 						"description": "Logout and invalidate refresh token."
 					},
@@ -146,15 +125,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/refresh-tokens",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"refresh-tokens"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "refresh-tokens"]
 						},
 						"description": "Get new access and refresh tokens using a valid refresh token."
 					},
@@ -184,15 +156,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/forgot-password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"forgot-password"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "forgot-password"]
 						},
 						"description": "Request password reset email."
 					},
@@ -222,15 +187,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/auth/reset-password?token=reset-token-from-email",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"reset-password"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "reset-password"],
 							"query": [
 								{
 									"key": "token",
@@ -255,15 +213,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/auth/send-verification-email",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"send-verification-email"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "send-verification-email"]
 						},
 						"description": "Send email verification link to logged-in user."
 					},
@@ -284,15 +235,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/auth/verify-email?token=verification-token",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"auth",
-								"verify-email"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "auth", "verify-email"],
 							"query": [
 								{
 									"key": "token",
@@ -332,14 +276,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/users",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users"]
 						},
 						"description": "**Purpose:** Create a new user (customer_admin only).\\n\\n**Who Uses it:** customer_admin\\n\\n**Roles:** field_user, customer_admin (NO system_admin)\\n\\n**Notes:**\\n- Password is optional - if not provided, a temporary password will be auto-generated\\n- companyId is taken from the authenticated user's JWT (no need to specify)\\n- Only the default customer_admin (isDefaultAdmin: true) can create other customer_admins\\n\\n**Response includes temporaryPassword if auto-generated.**"
 					},
@@ -357,14 +295,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/users?name=&role=&status=&companyId=&sortBy=createdAt:desc&limit=10&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users"],
 							"query": [
 								{
 									"key": "name",
@@ -419,15 +351,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
 						},
 						"description": "Get single user by ID."
 					},
@@ -454,15 +379,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
 						},
 						"description": "Update user details. Admins can update role/status."
 					},
@@ -480,15 +398,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{userId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "{{userId}}"]
 						},
 						"description": "Permanently delete a user."
 					},
@@ -506,16 +417,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{userId}}/deactivate",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"deactivate"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "{{userId}}", "deactivate"]
 						},
 						"description": "Soft delete - deactivate user account."
 					},
@@ -533,16 +436,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/users/{{userId}}/reset-password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"{{userId}}",
-								"reset-password"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "{{userId}}", "reset-password"]
 						},
 						"description": "Admin resets user password. New password sent via email."
 					},
@@ -569,15 +464,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/users/change-password",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"change-password"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "users", "change-password"]
 						},
 						"description": "Change own password (requires current password)."
 					},
@@ -610,14 +498,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/companies",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies"]
 						},
 						"description": "**Purpose:** Create a new company with default customer_admin.\\n\\n**Who Uses it:** system_admin only\\n\\n**IMPORTANT:** The `admin` object is REQUIRED. This creates the first customer_admin for the company with `isDefaultAdmin: true`. Only this admin can create/manage other customer_admins.\\n\\n**Request Body:**\\n- `companyName` (required)\\n- `contactEmail` (required)\\n- `phone` (optional)\\n- `address` (optional)\\n- `settings` (optional): verificationFrequency, geofenceThreshold, allowGPSOverride, imageRetentionDays, repairNotificationEmails, dueSoonDays\\n- `admin` (required): { name, email, password }\\n\\n**Response:**\\n\\n``` json\\n{\\n    \\\"company\\\": {\\n        \\\"_id\\\": \\\"...\\\",\\n        \\\"companyName\\\": \\\"Acme Corporation\\\",\\n        \\\"contactEmail\\\": \\\"admin@acme.com\\\",\\n        \\\"phone\\\": \\\"+92 333 1234567\\\",\\n        \\\"address\\\": \\\"123 Business Park, Lahore\\\",\\n        \\\"settings\\\": { ... },\\n        \\\"isActive\\\": true,\\n        \\\"createdAt\\\": \\\"...\\\",\\n        \\\"updatedAt\\\": \\\"...\\\"\\n    },\\n    \\\"admin\\\": {\\n        \\\"name\\\": \\\"Company Admin\\\",\\n        \\\"email\\\": \\\"companyadmin@acme.com\\\",\\n        \\\"role\\\": \\\"customer_admin\\\",\\n        \\\"companyId\\\": \\\"...\\\",\\n        \\\"isDefaultAdmin\\\": true,\\n        \\\"id\\\": \\\"...\\\"\\n    }\\n}\\n\\n ```"
 					},
@@ -635,14 +517,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/companies?companyName=&isActive=&sortBy=createdAt:desc&limit=10&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies"],
 							"query": [
 								{
 									"key": "companyName",
@@ -687,15 +563,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/companies/{{companyId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies",
-								"{{companyId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies", "{{companyId}}"]
 						},
 						"description": "**Purpose:** Get a company by ID with users and stats.\n\n**Who Uses it:** System Admin\n\n**Note:** Returns company details, users list, and counts for assets/QR codes (not full asset/QR objects).\n\n**Response:**\n\n``` json\n{\n    \"_id\": \"69383138d9f390c29af9b498\",\n    \"companyName\": \"jenpharm\",\n    \"contactEmail\": \"jenpharm@acme.com\",\n    \"phone\": \"+92 333 5551234\",\n    \"address\": \"456 Industrial Area, Karachi\",\n    \"settings\": {\n        \"verificationFrequency\": 30,\n        \"geofenceThreshold\": 25,\n        \"allowGPSOverride\": true,\n        \"imageRetentionDays\": 365,\n        \"repairNotificationEmails\": [],\n        \"dueSoonDays\": 3\n    },\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-15T10:30:00Z\",\n    \"updatedAt\": \"2024-01-20T08:00:00Z\",\n    \"stats\": {\n        \"totalUsers\": 2,\n        \"totalAssets\": 1,\n        \"totalQRCodes\": 1,\n        \"totalVerifications\": 1\n    },\n    \"users\": [\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"name\": \"John Doe\",\n            \"email\": \"john.doe@example.com\",\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"id\": \"693a0adfa4c4b5440d46c02e\"\n        }\n    ]\n}\n\n ```"
 					},
@@ -722,15 +591,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/companies/{{companyId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies",
-								"{{companyId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies", "{{companyId}}"]
 						},
 						"description": "**Purpose:** Update company details and settings.\n\n**Who Uses it:** system admin\n\n**Fields:** companyName, contactEmail, phone, address, settings (verificationFrequency, geofenceThreshold, allowGPSOverride, imageRetentionDays, repairNotificationEmails, dueSoonDays), isActive\n\n**Response:**\n\n``` json\n{\n    \"_id\": \"693826d75b3fbd7fea1559c6\",\n    \"companyName\": \"Acme Corp Updated\",\n    \"contactEmail\": \"newadmin@acme.com\",\n    \"phone\": \"+92 333 9876543\",\n    \"address\": \"456 New Business Park, Karachi\",\n    \"settings\": {\n        \"verificationFrequency\": 14,\n        \"geofenceThreshold\": 50,\n        \"allowGPSOverride\": true,\n        \"imageRetentionDays\": 365,\n        \"repairNotificationEmails\": [],\n        \"dueSoonDays\": 5\n    },\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-15T10:30:00Z\",\n    \"updatedAt\": \"2024-01-20T10:00:00Z\"\n}\n\n ```"
 					},
@@ -748,15 +610,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/companies/{{companyId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies",
-								"{{companyId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies", "{{companyId}}"]
 						},
 						"description": "**Purpose:** Delete a company (cascades to users, assets, etc.).\n\n**Who Uses it: system admin**\n\n**Response: No content.**"
 					},
@@ -774,16 +629,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/companies/{{companyId}}/settings",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"companies",
-								"{{companyId}}",
-								"settings"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "companies", "{{companyId}}", "settings"]
 						},
 						"description": "Get company settings only."
 					},
@@ -816,14 +663,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/qr",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr"]
 						},
 						"description": "Create a single QR code. Status: available (no company), allocated (with company)."
 					},
@@ -850,15 +691,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/qr/bulk",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"bulk"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "bulk"]
 						},
 						"description": "Create multiple QR codes at once (max 1000)."
 					},
@@ -876,15 +710,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr/bulk-import?companyId={{companyId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"bulk-import"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "bulk-import"],
 							"query": [
 								{
 									"key": "companyId",
@@ -918,15 +745,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/qr/allocate",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"allocate"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "allocate"]
 						},
 						"description": "Allocate existing available QR codes to a company."
 					},
@@ -944,14 +764,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr?qrCode=&status=&companyId=&sortBy=createdAt:desc&limit=10&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr"],
 							"query": [
 								{
 									"key": "qrCode",
@@ -1001,15 +815,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr/stats",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"stats"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "stats"]
 						},
 						"description": "Get QR code statistics (counts by status)."
 					},
@@ -1027,16 +834,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr/check/QR-2024-001",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"check",
-								"QR-2024-001"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "check", "QR-2024-001"]
 						},
 						"description": "Check QR code status for mobile app scanning."
 					},
@@ -1054,15 +853,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"{{qrCodeId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "{{qrCodeId}}"]
 						},
 						"description": "Get single QR code by ID."
 					},
@@ -1089,15 +881,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"{{qrCodeId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "{{qrCodeId}}"]
 						},
 						"description": "Update QR code status or company."
 					},
@@ -1115,15 +900,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"qr",
-								"{{qrCodeId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "qr", "{{qrCodeId}}"]
 						},
 						"description": "Delete a QR code (only if not used)."
 					},
@@ -1156,14 +934,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/assets",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets"]
 						},
 						"description": "Register a new asset with QR code. Location required."
 					},
@@ -1181,14 +953,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets?companyId=&serialNumber=&make=&model=&status=&verificationStatus=&sortBy=createdAt:desc&limit=10&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets"],
 							"query": [
 								{
 									"key": "companyId",
@@ -1253,15 +1019,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/map",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"map"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "map"]
 						},
 						"description": "Get assets with location data for map display."
 					},
@@ -1279,15 +1038,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/stats",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"stats"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "stats"]
 						},
 						"description": "Get asset statistics (counts by status, verification status)."
 					},
@@ -1305,16 +1057,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/by-qr/QR-2024-001",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"by-qr",
-								"QR-2024-001"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "by-qr", "QR-2024-001"]
 						},
 						"description": "Lookup asset by QR code string (for mobile scanning)."
 					},
@@ -1332,15 +1076,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}"]
 						},
 						"description": "Get single asset details."
 					},
@@ -1367,15 +1104,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}"]
 						},
 						"description": "Update asset details."
 					},
@@ -1402,16 +1132,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}/location",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}",
-								"location"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}", "location"]
 						},
 						"description": "Update asset registered location."
 					},
@@ -1429,16 +1151,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}/retire",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}",
-								"retire"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}", "retire"]
 						},
 						"description": "Retire an asset (sets status to retired)."
 					},
@@ -1465,16 +1179,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}/transfer",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}",
-								"transfer"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}", "transfer"]
 						},
 						"description": "Transfer asset to another company (system_admin only)."
 					},
@@ -1492,15 +1198,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/assets/{{assetId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"assets",
-								"{{assetId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "assets", "{{assetId}}"]
 						},
 						"description": "Delete an asset permanently."
 					},
@@ -1533,15 +1232,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/submit",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"submit"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "submit"]
 						},
 						"description": "Submit asset verification. Checklist: conditionStatus (good/fair/poor), operationalStatus (operational/needs_repair/non_operational)."
 					},
@@ -1559,14 +1251,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/verifications?assetId=&verifiedBy=&gpsCheckPassed=&gpsOverrideUsed=&repairNeeded=&investigationStatus=&startDate=&endDate=&sortBy=createdAt:desc&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications"],
 							"query": [
 								{
 									"key": "assetId",
@@ -1641,15 +1327,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/stats",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"stats"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "stats"]
 						},
 						"description": "Get verification statistics."
 					},
@@ -1667,15 +1346,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/flagged?investigationStatus=&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"flagged"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "flagged"],
 							"query": [
 								{
 									"key": "investigationStatus",
@@ -1710,16 +1382,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/asset/{{assetId}}?limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"asset",
-								"{{assetId}}"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "asset", "{{assetId}}"],
 							"query": [
 								{
 									"key": "limit",
@@ -1749,15 +1413,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/{{verificationId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"{{verificationId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "{{verificationId}}"]
 						},
 						"description": "Get single verification details."
 					},
@@ -1784,16 +1441,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/verifications/{{verificationId}}/investigate",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"verifications",
-								"{{verificationId}}",
-								"investigate"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "verifications", "{{verificationId}}", "investigate"]
 						},
 						"description": "Update investigation status (admin only). Status: open, investigating, resolved."
 					},
@@ -1817,15 +1466,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/status",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"status"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "status"]
 						},
 						"description": "Check if upload service (S3/local) is configured."
 					},
@@ -1852,15 +1494,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/asset-photo",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"asset-photo"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "asset-photo"]
 						},
 						"description": "Upload single base64-encoded photo."
 					},
@@ -1887,15 +1522,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/asset-photos",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"asset-photos"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "asset-photos"]
 						},
 						"description": "Upload multiple base64-encoded photos (max 5)."
 					},
@@ -1922,15 +1550,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/presigned-url",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"presigned-url"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "presigned-url"]
 						},
 						"description": "Get presigned URLs for direct S3 upload."
 					},
@@ -1957,15 +1578,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/photo",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"photo"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "photo"]
 						},
 						"description": "Delete single photo by URL."
 					},
@@ -1992,15 +1606,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/uploads/photos",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"uploads",
-								"photos"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "uploads", "photos"]
 						},
 						"description": "Delete multiple photos by URLs."
 					},
@@ -2024,15 +1631,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/audit-logs/me",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"audit-logs",
-								"me"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "audit-logs", "me"]
 						},
 						"description": "**Purpose:** Get current user audit logs.\n\n**Who Uses it: any authenticated user**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"results\": [\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"checklist\": {\n                        \"repairNotes\": \"\",\n                        \"conditionStatus\": \"good\",\n                        \"operationalStatus\": \"operational\"\n                    },\n                    \"scanLocationAccuracy\": 15,\n                    \"gpsRetryCount\": 0,\n                    \"gpsOverrideUsed\": false,\n                    \"photos\": [\n                        \"https://example.com/verify1.jpg\",\n                        \"https://example.com/verify2.jpg\"\n                    ],\n                    \"repairNeeded\": false,\n                    \"repairEmailSent\": false,\n                    \"investigationStatus\": null,\n                    \"syncedFromDevice\": \"device-uuid-123\",\n                    \"originalTimestamp\": \"2024-01-15T10:30:00.000Z\",\n                    \"_id\": \"6941c33b0e57d9821a9e1b11\",\n                    \"assetId\": \"6941c3050e57d9821a9e1aff\",\n                    \"companyId\": \"69383138d9f390c29af9b498\",\n                    \"verifiedBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"verifiedAt\": \"2024-01-15T10:30:00.000Z\",\n                    \"scanLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"distanceFromAsset\": 0,\n                    \"gpsCheckPassed\": true,\n                    \"investigationComments\": [],\n                    \"createdAt\": \"2025-12-16T20:38:19.487Z\",\n                    \"updatedAt\": \"2025-12-16T20:38:19.487Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"verification\",\n            \"entityId\": \"6941c33b0e57d9821a9e1b11\",\n            \"action\": \"verified\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"metadata\": {\n                \"assetId\": \"6941c3050e57d9821a9e1aff\",\n                \"gpsOverrideUsed\": false,\n                \"investigationStatus\": null\n            },\n            \"timestamp\": \"2025-12-16T20:38:19.817Z\",\n            \"id\": \"6941c33b0e57d9821a9e1b14\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T20:37:25.984Z\",\n                    \"nextVerificationDue\": \"2026-01-15T20:37:25.984Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941c3050e57d9821a9e1aff\",\n                    \"serialNumber\": \"SN-1100\",\n                    \"make\": \"Jenpharm\",\n                    \"model\": \"jenpharm ccs\",\n                    \"companyId\": \"69383138d9f390c29af9b498\",\n                    \"qrCodeId\": \"6941c2ca0e57d9821a9e1afa\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T20:37:25.984Z\",\n                    \"createdAt\": \"2025-12-16T20:37:25.992Z\",\n                    \"updatedAt\": \"2025-12-16T20:37:25.992Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941c3050e57d9821a9e1aff\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"timestamp\": \"2025-12-16T20:37:26.546Z\",\n            \"id\": \"6941c3060e57d9821a9e1b03\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T19:44:19.024Z\",\n                    \"nextVerificationDue\": \"2026-01-15T19:44:19.024Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941b6931ccfda6c81c4b225\",\n                    \"serialNumber\": \"SN-1000\",\n                    \"make\": \"toyota\",\n                    \"model\": \"mark\",\n                    \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                    \"qrCodeId\": \"693c738d96c6dc64f42512ba\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T19:44:19.024Z\",\n                    \"createdAt\": \"2025-12-16T19:44:19.026Z\",\n                    \"updatedAt\": \"2025-12-16T19:44:19.026Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941b6931ccfda6c81c4b225\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"timestamp\": \"2025-12-16T19:44:19.510Z\",\n            \"id\": \"6941b6931ccfda6c81c4b229\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T19:43:43.918Z\",\n                    \"nextVerificationDue\": \"2026-01-15T19:43:43.918Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941b66f1ccfda6c81c4b21c\",\n                    \"serialNumber\": \"SN-12345\",\n                    \"make\": \"Panasonic\",\n                    \"model\": \"ACZ\",\n                    \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                    \"qrCodeId\": \"693c738d96c6dc64f42512b9\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T19:43:43.918Z\",\n                    \"createdAt\": \"2025-12-16T19:43:43.927Z\",\n                    \"updatedAt\": \"2025-12-16T19:43:43.927Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941b66f1ccfda6c81c4b21c\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"timestamp\": \"2025-12-16T19:43:44.476Z\",\n            \"id\": \"6941b6701ccfda6c81c4b220\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-12T21:03:13.160Z\",\n                    \"nextVerificationDue\": \"2026-01-11T21:03:13.160Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"693c831196c6dc64f4251338\",\n                    \"serialNumber\": \"KP-001\",\n                    \"make\": \"TCL\",\n                    \"model\": \"TCL-3\",\n                    \"companyId\": \"69382f989eb6cfbb7368a1af\",\n                    \"qrCodeId\": \"693c779896c6dc64f42512c5\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-12T21:03:13.160Z\",\n                    \"createdAt\": \"2025-12-12T21:03:13.164Z\",\n                    \"updatedAt\": \"2025-12-12T21:03:13.164Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"693c831196c6dc64f4251338\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69382f989eb6cfbb7368a1af\",\n            \"timestamp\": \"2025-12-12T21:03:13.504Z\",\n            \"id\": \"693c831196c6dc64f425133c\"\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 50,\n    \"totalPages\": 1,\n    \"totalResults\": 5\n}\n\n ```"
 					},
@@ -2050,17 +1650,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/audit-logs/entity/asset/{{assetId}}?limit=50&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"audit-logs",
-								"entity",
-								"asset",
-								"{{assetId}}"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "audit-logs", "entity", "asset", "{{assetId}}"],
 							"query": [
 								{
 									"key": "limit",
@@ -2090,16 +1681,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/audit-logs/user/{{userId}}?entityType=&action=&limit=50&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"audit-logs",
-								"user",
-								"{{userId}}"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "audit-logs", "user", "{{userId}}"],
 							"query": [
 								{
 									"key": "entityType",
@@ -2139,14 +1722,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/audit-logs?entityType=&entityId=&action=&performedBy=&startDate=&endDate=&sortBy=timestamp:desc&limit=50&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"audit-logs"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "audit-logs"],
 							"query": [
 								{
 									"key": "entityType",
@@ -2217,15 +1794,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/reports/verifications?startDate=&endDate=&status=&assetId=&verifiedBy=&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reports",
-								"verifications"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "reports", "verifications"],
 							"query": [
 								{
 									"key": "startDate",
@@ -2280,15 +1850,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/reports/overdue?minDaysOverdue=&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reports",
-								"overdue"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "reports", "overdue"],
 							"query": [
 								{
 									"key": "minDaysOverdue",
@@ -2323,15 +1886,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/reports/map?status=",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reports",
-								"map"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "reports", "map"],
 							"query": [
 								{
 									"key": "status",
@@ -2356,15 +1912,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/reports/dashboard?startDate=&endDate=",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reports",
-								"dashboard"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "reports", "dashboard"],
 							"query": [
 								{
 									"key": "startDate",
@@ -2394,15 +1943,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/reports/export?format=csv&reportType=verifications&startDate=&endDate=&status=",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"reports",
-								"export"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "reports", "export"],
 							"query": [
 								{
 									"key": "format",
@@ -2462,15 +2004,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/sync/upload",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sync",
-								"upload"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "sync", "upload"]
 						},
 						"description": "Upload offline data from mobile device. Types: registration, verification. Data processed asynchronously."
 					},
@@ -2488,14 +2023,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/sync?syncStatus=&deviceId=&sortBy=createdAt:desc&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sync"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "sync"],
 							"query": [
 								{
 									"key": "syncStatus",
@@ -2540,15 +2069,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/sync/stats?startDate=&endDate=",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sync",
-								"stats"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "sync", "stats"],
 							"query": [
 								{
 									"key": "startDate",
@@ -2578,15 +2100,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/sync/{{syncId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sync",
-								"{{syncId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "sync", "{{syncId}}"]
 						},
 						"description": "Get single sync entry details."
 					},
@@ -2604,16 +2119,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/sync/{{syncId}}/retry",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"sync",
-								"{{syncId}}",
-								"retry"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "sync", "{{syncId}}", "retry"]
 						},
 						"description": "Retry processing a failed sync entry."
 					},
@@ -2646,15 +2153,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/notifications/register-device",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"notifications",
-								"register-device"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "notifications", "register-device"]
 						},
 						"description": "Register device for push notifications."
 					},
@@ -2672,15 +2172,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/notifications/unregister-device",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"notifications",
-								"unregister-device"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "notifications", "unregister-device"]
 						},
 						"description": "Unregister device from push notifications."
 					},
@@ -2698,15 +2191,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/notifications/status",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"notifications",
-								"status"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "notifications", "status"]
 						},
 						"description": "Get notification registration status."
 					},
@@ -2733,15 +2219,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/notifications/test",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"notifications",
-								"test"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "notifications", "test"]
 						},
 						"description": "Send test notification (development only)."
 					},
@@ -2774,14 +2253,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports"]
 						},
 						"description": "Create scheduled report. Types: verification_summary, asset_status, overdue_assets, compliance. Frequencies: daily, weekly, monthly, quarterly."
 					},
@@ -2799,14 +2272,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports?reportType=&frequency=&isActive=&limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports"],
 							"query": [
 								{
 									"key": "reportType",
@@ -2851,15 +2318,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports",
-								"{{reportId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports", "{{reportId}}"]
 						},
 						"description": "Get single scheduled report."
 					},
@@ -2886,15 +2346,8 @@
 						},
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports",
-								"{{reportId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports", "{{reportId}}"]
 						},
 						"description": "Update scheduled report."
 					},
@@ -2912,16 +2365,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}/toggle",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports",
-								"{{reportId}}",
-								"toggle"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports", "{{reportId}}", "toggle"]
 						},
 						"description": "Toggle scheduled report active/inactive."
 					},
@@ -2939,16 +2384,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}/run",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports",
-								"{{reportId}}",
-								"run"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports", "{{reportId}}", "run"]
 						},
 						"description": "Run scheduled report immediately."
 					},
@@ -2966,15 +2403,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"scheduled-reports",
-								"{{reportId}}"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "scheduled-reports", "{{reportId}}"]
 						},
 						"description": "Delete scheduled report."
 					},
@@ -3001,15 +2431,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/health",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"health"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "health"]
 						},
 						"description": "**Purpose:** Public health check endpoint. Returns system status.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"status\": \"healthy\",\n    \"timestamp\": \"2025-12-17T12:19:21.235Z\",\n    \"services\": {\n        \"mongodb\": {\n            \"status\": \"connected\",\n            \"readyState\": 1\n        },\n        \"redis\": {\n            \"status\": \"disconnected\"\n        }\n    }\n}\n\n ```"
 					},
@@ -3027,15 +2450,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/monitoring",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"monitoring"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "monitoring"]
 						},
 						"description": "**Purpose:** Get comprehensive system monitoring dashboard.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"data\": {\n        \"timestamp\": \"2025-12-17T12:29:30.984Z\",\n        \"sync\": {\n            \"pending\": 0,\n            \"failed\": 0,\n            \"last24Hours\": 0,\n            \"byStatus\": {}\n        },\n        \"verifications\": {\n            \"flaggedForInvestigation\": 0,\n            \"needsRepair\": 0,\n            \"last24Hours\": 1,\n            \"last7Days\": 1\n        },\n        \"assets\": {\n            \"total\": 4,\n            \"overdue\": 0,\n            \"dueSoon\": 0,\n            \"byStatus\": {\n                \"active\": 4\n            }\n        },\n        \"companies\": {\n            \"total\": 6,\n            \"active\": 6\n        },\n        \"users\": {\n            \"total\": 24,\n            \"active\": 21,\n            \"byRole\": {\n                \"system_admin\": 9,\n                \"customer_admin\": 7,\n                \"user\": 1,\n                \"field_user\": 7\n            }\n        },\n        \"qrCodes\": {\n            \"total\": 31,\n            \"byStatus\": {\n                \"used\": 4,\n                \"allocated\": 12,\n                \"available\": 14,\n                \"retired\": 1\n            }\n        }\n    }\n}\n\n ```"
 					},
@@ -3053,15 +2469,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/flagged-verifications?limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"flagged-verifications"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "flagged-verifications"],
 							"query": [
 								{
 									"key": "limit",
@@ -3091,15 +2500,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/failed-syncs?limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"failed-syncs"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "failed-syncs"],
 							"query": [
 								{
 									"key": "limit",
@@ -3129,15 +2531,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/overdue-assets?limit=20&page=1",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"overdue-assets"
-							],
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "overdue-assets"],
 							"query": [
 								{
 									"key": "limit",
@@ -3167,16 +2562,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/companies/summary",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"companies",
-								"summary"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "companies", "summary"]
 						},
 						"description": "**Purpose:** Get summary of all companies with asset/user counts.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"companies\": [\n        {\n            \"_id\": \"693b6af77d3db2621ce74ba0\",\n            \"isActive\": true,\n            \"companyName\": \"Systems Limited\",\n            \"createdAt\": \"2025-12-12T01:08:07.701Z\",\n            \"assetCount\": 2,\n            \"userCount\": 2,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"693826d75b3fbd7fea1559c6\",\n            \"isActive\": true,\n            \"companyName\": \"Acme Corp Updated\",\n            \"createdAt\": \"2025-12-09T13:40:39.871Z\",\n            \"assetCount\": 1,\n            \"userCount\": 5,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"69383138d9f390c29af9b498\",\n            \"isActive\": true,\n            \"companyName\": \"jenpharm\",\n            \"createdAt\": \"2025-12-09T14:24:56.644Z\",\n            \"assetCount\": 1,\n            \"userCount\": 2,\n            \"verificationCount\": 1\n        },\n        {\n            \"_id\": \"69382f989eb6cfbb7368a1af\",\n            \"isActive\": true,\n            \"companyName\": \"the ordinary\",\n            \"createdAt\": \"2025-12-09T14:18:00.183Z\",\n            \"assetCount\": 0,\n            \"userCount\": 1,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"693f11b1d4138a7cf3122540\",\n            \"isActive\": true,\n            \"companyName\": \"Demo Company\",\n            \"createdAt\": \"2025-12-14T19:36:17.315Z\",\n            \"assetCount\": 0,\n            \"userCount\": 2,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"6941c5b20e57d9821a9e1b26\",\n            \"isActive\": true,\n            \"companyName\": \"Pak Suzuki\",\n            \"createdAt\": \"2025-12-16T20:48:50.052Z\",\n            \"assetCount\": 0,\n            \"userCount\": 0,\n            \"verificationCount\": 0\n        }\n    ]\n}\n\n ```"
 					},
@@ -3194,16 +2581,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/admin/database/stats",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"admin",
-								"database",
-								"stats"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "admin", "database", "stats"]
 						},
 						"description": "**Purpose:** Get MongoDB database statistics.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"stats\": {\n        \"collections\": 9,\n        \"dataSize\": 43388,\n        \"storageSize\": 274432,\n        \"indexes\": 52,\n        \"indexSize\": 1499136,\n        \"avgObjSize\": 323.7910447761194,\n        \"objects\": 134\n    }\n}\n\n ```"
 					},
@@ -3227,14 +2606,8 @@
 						],
 						"url": {
 							"raw": "{{host}}/api/v1/dashboard",
-							"host": [
-								"{{host}}"
-							],
-							"path": [
-								"api",
-								"v1",
-								"dashboard"
-							]
+							"host": ["{{host}}"],
+							"path": ["api", "v1", "dashboard"]
 						},
 						"description": "**Purpose:** Get consolidated dashboard data in a single API call.\n\n**Who Uses it:**\n- **system_admin**: Gets global stats (total companies, users, assets, QR codes) + recent companies list\n- **customer_admin**: Gets company-specific stats + recent users\n\n**Response (system_admin):**\n```json\n{\n  \"success\": true,\n  \"stats\": {\n    \"totalCompanies\": 15,\n    \"totalUsers\": 150,\n    \"totalAssets\": 500,\n    \"totalQRCodes\": 1000\n  },\n  \"recentCompanies\": [\n    {\n      \"_id\": \"...\",\n      \"companyName\": \"Company Name\",\n      \"contactEmail\": \"email@company.com\",\n      \"createdAt\": \"2024-01-15T10:30:00Z\",\n      \"totalUsers\": 10\n    }\n  ]\n}\n```\n\n**Response (customer_admin):**\n```json\n{\n  \"success\": true,\n  \"company\": {\n    \"companyName\": \"My Company\",\n    \"contactEmail\": \"admin@mycompany.com\",\n    \"settings\": {...},\n    \"isActive\": true\n  },\n  \"stats\": {\n    \"totalUsers\": 25,\n    \"totalAssets\": 100,\n    \"totalQRCodes\": 150\n  },\n  \"recentUsers\": [...]\n}\n```"
 					},

@@ -1,9 +1,11 @@
-import { Loader2, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Camera, Loader2, User } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
+import uploadService from "@/api/services/uploadService";
 import userService from "@/api/services/userService";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
@@ -25,6 +27,9 @@ interface EditUserForm {
 
 export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalProps) {
 	const [loading, setLoading] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
 	const form = useForm<EditUserForm>({
 		defaultValues: {
@@ -41,18 +46,57 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 				email: user.email || "",
 				role: user.role || "field_user",
 			});
+			setPreviewUrl(null);
+			setSelectedFile(null);
 		}
 	}, [user, form]);
+
+	const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		if (!file.type.startsWith("image/")) {
+			toast.error("Please select an image file");
+			return;
+		}
+
+		if (file.size > 5 * 1024 * 1024) {
+			toast.error("Image size must be less than 5MB");
+			return;
+		}
+
+		setSelectedFile(file);
+		const reader = new FileReader();
+		reader.onloadend = () => {
+			setPreviewUrl(reader.result as string);
+		};
+		reader.readAsDataURL(file);
+	};
 
 	const handleSubmit = async (values: EditUserForm) => {
 		if (!user?.id) return;
 
 		setLoading(true);
 		try {
-			await userService.updateUser(user.id, {
+			let imageUrl = user.profilePic;
+
+			// If a new file was selected, upload it first
+			if (selectedFile) {
+				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
+				imageUrl = uploadResponse.url;
+			}
+
+			const updateData: any = {
 				name: values.name,
 				role: values.role as "field_user" | "customer_admin",
-			});
+			};
+
+			// Only include profilePic if it changed
+			if (imageUrl !== user.profilePic) {
+				updateData.profilePic = imageUrl;
+			}
+
+			await userService.updateUser(user.id, updateData);
 
 			toast.success("User updated successfully");
 			onSuccess();
@@ -77,6 +121,29 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+						{/* Profile Picture Section */}
+						<div className="flex items-center gap-4 pb-4 border-b">
+							<Avatar className="h-16 w-16">
+								<AvatarImage src={previewUrl || user?.profilePic || undefined} alt={user?.name} />
+								<AvatarFallback className="text-lg">{user?.name?.charAt(0).toUpperCase()}</AvatarFallback>
+							</Avatar>
+							<div className="flex-1">
+								<p className="text-sm font-medium mb-1">Profile Picture</p>
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									onChange={handleImageSelect}
+									className="hidden"
+								/>
+								<Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+									<Camera className="h-4 w-4 mr-2" />
+									Change Picture
+								</Button>
+								{selectedFile && <p className="text-xs text-muted-foreground mt-1">Selected: {selectedFile.name}</p>}
+							</div>
+						</div>
+
 						<FormField
 							control={form.control}
 							name="name"

@@ -22,10 +22,12 @@ export default function UsersPage() {
 	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
 
 	// Fetch users
-	const { data: users, isLoading } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: ["users"],
 		queryFn: () => userService.getUsers(),
 	});
+
+	const users = data?.results || [];
 
 	// Filter users by search
 	const filteredUsers = users?.filter((user: UserInfo) => {
@@ -42,7 +44,11 @@ export default function UsersPage() {
 		if (!resetPasswordUser?.id) return;
 		try {
 			const result = await userService.resetUserPassword(resetPasswordUser.id);
-			toast.success(`Password reset. Temporary password: ${result.temporaryPassword}`);
+			toast.success(`Password reset successfully! Temporary password: ${result.temporaryPassword}`, {
+				duration: 10000,
+			});
+			setResetPasswordUser(null);
+			handleRefresh();
 		} catch {
 			toast.error("Failed to reset password");
 		}
@@ -53,6 +59,7 @@ export default function UsersPage() {
 		try {
 			await userService.deactivateUser(deactivateUser.id);
 			toast.success("User deactivated successfully");
+			setDeactivateUser(null);
 			handleRefresh();
 		} catch {
 			toast.error("Failed to deactivate user");

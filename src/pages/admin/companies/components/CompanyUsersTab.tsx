@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Plus, UserCircle } from "lucide-react";
 import { useState } from "react";
 import adminService from "@/api/services/adminService";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
@@ -104,8 +105,7 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Name</TableHead>
-							<TableHead>Email</TableHead>
+							<TableHead>User</TableHead>
 							<TableHead>Role</TableHead>
 							<TableHead>Last Login</TableHead>
 						</TableRow>
@@ -113,8 +113,20 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 					<TableBody>
 						{users.map((user) => (
 							<TableRow key={user.id || user.email}>
-								<TableCell className="font-medium">{user.name}</TableCell>
-								<TableCell>{user.email}</TableCell>
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<Avatar className="h-9 w-9">
+											<AvatarImage src={user.profilePic || undefined} alt={user.name} />
+											<AvatarFallback className="bg-primary/10 text-primary text-sm">
+												{user.name?.charAt(0).toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+										<div>
+											<p className="font-medium">{user.name}</p>
+											<p className="text-xs text-muted-foreground">{user.email}</p>
+										</div>
+									</div>
+								</TableCell>
 								<TableCell>{getRoleBadge(user.role)}</TableCell>
 								<TableCell className="text-sm text-muted-foreground">
 									{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy") : "Never"}

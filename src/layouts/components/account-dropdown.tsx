@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react";
 import { useLoginStateContext } from "@/pages/sys/login/providers/login-provider";
 import { useRouter } from "@/routes/hooks";
 import { useUserActions, useUserInfo } from "@/store/userStore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
 	DropdownMenu,
@@ -16,7 +17,9 @@ import {
  */
 export default function AccountDropdown() {
 	const { replace } = useRouter();
-	const { username, email, avatar } = useUserInfo();
+	const userInfo = useUserInfo();
+	const { username, email, avatar } = userInfo;
+	const profilePic = userInfo.profilePic || avatar;
 	const { clearUserInfoAndToken } = useUserActions();
 	const { backToLogin } = useLoginStateContext();
 
@@ -35,13 +38,19 @@ export default function AccountDropdown() {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" size="sm" className="rounded-full gap-2 pl-1 pr-3">
-					<img className="h-7 w-7 rounded-full" src={avatar} alt="" />
+					<Avatar className="h-7 w-7">
+						<AvatarImage src={profilePic || undefined} alt={username} />
+						<AvatarFallback className="text-xs">{username?.charAt(0).toUpperCase()}</AvatarFallback>
+					</Avatar>
 					<span className="hidden sm:inline text-sm font-medium">{username}</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
 				<div className="flex items-center gap-3 p-3">
-					<img className="h-10 w-10 rounded-full" src={avatar} alt="" />
+					<Avatar className="h-10 w-10">
+						<AvatarImage src={profilePic || undefined} alt={username} />
+						<AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+					</Avatar>
 					<div className="flex flex-col">
 						<span className="text-sm font-medium">{username}</span>
 						<span className="text-xs text-muted-foreground">{email}</span>

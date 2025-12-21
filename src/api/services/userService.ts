@@ -1,6 +1,5 @@
-import apiClient from "../apiClient";
-
 import type { UserInfo } from "#/entity";
+import apiClient from "../apiClient";
 
 // ============================================
 // Auth Types
@@ -75,6 +74,7 @@ export interface CreateUserReq {
 	email: string;
 	password?: string;
 	role: "field_user" | "customer_admin";
+	profilePic?: string;
 }
 
 export interface CreateUserRes {
@@ -88,6 +88,7 @@ export interface UpdateUserReq {
 	email?: string;
 	role?: "field_user" | "customer_admin";
 	status?: "active" | "inactive";
+	profilePic?: string;
 }
 
 // Paginated response from real API
@@ -110,11 +111,11 @@ enum AuthApi {
 	Refresh = "/auth/refresh",
 	ForgotPassword = "/auth/forgot-password",
 	ResetPassword = "/auth/reset-password",
-	ChangePassword = "/auth/change-password",
 }
 
 enum UserApi {
 	Users = "/users",
+	ChangePassword = "/users/change-password",
 	CreateFieldWorker = "/users/create-field-worker",
 	MFA = "/users/mfa",
 }
@@ -132,7 +133,7 @@ const resetPassword = (data: ResetPasswordReq) =>
 	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ResetPassword, data });
 
 const changePassword = (data: ChangePasswordReq) =>
-	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ChangePassword, data });
+	apiClient.post<{ success: boolean; message: string }>({ url: UserApi.ChangePassword, data });
 
 // ============================================
 // User Management Service (Customer Admin)
@@ -148,23 +149,18 @@ export interface GetUsersParams {
 	page?: number;
 }
 
-const getUsers = (params?: GetUsersParams) =>
-	apiClient.get<UsersListRes>({ url: UserApi.Users, params });
+const getUsers = (params?: GetUsersParams) => apiClient.get<UsersListRes>({ url: UserApi.Users, params });
 
-const getUserById = (userId: string) =>
-	apiClient.get<UserInfo>({ url: `${UserApi.Users}/${userId}` });
+const getUserById = (userId: string) => apiClient.get<UserInfo>({ url: `${UserApi.Users}/${userId}` });
 
-const createUser = (data: CreateUserReq) =>
-	apiClient.post<CreateUserRes>({ url: UserApi.Users, data });
+const createUser = (data: CreateUserReq) => apiClient.post<CreateUserRes>({ url: UserApi.Users, data });
 
 const updateUser = (userId: string, data: UpdateUserReq) =>
 	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data });
 
-const deactivateUser = (userId: string) =>
-	apiClient.put<UserInfo>({ url: `${UserApi.Users}/${userId}/deactivate` });
+const deactivateUser = (userId: string) => apiClient.put<UserInfo>({ url: `${UserApi.Users}/${userId}/deactivate` });
 
-const deleteUser = (userId: string) =>
-	apiClient.delete<void>({ url: `${UserApi.Users}/${userId}` });
+const deleteUser = (userId: string) => apiClient.delete<void>({ url: `${UserApi.Users}/${userId}` });
 
 const resetUserPassword = (userId: string) =>
 	apiClient.post<{ success: boolean; temporaryPassword: string; message: string }>({
@@ -193,6 +189,7 @@ export default {
 	getUsers,
 	getUserById,
 	createUser,
+	createFieldWorker: createUser, // Alias for backward compatibility
 	updateUser,
 	deactivateUser,
 	deleteUser,

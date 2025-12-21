@@ -41,21 +41,23 @@ export default function MapPage() {
 	const [tileLayer, setTileLayer] = useState<keyof typeof tileLayers>("light");
 
 	// Fetch map assets
-	const { data: assets, isLoading } = useQuery({
+	const { data, isLoading } = useQuery({
 		queryKey: ["map", "assets"],
 		queryFn: () => reportService.getMapAssets(),
 	});
 
+	const assets = data?.assets || [];
+
 	// Filter assets by status
 	const filteredAssets = useMemo(() => {
-		if (!assets) return [];
+		if (!assets || assets.length === 0) return [];
 		if (selectedStatus === "all") return assets;
 		return assets.filter((a) => a.status === selectedStatus);
 	}, [assets, selectedStatus]);
 
 	// Calculate counts
 	const counts = useMemo(() => {
-		if (!assets) return { total: 0, onTime: 0, dueSoon: 0, overdue: 0 };
+		if (!assets || assets.length === 0) return { total: 0, onTime: 0, dueSoon: 0, overdue: 0 };
 		return {
 			total: assets.length,
 			onTime: assets.filter((a) => a.status === VerificationStatus.ON_TIME).length,

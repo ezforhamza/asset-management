@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Shield, User, UserX } from "lucide-react";
 import type { Company, UserInfo } from "#/entity";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
@@ -109,13 +110,12 @@ export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactiva
 						<TableRow key={user.id}>
 							<TableCell>
 								<div className="flex items-center gap-3">
-									<div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-										{user.role === "system_admin" ? (
-											<Shield className="h-4 w-4 text-primary" />
-										) : (
-											<User className="h-4 w-4 text-primary" />
-										)}
-									</div>
+									<Avatar className="h-9 w-9">
+										<AvatarImage src={user.profilePic || undefined} alt={user.name} />
+										<AvatarFallback className="bg-primary/10 text-primary">
+											{user.role === "system_admin" ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />}
+										</AvatarFallback>
+									</Avatar>
 									<div>
 										<p className="font-medium">{user.name}</p>
 										<p className="text-xs text-muted-foreground">{user.email}</p>

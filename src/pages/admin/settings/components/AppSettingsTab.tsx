@@ -162,9 +162,7 @@ export function AppSettingsTab() {
 									<div className="flex items-start justify-between gap-4">
 										<div className="space-y-1 flex-1">
 											<FormLabel>Allow Company Override</FormLabel>
-											<FormDescription>
-												Let companies customize their own verification frequency
-											</FormDescription>
+											<FormDescription>Let companies customize their own verification frequency</FormDescription>
 										</div>
 										<FormControl>
 											<Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -184,9 +182,7 @@ export function AppSettingsTab() {
 									<div className="flex items-start justify-between gap-4">
 										<div className="space-y-1 flex-1">
 											<FormLabel>Require Photo on Verification</FormLabel>
-											<FormDescription>
-												Field workers must upload photo when verifying assets
-											</FormDescription>
+											<FormDescription>Field workers must upload photo when verifying assets</FormDescription>
 										</div>
 										<FormControl>
 											<Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -367,9 +363,7 @@ export function AppSettingsTab() {
 											<div className="flex items-start justify-between">
 												<div className="space-y-1 flex-1">
 													<FormLabel>Sync Interval</FormLabel>
-													<FormDescription>
-														How often to sync offline data when connection is restored
-													</FormDescription>
+													<FormDescription>How often to sync offline data when connection is restored</FormDescription>
 												</div>
 												<FormControl>
 													<div className="flex items-center gap-2">

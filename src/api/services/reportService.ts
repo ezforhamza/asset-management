@@ -1,98 +1,78 @@
+import type {
+	DashboardStatsParams,
+	DashboardStatsRes,
+	ExportReportParams,
+	MapAssetsParams,
+	MapAssetsRes,
+	OverdueAssetsParams,
+	OverdueAssetsRes,
+	VerificationReportParams,
+	VerificationReportRes,
+} from "#/report";
 import apiClient from "../apiClient";
+import API_ENDPOINTS from "../endpoints";
 
-import type { Verification, MapAsset } from "#/entity";
-
-// ============================================
-// Report Types
-// ============================================
-
-export interface ReportParams {
-	startDate?: string;
-	endDate?: string;
-	status?: "on_time" | "due_soon" | "overdue";
-	verifiedBy?: string;
-	page?: number;
-	limit?: number;
-}
-
-export interface ReportRes {
-	data: Verification[];
-	pagination: {
-		total: number;
-		page: number;
-		pages: number;
-	};
-}
-
-export interface ScheduleReportReq {
-	frequency: "daily" | "weekly" | "monthly";
-	dayOfWeek?: number;
-	dayOfMonth?: number;
-	recipients: string[];
-	reportType: "verification_summary" | "overdue_assets";
-	includeAttachment: boolean;
-}
-
-export interface ScheduledReport {
-	_id: string;
-	frequency: string;
-	recipients: string[];
-	reportType: string;
-	lastSent: string | null;
-	nextScheduled: string;
-	isActive: boolean;
-}
-
-// ============================================
-// API Endpoints
-// ============================================
-
-enum ReportApi {
-	Verifications = "/reports/verifications",
-	Export = "/reports/export",
-	Schedules = "/reports/schedules",
-}
-
-enum MapApi {
-	Assets = "/map/assets",
-}
+// Re-export types for consumers
+export type {
+	VerificationReportParams,
+	VerificationReportRes,
+	OverdueAssetsParams,
+	OverdueAssetsRes,
+	MapAssetsParams,
+	MapAssetsRes,
+	DashboardStatsParams,
+	DashboardStatsRes,
+	ExportReportParams,
+};
 
 // ============================================
 // Report Service
 // ============================================
 
-const getVerificationReport = (params?: ReportParams) =>
-	apiClient.get<ReportRes>({ url: ReportApi.Verifications, params });
+const getVerificationReport = (params?: VerificationReportParams) =>
+	apiClient.get<VerificationReportRes>({ url: API_ENDPOINTS.REPORTS.VERIFICATIONS, params });
 
-const exportReport = (params: { format: "csv" | "pdf"; startDate?: string; endDate?: string }) => {
+const getOverdueAssets = (params?: OverdueAssetsParams) =>
+	apiClient.get<OverdueAssetsRes>({ url: API_ENDPOINTS.REPORTS.OVERDUE, params });
+
+const getMapAssets = (params?: MapAssetsParams) =>
+	apiClient.get<MapAssetsRes>({ url: API_ENDPOINTS.REPORTS.MAP, params });
+
+const getDashboardStats = (params?: DashboardStatsParams) =>
+	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
+
+const exportReport = (params: ExportReportParams) => {
 	const queryString = new URLSearchParams(params as Record<string, string>).toString();
-	window.open(`${ReportApi.Export}?${queryString}`, "_blank");
+	const { userToken } = require("@/store/userStore").default.getState();
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "http://157.245.234.165/api/v1";
+	const token = userToken?.accessToken;
+
+	// Create a temporary link with auth token in header (using fetch to download)
+	fetch(`${baseUrl}${API_ENDPOINTS.REPORTS.EXPORT}?${queryString}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => response.blob())
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `report_${params.reportType}_${new Date().toISOString().split("T")[0]}.${params.format}`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		})
+		.catch((error) => {
+			console.error("Export failed:", error);
+		});
 };
 
-const createSchedule = (data: ScheduleReportReq) =>
-	apiClient.post<{ success: boolean; scheduleId: string; message: string }>({
-		url: ReportApi.Schedules,
-		data,
-	});
-
-const getSchedules = () => apiClient.get<ScheduledReport[]>({ url: ReportApi.Schedules });
-
-const deleteSchedule = (scheduleId: string) =>
-	apiClient.delete<{ success: boolean; message: string }>({ url: `${ReportApi.Schedules}/${scheduleId}` });
-
-// ============================================
-// Map Service
-// ============================================
-
-const getMapAssets = (params?: { status?: string }) => apiClient.get<MapAsset[]>({ url: MapApi.Assets, params });
-
 export default {
-	// Reports
 	getVerificationReport,
-	exportReport,
-	createSchedule,
-	getSchedules,
-	deleteSchedule,
-	// Map
+	getOverdueAssets,
 	getMapAssets,
+	getDashboardStats,
+	exportReport,
 };

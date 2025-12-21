@@ -74,9 +74,11 @@ export const API_ENDPOINTS = {
 
 	// Reports
 	REPORTS: {
-		DASHBOARD_STATS: "/reports/dashboard-stats",
-		VERIFICATION_SUMMARY: "/reports/verification-summary",
-		COMPANY_SUMMARY: "/reports/company-summary",
+		VERIFICATIONS: "/reports/verifications",
+		OVERDUE: "/reports/overdue",
+		MAP: "/reports/map",
+		DASHBOARD: "/reports/dashboard",
+		EXPORT: "/reports/export",
 	},
 
 	// Uploads
