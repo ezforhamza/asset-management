@@ -39,7 +39,7 @@ axiosInstance.interceptors.response.use(
 		// Otherwise return raw data
 		return responseData;
 	},
-	async (error: AxiosError<{ success: boolean; error: string; message?: string }>) => {
+	async (error: AxiosError<{ code?: number; success?: boolean; error?: string; message?: string }>) => {
 		const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 		const { response } = error || {};
 
@@ -57,19 +57,19 @@ axiosInstance.interceptors.response.use(
 
 			if (userToken?.refreshToken) {
 				try {
-					const refreshRes = await axios.post(`${GLOBAL_CONFIG.apiBaseUrl}/auth/refresh`, {
+					const refreshRes = await axios.post(`${GLOBAL_CONFIG.apiBaseUrl}/auth/refresh-tokens`, {
 						refreshToken: userToken.refreshToken,
 					});
 
-					if (refreshRes.data?.success && refreshRes.data?.accessToken) {
+					if (refreshRes.data?.access?.token) {
 						actions.setUserToken({
-							accessToken: refreshRes.data.accessToken,
-							refreshToken: userToken.refreshToken,
+							accessToken: refreshRes.data.access.token,
+							refreshToken: refreshRes.data.refresh?.token || userToken.refreshToken,
 						});
 
 						// Retry original request with new token
 						if (originalRequest.headers) {
-							originalRequest.headers.Authorization = `Bearer ${refreshRes.data.accessToken}`;
+							originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access.token}`;
 						}
 						return axiosInstance(originalRequest);
 					}
@@ -105,6 +105,9 @@ class APIClient {
 	}
 	put<T = unknown>(config: AxiosRequestConfig): Promise<T> {
 		return this.request<T>({ ...config, method: "PUT" });
+	}
+	patch<T = unknown>(config: AxiosRequestConfig): Promise<T> {
+		return this.request<T>({ ...config, method: "PATCH" });
 	}
 	delete<T = unknown>(config: AxiosRequestConfig): Promise<T> {
 		return this.request<T>({ ...config, method: "DELETE" });

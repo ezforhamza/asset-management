@@ -1,6 +1,6 @@
+import { UserRole } from "#/enum";
 import { Icon } from "@/components/icon";
 import type { NavProps } from "@/components/nav";
-import { UserRole } from "#/enum";
 
 // Client Panel Navigation (Customer Admin & Field User)
 export const clientNavData: NavProps["data"] = [
@@ -79,12 +79,6 @@ export const adminNavData: NavProps["data"] = [
 	{
 		name: "System",
 		items: [
-			{
-				title: "Monitoring",
-				path: "/admin/monitoring",
-				icon: <Icon icon="solar:chart-bold-duotone" size="24" />,
-				roles: [UserRole.SYSTEM_ADMIN],
-			},
 			{
 				title: "Audit Logs",
 				path: "/admin/audit-logs",

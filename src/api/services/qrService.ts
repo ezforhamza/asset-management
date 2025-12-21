@@ -1,52 +1,36 @@
+import type { QRCode } from "#/entity";
 import apiClient from "../apiClient";
+import API_ENDPOINTS from "../endpoints";
 
 // ============================================
 // QR Code Types
 // ============================================
 
-export enum QRCodeStatus {
-	AVAILABLE = "available",
-	ALLOCATED = "allocated",
-	USED = "used",
-	RETIRED = "retired",
-}
-
-export interface QRCode {
-	_id: string;
-	qrCode: string;
-	companyId: string | null;
-	assetId: string | null;
-	status: QRCodeStatus;
-	allocatedAt: string | null;
-	linkedAt: string | null;
-	createdAt: string;
-}
-
-export interface QRCodeCheckRes {
-	success: boolean;
-	qrCode: string;
-	status: QRCodeStatus;
-	asset: {
-		_id: string;
-		serialNumber: string;
-		make: string;
-		model: string;
-	} | null;
-}
-
 export interface QRCodesListParams {
-	status?: QRCodeStatus;
+	qrCode?: string;
+	status?: string;
+	companyId?: string;
+	sortBy?: string;
 	page?: number;
 	limit?: number;
 }
 
 export interface QRCodesListRes {
-	qrCodes: QRCode[];
-	pagination: {
-		total: number;
-		page: number;
-		pages: number;
-	};
+	results: QRCode[];
+	page: number;
+	limit: number;
+	totalPages: number;
+	totalResults: number;
+}
+
+export interface CreateQRCodeReq {
+	qrCode: string;
+	companyId?: string;
+}
+
+export interface BulkCreateQRCodesReq {
+	qrCodes: string[];
+	companyId?: string;
 }
 
 export interface AllocateQRCodesReq {
@@ -54,62 +38,110 @@ export interface AllocateQRCodesReq {
 	companyId: string;
 }
 
+export interface UpdateQRCodeReq {
+	status?: string;
+	companyId?: string;
+}
+
 export interface BulkImportRes {
 	success: boolean;
 	imported: number;
 	duplicates: number;
+	duplicatesList: string[];
 	errors: string[];
 }
 
-// ============================================
-// API Endpoints
-// ============================================
-
-enum QRApi {
-	Check = "/qr",
-	Allocate = "/qr/allocate",
-	BulkImport = "/qr/bulk-import",
-	List = "/qr-codes",
+export interface QRCodeStatsRes {
+	success: boolean;
+	stats: {
+		available: number;
+		allocated: number;
+		used: number;
+		retired: number;
+		total: number;
+	};
 }
 
-// ============================================
-// QR Service (Customer Portal - limited access)
-// ============================================
+export interface QRCodeCheckRes {
+	success: boolean;
+	qrCode: string;
+	status: string;
+	asset: {
+		id: string;
+		serialNumber: string;
+		make: string;
+		model: string;
+	} | null;
+}
 
-const checkQRCode = (qrCode: string) => apiClient.get<QRCodeCheckRes>({ url: `${QRApi.Check}/${qrCode}` });
-
-const getCompanyQRCodes = (params?: QRCodesListParams) => apiClient.get<QRCodesListRes>({ url: QRApi.List, params });
-
-// ============================================
-// QR Service (Admin Panel - full access)
-// ============================================
-
-const allocateQRCodes = (data: AllocateQRCodesReq) =>
-	apiClient.post<{ success: boolean; allocated: number }>({ url: QRApi.Allocate, data });
-
-const bulkImportQRCodes = (file: File) => {
-	const formData = new FormData();
-	formData.append("file", file);
-	return apiClient.post<BulkImportRes>({
-		url: QRApi.BulkImport,
-		data: formData,
-		headers: { "Content-Type": "multipart/form-data" },
-	});
+// Re-export types for consumers
+export type {
+	QRCodesListParams,
+	QRCodesListRes,
+	CreateQRCodeReq,
+	BulkCreateQRCodesReq,
+	AllocateQRCodesReq,
+	UpdateQRCodeReq,
+	BulkImportRes,
+	QRCodeStatsRes,
+	QRCodeCheckRes,
 };
 
-const getAllQRCodes = (params?: QRCodesListParams & { companyId?: string }) =>
-	apiClient.get<QRCodesListRes>({ url: `/admin${QRApi.List}`, params });
+// ============================================
+// QR Service Methods
+// ============================================
 
-const retireQRCode = (qrCodeId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: `/admin${QRApi.List}/${qrCodeId}/retire` });
+// Get paginated list of QR codes with filters
+const getQRCodes = (params?: QRCodesListParams) =>
+	apiClient.get<QRCodesListRes>({ url: API_ENDPOINTS.QR_CODES.BASE, params });
+
+// Get QR code statistics
+const getQRCodeStats = () => apiClient.get<QRCodeStatsRes>({ url: `${API_ENDPOINTS.QR_CODES.BASE}/stats` });
+
+// Get single QR code by ID
+const getQRCodeById = (id: string) => apiClient.get<QRCode>({ url: API_ENDPOINTS.QR_CODES.BY_ID(id) });
+
+// Check QR code status (for mobile scanning)
+const checkQRCode = (qrCode: string) =>
+	apiClient.get<QRCodeCheckRes>({ url: `${API_ENDPOINTS.QR_CODES.BASE}/check/${qrCode}` });
+
+// Create single QR code
+const createQRCode = (data: CreateQRCodeReq) => apiClient.post<QRCode>({ url: API_ENDPOINTS.QR_CODES.BASE, data });
+
+// Bulk create QR codes (JSON)
+const bulkCreateQRCodes = (data: BulkCreateQRCodesReq) =>
+	apiClient.post<{ created: number; duplicates: number }>({ url: API_ENDPOINTS.QR_CODES.BULK, data });
+
+// Bulk import QR codes from CSV
+const bulkImportQRCodes = (file: File, companyId?: string) => {
+	const formData = new FormData();
+	formData.append("file", file);
+	const url = companyId
+		? `${API_ENDPOINTS.QR_CODES.BULK_IMPORT}?companyId=${companyId}`
+		: API_ENDPOINTS.QR_CODES.BULK_IMPORT;
+	return apiClient.post<BulkImportRes>({ url, data: formData, headers: { "Content-Type": "multipart/form-data" } });
+};
+
+// Allocate QR codes to company
+const allocateQRCodes = (data: AllocateQRCodesReq) =>
+	apiClient.post<{ allocated: number; message: string }>({ url: `${API_ENDPOINTS.QR_CODES.BASE}/allocate`, data });
+
+// Update QR code
+const updateQRCode = (id: string, data: UpdateQRCodeReq) =>
+	apiClient.patch<QRCode>({ url: API_ENDPOINTS.QR_CODES.BY_ID(id), data });
+
+// Delete QR code
+const deleteQRCode = (id: string) => apiClient.delete<void>({ url: API_ENDPOINTS.QR_CODES.BY_ID(id) });
 
 export default {
-	// Customer Portal
+	getQRCodes,
+	getQRCodeStats,
+	getQRCodeById,
 	checkQRCode,
-	getCompanyQRCodes,
-	// Admin Panel
-	allocateQRCodes,
+	createQRCode,
+	bulkCreateQRCodes,
 	bulkImportQRCodes,
-	getAllQRCodes,
-	retireQRCode,
+	allocateQRCodes,
+	updateQRCode,
+	deleteQRCode,
 };

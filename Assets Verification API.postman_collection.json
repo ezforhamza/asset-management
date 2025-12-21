@@ -1,0 +1,3309 @@
+{
+	"info": {
+		"_postman_id": "8163ddfe-1345-4c4e-af6b-9c0dda850eb0",
+		"name": "Assets Verification API",
+		"description": "Complete API documentation for the Assets Verification Backend System.\n\n## Base URL\n\n[http://localhost:3000/api/v1](http://localhost:3000/api/v1)\n\n## Authentication\n\nMost endpoints require Bearer token authentication. After login, set the accessToken variable.\n\n## Roles\n\n- **system_admin**: Full system access, manages companies\n    \n- **customer_admin**: Company admin, manages users and assets\n    \n- **field_user**: Field worker, submits verifications\n    \n\n## Status Codes\n\n- 200: Success\n    \n- 201: Created\n    \n- 204: No Content\n    \n- 400: Bad Request (validation error)\n    \n- 401: Unauthorized\n    \n- 403: Forbidden\n    \n- 404: Not Found\n    \n- 429: Too Many Requests (rate limited)\n    \n- 500: Internal Server Error",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39785706",
+		"_collection_link": "https://hamza-tanveer.postman.co/workspace/hamza-tanveer-Workspace~f865da96-aa62-4004-8436-a814999b4d42/collection/39785706-8163ddfe-1345-4c4e-af6b-9c0dda850eb0?action=share&source=collection_link&creator=39785706"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"field_user\",\n  \"companyId\": \"{{companyId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/register",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						},
+						"description": "⚠️ DISABLED - Public registration is disabled. Users are created by admins only:\\n- system_admin: Hardcoded (only one)\\n- customer_admin: Created when company is created\\n- field_user: Created by customer_admin via POST /users"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/login",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Purpose:** Login with email and password\n\n**Who Uses it:** registered user (any)\n\n**When to call it:** on login.\n\n**Response:**\n\n``` json\n{\n    \"user\": {\n        \"role\": \"system_admin\",\n        \"isEmailVerified\": false,\n        \"status\": \"active\",\n        \"mustChangePassword\": false,\n        \"devicePlatform\": null,\n        \"mfaEnabled\": false,\n        \"name\": \"System administrator\",\n        \"email\": \"systemadministrator@example.com\",\n        \"id\": \"693b65ca7d3db2621ce74b7f\"\n    },\n    \"tokens\": {\n        \"access\": {\n            \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTNiNjVjYTdkM2RiMjYyMWNlNzRiN2YiLCJpYXQiOjE3NjU5MTIwOTksImV4cCI6MTc2NTkxMzg5OSwidHlwZSI6ImFjY2VzcyJ9.n4xS7mW4CDtdRP5jSjUZ3548azKsGIq-5KtEqe0u2XM\",\n            \"expires\": \"2025-12-16T19:38:19.531Z\"\n        },\n        \"refresh\": {\n            \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OTNiNjVjYTdkM2RiMjYyMWNlNzRiN2YiLCJpYXQiOjE3NjU5MTIwOTksImV4cCI6MTc2ODUwNDA5OSwidHlwZSI6InJlZnJlc2gifQ.S33BES5tdq6EQ6zoH8uNcofZPtIUeX6K4A0WaAXZSek\",\n            \"expires\": \"2026-01-15T19:08:19.534Z\"\n        }\n    }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/logout",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout and invalidate refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Tokens",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/refresh-tokens",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"refresh-tokens"
+							]
+						},
+						"description": "Get new access and refresh tokens using a valid refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/forgot-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset email."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"password\": \"newpassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/auth/reset-password?token=reset-token-from-email",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"reset-password"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "reset-token-from-email",
+									"description": "Reset token from email"
+								}
+							]
+						},
+						"description": "Reset password using token from email."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Verification Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/auth/send-verification-email",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"send-verification-email"
+							]
+						},
+						"description": "Send email verification link to logged-in user."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/auth/verify-email?token=verification-token",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"verify-email"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "verification-token",
+									"description": "Email verification token"
+								}
+							]
+						},
+						"description": "Verify email address using token."
+					},
+					"response": []
+				}
+			],
+			"description": "User authentication endpoints"
+		},
+		{
+			"name": "2. Users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Smith\",\n  \"email\": \"jane.smith@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"field_user\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							]
+						},
+						"description": "**Purpose:** Create a new user (customer_admin only).\\n\\n**Who Uses it:** customer_admin\\n\\n**Roles:** field_user, customer_admin (NO system_admin)\\n\\n**Notes:**\\n- Password is optional - if not provided, a temporary password will be auto-generated\\n- companyId is taken from the authenticated user's JWT (no need to specify)\\n- Only the default customer_admin (isDefaultAdmin: true) can create other customer_admins\\n\\n**Response includes temporaryPassword if auto-generated.**"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users?name=&role=&status=&companyId=&sortBy=createdAt:desc&limit=10&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "Filter by name (partial match)"
+								},
+								{
+									"key": "role",
+									"value": "",
+									"description": "Filter by role: field_user, customer_admin, system_admin"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status: active, inactive"
+								},
+								{
+									"key": "companyId",
+									"value": "",
+									"description": "Filter by company ID"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order (e.g., name:asc)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page (default: 10)"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								}
+							]
+						},
+						"description": "**Purpose:** Get paginated list of users with optional filters.\n\n**Who Uses it: system admin only**\n\n**Response:**\n\n``` json\n{\n    \"results\": [\n        {\n            \"role\": \"user\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"alpha1\",\n            \"email\": \"alpha1@example.com\",\n            \"id\": \"693742bd64ccc54caaa93ada\"\n        },\n        {\n            \"role\": \"system_admin\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"System Admin\",\n            \"email\": \"admin@test.com\",\n            \"id\": \"6938269d5b3fbd7fea1559c0\"\n        },\n        {\n            \"role\": \"customer_admin\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"Company Admin\",\n            \"email\": \"company.admin@acme.com\",\n            \"companyId\": \"693826d75b3fbd7fea1559c6\",\n            \"id\": \"693826e55b3fbd7fea1559c9\"\n        },\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"inactive\",\n            \"mustChangePassword\": true,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"Field Worker 1\",\n            \"email\": \"worker1@acme.com\",\n            \"companyId\": \"693826d75b3fbd7fea1559c6\",\n            \"id\": \"693826f15b3fbd7fea1559cf\"\n        },\n        {\n            \"role\": \"system_admin\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"System Admin\",\n            \"email\": \"admin1@test.com\",\n            \"id\": \"69382e949eb6cfbb7368a19c\"\n        },\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"inactive\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"John Doe\",\n            \"email\": \"john.doe@example.com\",\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"id\": \"693a0adfa4c4b5440d46c02e\"\n        },\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": true,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"John snow\",\n            \"email\": \"snow@example.com\",\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"id\": \"693b55957d3db2621ce74b54\"\n        },\n        {\n            \"role\": \"system_admin\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"Test System Admin\",\n            \"email\": \"testsysadmin@example.com\",\n            \"id\": \"693b57d37d3db2621ce74b5c\"\n        },\n        {\n            \"role\": \"customer_admin\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": false,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"Abdullah\",\n            \"email\": \"abdullah2@example.com\",\n            \"companyId\": \"693826d75b3fbd7fea1559c6\",\n            \"id\": \"693b57dc7d3db2621ce74b62\"\n        },\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"mustChangePassword\": true,\n            \"devicePlatform\": null,\n            \"mfaEnabled\": false,\n            \"name\": \"Test Field Worker\",\n            \"email\": \"testworker@example.com\",\n            \"companyId\": \"693826d75b3fbd7fea1559c6\",\n            \"id\": \"693b58047d3db2621ce74b6c\"\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 3,\n    \"totalResults\": 24\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Get single user by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated.email@example.com\",\n  \"role\": \"customer_admin\",\n  \"status\": \"active\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Update user details. Admins can update role/status."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{userId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}"
+							]
+						},
+						"description": "Permanently delete a user."
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{userId}}/deactivate",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"deactivate"
+							]
+						},
+						"description": "Soft delete - deactivate user account."
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Reset User Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/users/{{userId}}/reset-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"{{userId}}",
+								"reset-password"
+							]
+						},
+						"description": "Admin resets user password. New password sent via email."
+					},
+					"response": []
+				},
+				{
+					"name": "Change Own Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"oldpassword123\",\n  \"newPassword\": \"newpassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/users/change-password",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"change-password"
+							]
+						},
+						"description": "Change own password (requires current password)."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints"
+		},
+		{
+			"name": "3. Companies",
+			"item": [
+				{
+					"name": "Create Company",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"Acme Corporation\",\n  \"contactEmail\": \"admin@acme.com\",\n  \"phone\": \"+92 333 1234567\",\n  \"address\": \"123 Business Park, Lahore, Pakistan\",\n  \"settings\": {\n    \"verificationFrequency\": 30,\n    \"geofenceThreshold\": 20,\n    \"allowGPSOverride\": true,\n    \"imageRetentionDays\": 365,\n    \"repairNotificationEmails\": [\n      \"repairs@acme.com\",\n      \"manager@acme.com\"\n    ],\n    \"dueSoonDays\": 3\n  },\n  \"admin\": {\n    \"name\": \"Company Admin\",\n    \"email\": \"companyadmin@acme.com\",\n    \"password\": \"Password123\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/companies",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies"
+							]
+						},
+						"description": "**Purpose:** Create a new company with default customer_admin.\\n\\n**Who Uses it:** system_admin only\\n\\n**IMPORTANT:** The `admin` object is REQUIRED. This creates the first customer_admin for the company with `isDefaultAdmin: true`. Only this admin can create/manage other customer_admins.\\n\\n**Request Body:**\\n- `companyName` (required)\\n- `contactEmail` (required)\\n- `phone` (optional)\\n- `address` (optional)\\n- `settings` (optional): verificationFrequency, geofenceThreshold, allowGPSOverride, imageRetentionDays, repairNotificationEmails, dueSoonDays\\n- `admin` (required): { name, email, password }\\n\\n**Response:**\\n\\n``` json\\n{\\n    \\\"company\\\": {\\n        \\\"_id\\\": \\\"...\\\",\\n        \\\"companyName\\\": \\\"Acme Corporation\\\",\\n        \\\"contactEmail\\\": \\\"admin@acme.com\\\",\\n        \\\"phone\\\": \\\"+92 333 1234567\\\",\\n        \\\"address\\\": \\\"123 Business Park, Lahore\\\",\\n        \\\"settings\\\": { ... },\\n        \\\"isActive\\\": true,\\n        \\\"createdAt\\\": \\\"...\\\",\\n        \\\"updatedAt\\\": \\\"...\\\"\\n    },\\n    \\\"admin\\\": {\\n        \\\"name\\\": \\\"Company Admin\\\",\\n        \\\"email\\\": \\\"companyadmin@acme.com\\\",\\n        \\\"role\\\": \\\"customer_admin\\\",\\n        \\\"companyId\\\": \\\"...\\\",\\n        \\\"isDefaultAdmin\\\": true,\\n        \\\"id\\\": \\\"...\\\"\\n    }\\n}\\n\\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Companies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/companies?companyName=&isActive=&sortBy=createdAt:desc&limit=10&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies"
+							],
+							"query": [
+								{
+									"key": "companyName",
+									"value": "",
+									"description": "Filter by company name"
+								},
+								{
+									"key": "isActive",
+									"value": "",
+									"description": "Filter by active status: true/false"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "**Purpose:** Get paginated list of companies with totalAssets and totalUsers.\n\n**Who Uses it:** system admin\n\n**When to call it:** on admin dashboard or admin companies tab.\n\n**Params: (optional)**\n\n//companyName:  \n//isActive: true/false  \n//sortBy:createdAt:desc/aesc  \n//limit:10  \n//page:1\n\n**Response:**\n\n``` json\n{\n    \"results\": [\n        {\n            \"_id\": \"693826d75b3fbd7fea1559c6\",\n            \"companyName\": \"Acme Industries\",\n            \"contactEmail\": \"contact@acme.com\",\n            \"phone\": \"+92 333 1234567\",\n            \"address\": \"123 Business Park, Lahore, Pakistan\",\n            \"settings\": {\n                \"verificationFrequency\": 30,\n                \"geofenceThreshold\": 25,\n                \"allowGPSOverride\": true,\n                \"imageRetentionDays\": 365,\n                \"repairNotificationEmails\": [],\n                \"dueSoonDays\": 3\n            },\n            \"isActive\": true,\n            \"createdAt\": \"2024-01-15T10:30:00Z\",\n            \"updatedAt\": \"2024-01-20T08:00:00Z\",\n            \"totalAssets\": 25,\n            \"totalUsers\": 10\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 1,\n    \"totalResults\": 1\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/companies/{{companyId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}"
+							]
+						},
+						"description": "**Purpose:** Get a company by ID with users and stats.\n\n**Who Uses it:** System Admin\n\n**Note:** Returns company details, users list, and counts for assets/QR codes (not full asset/QR objects).\n\n**Response:**\n\n``` json\n{\n    \"_id\": \"69383138d9f390c29af9b498\",\n    \"companyName\": \"jenpharm\",\n    \"contactEmail\": \"jenpharm@acme.com\",\n    \"phone\": \"+92 333 5551234\",\n    \"address\": \"456 Industrial Area, Karachi\",\n    \"settings\": {\n        \"verificationFrequency\": 30,\n        \"geofenceThreshold\": 25,\n        \"allowGPSOverride\": true,\n        \"imageRetentionDays\": 365,\n        \"repairNotificationEmails\": [],\n        \"dueSoonDays\": 3\n    },\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-15T10:30:00Z\",\n    \"updatedAt\": \"2024-01-20T08:00:00Z\",\n    \"stats\": {\n        \"totalUsers\": 2,\n        \"totalAssets\": 1,\n        \"totalQRCodes\": 1,\n        \"totalVerifications\": 1\n    },\n    \"users\": [\n        {\n            \"role\": \"field_user\",\n            \"isEmailVerified\": false,\n            \"status\": \"active\",\n            \"name\": \"John Doe\",\n            \"email\": \"john.doe@example.com\",\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"id\": \"693a0adfa4c4b5440d46c02e\"\n        }\n    ]\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Company",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"Acme Corp Updated\",\n  \"contactEmail\": \"newadmin@acme.com\",\n  \"phone\": \"+92 333 9876543\",\n  \"address\": \"456 New Business Park, Karachi, Pakistan\",\n  \"settings\": {\n    \"verificationFrequency\": 14,\n    \"geofenceThreshold\": 50,\n    \"dueSoonDays\": 5\n  },\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/companies/{{companyId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}"
+							]
+						},
+						"description": "**Purpose:** Update company details and settings.\n\n**Who Uses it:** system admin\n\n**Fields:** companyName, contactEmail, phone, address, settings (verificationFrequency, geofenceThreshold, allowGPSOverride, imageRetentionDays, repairNotificationEmails, dueSoonDays), isActive\n\n**Response:**\n\n``` json\n{\n    \"_id\": \"693826d75b3fbd7fea1559c6\",\n    \"companyName\": \"Acme Corp Updated\",\n    \"contactEmail\": \"newadmin@acme.com\",\n    \"phone\": \"+92 333 9876543\",\n    \"address\": \"456 New Business Park, Karachi\",\n    \"settings\": {\n        \"verificationFrequency\": 14,\n        \"geofenceThreshold\": 50,\n        \"allowGPSOverride\": true,\n        \"imageRetentionDays\": 365,\n        \"repairNotificationEmails\": [],\n        \"dueSoonDays\": 5\n    },\n    \"isActive\": true,\n    \"createdAt\": \"2024-01-15T10:30:00Z\",\n    \"updatedAt\": \"2024-01-20T10:00:00Z\"\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Company",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/companies/{{companyId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}"
+							]
+						},
+						"description": "**Purpose:** Delete a company (cascades to users, assets, etc.).\n\n**Who Uses it: system admin**\n\n**Response: No content.**"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company Settings",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/companies/{{companyId}}/settings",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"settings"
+							]
+						},
+						"description": "Get company settings only."
+					},
+					"response": []
+				}
+			],
+			"description": "Company management endpoints (system_admin only)"
+		},
+		{
+			"name": "4. QR Codes",
+			"item": [
+				{
+					"name": "Create Single QR Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"qrCode\": \"QR-2024-001\",\n  \"companyId\": \"{{companyId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/qr",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr"
+							]
+						},
+						"description": "Create a single QR code. Status: available (no company), allocated (with company)."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Create QR Codes (JSON)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"qrCodes\": [\n    \"QR-2024-002\",\n    \"QR-2024-003\",\n    \"QR-2024-004\"\n  ],\n  \"companyId\": \"{{companyId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/qr/bulk",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"bulk"
+							]
+						},
+						"description": "Create multiple QR codes at once (max 1000)."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Import QR Codes (CSV)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr/bulk-import?companyId={{companyId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"bulk-import"
+							],
+							"query": [
+								{
+									"key": "companyId",
+									"value": "{{companyId}}",
+									"description": "Optional: allocate to company"
+								}
+							]
+						},
+						"description": "**Purpose:** Import QR codes from CSV file. CSV should have \"qrCode\" column.\n\n**Who Uses it: system admin**\n\n**Notes:**\n\n1. **csv file can have second column \"companyId\" (optional).**\n    \n2. **if we use query param:** companyId={{companyId}} All QRs allocated to company with this companyId (optional).\n    \n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"imported\": 5,\n    \"duplicates\": 0,\n    \"duplicatesList\": [],\n    \"errors\": []\n}\n// if duplicated:\n{\n    \"success\": true,\n    \"imported\": 0,\n    \"duplicates\": 5,\n    \"duplicatesList\": [\n        \"QR-CSV-01\",\n        \"QR-CSV-02\",\n        \"QR-CSV-03\",\n        \"QR-CSV-04\",\n        \"QR-CSV-05\"\n    ],\n    \"errors\": []\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Allocate QR Codes to Company",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"qrCodes\": [\n    \"QR-2024-001\",\n    \"QR-2024-002\"\n  ],\n  \"companyId\": \"{{companyId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/qr/allocate",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"allocate"
+							]
+						},
+						"description": "Allocate existing available QR codes to a company."
+					},
+					"response": []
+				},
+				{
+					"name": "Get QR Codes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr?qrCode=&status=&companyId=&sortBy=createdAt:desc&limit=10&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr"
+							],
+							"query": [
+								{
+									"key": "qrCode",
+									"value": "",
+									"description": "Search by QR code string"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status: available, allocated, used, retired"
+								},
+								{
+									"key": "companyId",
+									"value": "",
+									"description": "Filter by company"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "**Purpose:** Get paginated list of QR codes.\n\n**Who Uses it: System admin only**\n\n**Params: optional**\n\n**Response:**\n\n``` json\n{\n    \"results\": [\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"Acme Corp Updated\",\n                \"contactEmail\": \"newadmin@acme.com\",\n                \"id\": \"693826d75b3fbd7fea1559c6\"\n            },\n            \"assetId\": null,\n            \"status\": \"allocated\",\n            \"allocatedAt\": \"2025-12-09T13:53:25.919Z\",\n            \"linkedAt\": null,\n            \"qrCode\": \"QR003\",\n            \"id\": \"69382975183cef991b5f3aae\"\n        },\n        {\n            \"companyId\": null,\n            \"assetId\": null,\n            \"status\": \"available\",\n            \"allocatedAt\": null,\n            \"linkedAt\": null,\n            \"qrCode\": \"QR004\",\n            \"id\": \"69382975183cef991b5f3aaf\"\n        },\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"Acme Corp Updated\",\n                \"contactEmail\": \"newadmin@acme.com\",\n                \"id\": \"693826d75b3fbd7fea1559c6\"\n            },\n            \"assetId\": null,\n            \"status\": \"allocated\",\n            \"allocatedAt\": \"2025-12-09T13:53:25.919Z\",\n            \"linkedAt\": null,\n            \"qrCode\": \"QR002\",\n            \"id\": \"69382975183cef991b5f3aad\"\n        },\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"Acme Corp Updated\",\n                \"contactEmail\": \"newadmin@acme.com\",\n                \"id\": \"693826d75b3fbd7fea1559c6\"\n            },\n            \"assetId\": {\n                \"status\": \"active\",\n                \"serialNumber\": \"SN-12345\",\n                \"make\": \"Caterpillar\",\n                \"model\": \"320E\",\n                \"id\": \"69382c2515a44eaf59d38353\"\n            },\n            \"status\": \"used\",\n            \"allocatedAt\": \"2025-12-09T13:53:25.919Z\",\n            \"linkedAt\": \"2025-12-09T14:03:17.331Z\",\n            \"qrCode\": \"QR001\",\n            \"id\": \"69382975183cef991b5f3aac\"\n        },\n        {\n            \"companyId\": null,\n            \"assetId\": null,\n            \"status\": \"available\",\n            \"allocatedAt\": null,\n            \"linkedAt\": null,\n            \"qrCode\": \"QR005\",\n            \"id\": \"69382975183cef991b5f3ab0\"\n        },\n        {\n            \"companyId\": null,\n            \"assetId\": null,\n            \"status\": \"available\",\n            \"allocatedAt\": null,\n            \"linkedAt\": null,\n            \"qrCode\": \"QR006\",\n            \"id\": \"69382a4ef80568a552453b1b\"\n        },\n        {\n            \"companyId\": null,\n            \"assetId\": null,\n            \"status\": \"available\",\n            \"allocatedAt\": null,\n            \"linkedAt\": null,\n            \"qrCode\": \"QR007\",\n            \"id\": \"69382a4ef80568a552453b1c\"\n        },\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"the ordinary\",\n                \"contactEmail\": \"thrordinary@acme.com\",\n                \"id\": \"69382f989eb6cfbb7368a1af\"\n            },\n            \"assetId\": null,\n            \"status\": \"allocated\",\n            \"allocatedAt\": \"2025-12-12T19:56:47.826Z\",\n            \"linkedAt\": null,\n            \"qrCode\": \"QR-2024-001\",\n            \"id\": \"693c737f96c6dc64f42512b5\"\n        },\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"the ordinary\",\n                \"contactEmail\": \"thrordinary@acme.com\",\n                \"id\": \"69382f989eb6cfbb7368a1af\"\n            },\n            \"assetId\": null,\n            \"status\": \"retired\",\n            \"allocatedAt\": \"2025-12-12T19:57:01.446Z\",\n            \"linkedAt\": null,\n            \"qrCode\": \"QR-2024-004\",\n            \"id\": \"693c738d96c6dc64f42512bb\"\n        },\n        {\n            \"companyId\": {\n                \"isActive\": true,\n                \"companyName\": \"Systems Limited\",\n                \"contactEmail\": \"admin@systemlimited.com\",\n                \"id\": \"693b6af77d3db2621ce74ba0\"\n            },\n            \"assetId\": {\n                \"status\": \"active\",\n                \"serialNumber\": \"SN-12345\",\n                \"make\": \"Panasonic\",\n                \"model\": \"ACZ\",\n                \"id\": \"6941b66f1ccfda6c81c4b21c\"\n            },\n            \"status\": \"used\",\n            \"allocatedAt\": \"2025-12-12T19:57:01.446Z\",\n            \"linkedAt\": \"2025-12-16T19:43:44.264Z\",\n            \"qrCode\": \"QR-2024-002\",\n            \"id\": \"693c738d96c6dc64f42512b9\"\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 2,\n    \"totalResults\": 14\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get QR Code Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr/stats",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"stats"
+							]
+						},
+						"description": "Get QR code statistics (counts by status)."
+					},
+					"response": []
+				},
+				{
+					"name": "Check QR Code (Mobile)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr/check/QR-2024-001",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"check",
+								"QR-2024-001"
+							]
+						},
+						"description": "Check QR code status for mobile app scanning."
+					},
+					"response": []
+				},
+				{
+					"name": "Get QR Code by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"{{qrCodeId}}"
+							]
+						},
+						"description": "Get single QR code by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update QR Code",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"allocated\",\n  \"companyId\": \"{{companyId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"{{qrCodeId}}"
+							]
+						},
+						"description": "Update QR code status or company."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete QR Code",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/qr/{{qrCodeId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"qr",
+								"{{qrCodeId}}"
+							]
+						},
+						"description": "Delete a QR code (only if not used)."
+					},
+					"response": []
+				}
+			],
+			"description": "QR code management endpoints"
+		},
+		{
+			"name": "5. Assets",
+			"item": [
+				{
+					"name": "Register Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"qrCode\": \"QR-2024-001\",\n  \"serialNumber\": \"SN-12345\",\n  \"make\": \"Caterpillar\",\n  \"model\": \"D6T\",\n  \"location\": {\n    \"latitude\": 37.7749,\n    \"longitude\": -122.4194\n  },\n  \"locationAccuracy\": 10,\n  \"photos\": [\n    \"https://example.com/photo1.jpg\"\n  ],\n  \"verificationFrequency\": 30\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/assets",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets"
+							]
+						},
+						"description": "Register a new asset with QR code. Location required."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets?companyId=&serialNumber=&make=&model=&status=&verificationStatus=&sortBy=createdAt:desc&limit=10&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets"
+							],
+							"query": [
+								{
+									"key": "companyId",
+									"value": "",
+									"description": "Filter by company ID (system_admin only)"
+								},
+								{
+									"key": "serialNumber",
+									"value": "",
+									"description": "Filter by serial number"
+								},
+								{
+									"key": "make",
+									"value": "",
+									"description": "Filter by make/manufacturer"
+								},
+								{
+									"key": "model",
+									"value": "",
+									"description": "Filter by model"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter: active, retired, transferred"
+								},
+								{
+									"key": "verificationStatus",
+									"value": "",
+									"description": "Filter: on_time, due_soon, overdue"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "**Purpose:** Get paginated list of assets.\n\n**Who Uses it: system admin only**\n\n**Response:**\n\n``` json\n{\n    \"results\": [\n        {\n            \"registeredLocation\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    69.3451,\n                    30.3753\n                ]\n            },\n            \"locationAccuracy\": 5.2,\n            \"status\": \"active\",\n            \"verificationFrequency\": null,\n            \"lastVerifiedAt\": \"2025-12-09T14:03:17.104Z\",\n            \"nextVerificationDue\": \"2026-01-08T14:03:17.104Z\",\n            \"photos\": [],\n            \"serialNumber\": \"SN-12345\",\n            \"make\": \"Caterpillar\",\n            \"model\": \"320E\",\n            \"companyId\": \"693826d75b3fbd7fea1559c6\",\n            \"qrCodeId\": {\n                \"companyId\": \"693826d75b3fbd7fea1559c6\",\n                \"assetId\": \"69382c2515a44eaf59d38353\",\n                \"status\": \"used\",\n                \"allocatedAt\": \"2025-12-09T13:53:25.919Z\",\n                \"linkedAt\": \"2025-12-09T14:03:17.331Z\",\n                \"qrCode\": \"QR001\",\n                \"id\": \"69382975183cef991b5f3aac\"\n            },\n            \"registeredBy\": {\n                \"role\": \"customer_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"Company Admin\",\n                \"email\": \"company.admin@acme.com\",\n                \"companyId\": \"693826d75b3fbd7fea1559c6\",\n                \"id\": \"693826e55b3fbd7fea1559c9\"\n            },\n            \"registeredAt\": \"2025-12-09T14:03:17.104Z\",\n            \"id\": \"69382c2515a44eaf59d38353\"\n        },\n        {\n            \"registeredLocation\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    -122.4194,\n                    37.7749\n                ]\n            },\n            \"locationAccuracy\": 10,\n            \"status\": \"active\",\n            \"verificationFrequency\": 30,\n            \"lastVerifiedAt\": \"2025-12-16T19:43:43.918Z\",\n            \"nextVerificationDue\": \"2026-01-15T19:43:43.918Z\",\n            \"photos\": [\n                \"https://example.com/photo1.jpg\"\n            ],\n            \"serialNumber\": \"SN-12345\",\n            \"make\": \"Panasonic\",\n            \"model\": \"ACZ\",\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"qrCodeId\": {\n                \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                \"assetId\": \"6941b66f1ccfda6c81c4b21c\",\n                \"status\": \"used\",\n                \"allocatedAt\": \"2025-12-12T19:57:01.446Z\",\n                \"linkedAt\": \"2025-12-16T19:43:44.264Z\",\n                \"qrCode\": \"QR-2024-002\",\n                \"id\": \"693c738d96c6dc64f42512b9\"\n            },\n            \"registeredBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"registeredAt\": \"2025-12-16T19:43:43.918Z\",\n            \"id\": \"6941b66f1ccfda6c81c4b21c\"\n        },\n        {\n            \"registeredLocation\": {\n                \"type\": \"Point\",\n                \"coordinates\": [\n                    -122.4194,\n                    37.7749\n                ]\n            },\n            \"locationAccuracy\": 10,\n            \"status\": \"active\",\n            \"verificationFrequency\": 30,\n            \"lastVerifiedAt\": \"2025-12-16T19:44:19.024Z\",\n            \"nextVerificationDue\": \"2026-01-15T19:44:19.024Z\",\n            \"photos\": [\n                \"https://example.com/photo1.jpg\"\n            ],\n            \"serialNumber\": \"SN-1000\",\n            \"make\": \"toyota\",\n            \"model\": \"mark\",\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"qrCodeId\": {\n                \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                \"assetId\": \"6941b6931ccfda6c81c4b225\",\n                \"status\": \"used\",\n                \"allocatedAt\": \"2025-12-12T19:57:01.446Z\",\n                \"linkedAt\": \"2025-12-16T19:44:19.351Z\",\n                \"qrCode\": \"QR-2024-003\",\n                \"id\": \"693c738d96c6dc64f42512ba\"\n            },\n            \"registeredBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"registeredAt\": \"2025-12-16T19:44:19.024Z\",\n            \"id\": \"6941b6931ccfda6c81c4b225\"\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 10,\n    \"totalPages\": 1,\n    \"totalResults\": 3\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assets for Map",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/map",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"map"
+							]
+						},
+						"description": "Get assets with location data for map display."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Asset Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/stats",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"stats"
+							]
+						},
+						"description": "Get asset statistics (counts by status, verification status)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Asset by QR Code",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/by-qr/QR-2024-001",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"by-qr",
+								"QR-2024-001"
+							]
+						},
+						"description": "Lookup asset by QR code string (for mobile scanning)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Asset by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}"
+							]
+						},
+						"description": "Get single asset details."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Asset",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"serialNumber\": \"SN-12345-UPD\",\n  \"make\": \"Caterpillar\",\n  \"model\": \"D6T XL\",\n  \"status\": \"active\",\n  \"verificationFrequency\": 14\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}"
+							]
+						},
+						"description": "Update asset details."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Asset Location",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\": {\n    \"latitude\": 37.7849,\n    \"longitude\": -122.4094\n  },\n  \"locationAccuracy\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}/location",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}",
+								"location"
+							]
+						},
+						"description": "Update asset registered location."
+					},
+					"response": []
+				},
+				{
+					"name": "Retire Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}/retire",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}",
+								"retire"
+							]
+						},
+						"description": "Retire an asset (sets status to retired)."
+					},
+					"response": []
+				},
+				{
+					"name": "Transfer Asset",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newCompanyId\": \"{{companyId}}\",\n  \"newLocation\": {\n    \"latitude\": 40.7128,\n    \"longitude\": -74.006\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}/transfer",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}",
+								"transfer"
+							]
+						},
+						"description": "Transfer asset to another company (system_admin only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Asset",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/assets/{{assetId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"assets",
+								"{{assetId}}"
+							]
+						},
+						"description": "Delete an asset permanently."
+					},
+					"response": []
+				}
+			],
+			"description": "Asset management endpoints"
+		},
+		{
+			"name": "6. Verifications",
+			"item": [
+				{
+					"name": "Submit Verification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assetId\": \"{{assetId}}\",\n  \"location\": {\n    \"latitude\": 37.7749,\n    \"longitude\": -122.4194\n  },\n  \"locationAccuracy\": 15,\n  \"photos\": [\n    \"https://example.com/verify1.jpg\",\n    \"https://example.com/verify2.jpg\"\n  ],\n  \"checklist\": {\n    \"conditionStatus\": \"good\",\n    \"operationalStatus\": \"operational\",\n    \"repairNotes\": \"\"\n  },\n  \"gpsRetryCount\": 0,\n  \"deviceId\": \"device-uuid-123\",\n  \"originalTimestamp\": \"2024-01-15T10:30:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/submit",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"submit"
+							]
+						},
+						"description": "Submit asset verification. Checklist: conditionStatus (good/fair/poor), operationalStatus (operational/needs_repair/non_operational)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Verifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/verifications?assetId=&verifiedBy=&gpsCheckPassed=&gpsOverrideUsed=&repairNeeded=&investigationStatus=&startDate=&endDate=&sortBy=createdAt:desc&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications"
+							],
+							"query": [
+								{
+									"key": "assetId",
+									"value": "",
+									"description": "Filter by asset ID"
+								},
+								{
+									"key": "verifiedBy",
+									"value": "",
+									"description": "Filter by user ID"
+								},
+								{
+									"key": "gpsCheckPassed",
+									"value": "",
+									"description": "Filter: true/false"
+								},
+								{
+									"key": "gpsOverrideUsed",
+									"value": "",
+									"description": "Filter: true/false"
+								},
+								{
+									"key": "repairNeeded",
+									"value": "",
+									"description": "Filter: true/false"
+								},
+								{
+									"key": "investigationStatus",
+									"value": "",
+									"description": "Filter: open, investigating, resolved"
+								},
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Filter from date (ISO format)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "Filter to date (ISO format)"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get paginated verifications with filters."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Verification Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/stats",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"stats"
+							]
+						},
+						"description": "Get verification statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flagged Verifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/flagged?investigationStatus=&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"flagged"
+							],
+							"query": [
+								{
+									"key": "investigationStatus",
+									"value": "",
+									"description": "Filter: open, investigating, resolved"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get verifications requiring investigation."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Asset Verifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/asset/{{assetId}}?limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"asset",
+								"{{assetId}}"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get verification history for specific asset."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Verification by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/{{verificationId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"{{verificationId}}"
+							]
+						},
+						"description": "Get single verification details."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Investigation Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"investigationStatus\": \"resolved\",\n  \"comment\": \"Issue was investigated and resolved. Asset location confirmed.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/verifications/{{verificationId}}/investigate",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"verifications",
+								"{{verificationId}}",
+								"investigate"
+							]
+						},
+						"description": "Update investigation status (admin only). Status: open, investigating, resolved."
+					},
+					"response": []
+				}
+			],
+			"description": "Asset verification endpoints"
+		},
+		{
+			"name": "7. Uploads",
+			"item": [
+				{
+					"name": "Check Upload Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"status"
+							]
+						},
+						"description": "Check if upload service (S3/local) is configured."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Single Photo",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assetId\": \"{{assetId}}\",\n  \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRg...\",\n  \"options\": {\n    \"quality\": 80,\n    \"maxWidth\": 1920,\n    \"maxHeight\": 1080\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/asset-photo",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"asset-photo"
+							]
+						},
+						"description": "Upload single base64-encoded photo."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Multiple Photos",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assetId\": \"{{assetId}}\",\n  \"images\": [\n    \"data:image/jpeg;base64,/9j/4AAQ...\",\n    \"data:image/jpeg;base64,/9j/4AAQ...\"\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/asset-photos",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"asset-photos"
+							]
+						},
+						"description": "Upload multiple base64-encoded photos (max 5)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Presigned URLs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"assetId\": \"{{assetId}}\",\n  \"contentType\": \"image/jpeg\",\n  \"count\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/presigned-url",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"presigned-url"
+							]
+						},
+						"description": "Get presigned URLs for direct S3 upload."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Photo",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"url\": \"https://bucket.s3.amazonaws.com/assets/photo.jpg\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/photo",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"photo"
+							]
+						},
+						"description": "Delete single photo by URL."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Multiple Photos",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"urls\": [\n    \"https://bucket.s3.amazonaws.com/assets/photo1.jpg\",\n    \"https://bucket.s3.amazonaws.com/assets/photo2.jpg\"\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/uploads/photos",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"uploads",
+								"photos"
+							]
+						},
+						"description": "Delete multiple photos by URLs."
+					},
+					"response": []
+				}
+			],
+			"description": "Photo upload endpoints"
+		},
+		{
+			"name": "8. Audit Logs",
+			"item": [
+				{
+					"name": "Get My Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/audit-logs/me",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs",
+								"me"
+							]
+						},
+						"description": "**Purpose:** Get current user audit logs.\n\n**Who Uses it: any authenticated user**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"results\": [\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"checklist\": {\n                        \"repairNotes\": \"\",\n                        \"conditionStatus\": \"good\",\n                        \"operationalStatus\": \"operational\"\n                    },\n                    \"scanLocationAccuracy\": 15,\n                    \"gpsRetryCount\": 0,\n                    \"gpsOverrideUsed\": false,\n                    \"photos\": [\n                        \"https://example.com/verify1.jpg\",\n                        \"https://example.com/verify2.jpg\"\n                    ],\n                    \"repairNeeded\": false,\n                    \"repairEmailSent\": false,\n                    \"investigationStatus\": null,\n                    \"syncedFromDevice\": \"device-uuid-123\",\n                    \"originalTimestamp\": \"2024-01-15T10:30:00.000Z\",\n                    \"_id\": \"6941c33b0e57d9821a9e1b11\",\n                    \"assetId\": \"6941c3050e57d9821a9e1aff\",\n                    \"companyId\": \"69383138d9f390c29af9b498\",\n                    \"verifiedBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"verifiedAt\": \"2024-01-15T10:30:00.000Z\",\n                    \"scanLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"distanceFromAsset\": 0,\n                    \"gpsCheckPassed\": true,\n                    \"investigationComments\": [],\n                    \"createdAt\": \"2025-12-16T20:38:19.487Z\",\n                    \"updatedAt\": \"2025-12-16T20:38:19.487Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"verification\",\n            \"entityId\": \"6941c33b0e57d9821a9e1b11\",\n            \"action\": \"verified\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"metadata\": {\n                \"assetId\": \"6941c3050e57d9821a9e1aff\",\n                \"gpsOverrideUsed\": false,\n                \"investigationStatus\": null\n            },\n            \"timestamp\": \"2025-12-16T20:38:19.817Z\",\n            \"id\": \"6941c33b0e57d9821a9e1b14\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T20:37:25.984Z\",\n                    \"nextVerificationDue\": \"2026-01-15T20:37:25.984Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941c3050e57d9821a9e1aff\",\n                    \"serialNumber\": \"SN-1100\",\n                    \"make\": \"Jenpharm\",\n                    \"model\": \"jenpharm ccs\",\n                    \"companyId\": \"69383138d9f390c29af9b498\",\n                    \"qrCodeId\": \"6941c2ca0e57d9821a9e1afa\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T20:37:25.984Z\",\n                    \"createdAt\": \"2025-12-16T20:37:25.992Z\",\n                    \"updatedAt\": \"2025-12-16T20:37:25.992Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941c3050e57d9821a9e1aff\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69383138d9f390c29af9b498\",\n            \"timestamp\": \"2025-12-16T20:37:26.546Z\",\n            \"id\": \"6941c3060e57d9821a9e1b03\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T19:44:19.024Z\",\n                    \"nextVerificationDue\": \"2026-01-15T19:44:19.024Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941b6931ccfda6c81c4b225\",\n                    \"serialNumber\": \"SN-1000\",\n                    \"make\": \"toyota\",\n                    \"model\": \"mark\",\n                    \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                    \"qrCodeId\": \"693c738d96c6dc64f42512ba\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T19:44:19.024Z\",\n                    \"createdAt\": \"2025-12-16T19:44:19.026Z\",\n                    \"updatedAt\": \"2025-12-16T19:44:19.026Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941b6931ccfda6c81c4b225\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"timestamp\": \"2025-12-16T19:44:19.510Z\",\n            \"id\": \"6941b6931ccfda6c81c4b229\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-16T19:43:43.918Z\",\n                    \"nextVerificationDue\": \"2026-01-15T19:43:43.918Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"6941b66f1ccfda6c81c4b21c\",\n                    \"serialNumber\": \"SN-12345\",\n                    \"make\": \"Panasonic\",\n                    \"model\": \"ACZ\",\n                    \"companyId\": \"693b6af77d3db2621ce74ba0\",\n                    \"qrCodeId\": \"693c738d96c6dc64f42512b9\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-16T19:43:43.918Z\",\n                    \"createdAt\": \"2025-12-16T19:43:43.927Z\",\n                    \"updatedAt\": \"2025-12-16T19:43:43.927Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"6941b66f1ccfda6c81c4b21c\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"693b6af77d3db2621ce74ba0\",\n            \"timestamp\": \"2025-12-16T19:43:44.476Z\",\n            \"id\": \"6941b6701ccfda6c81c4b220\"\n        },\n        {\n            \"changes\": {\n                \"before\": null,\n                \"after\": {\n                    \"locationAccuracy\": 10,\n                    \"status\": \"active\",\n                    \"verificationFrequency\": 30,\n                    \"lastVerifiedAt\": \"2025-12-12T21:03:13.160Z\",\n                    \"nextVerificationDue\": \"2026-01-11T21:03:13.160Z\",\n                    \"photos\": [\n                        \"https://example.com/photo1.jpg\"\n                    ],\n                    \"_id\": \"693c831196c6dc64f4251338\",\n                    \"serialNumber\": \"KP-001\",\n                    \"make\": \"TCL\",\n                    \"model\": \"TCL-3\",\n                    \"companyId\": \"69382f989eb6cfbb7368a1af\",\n                    \"qrCodeId\": \"693c779896c6dc64f42512c5\",\n                    \"registeredLocation\": {\n                        \"type\": \"Point\",\n                        \"coordinates\": [\n                            -122.4194,\n                            37.7749\n                        ]\n                    },\n                    \"registeredBy\": \"693b65ca7d3db2621ce74b7f\",\n                    \"registeredAt\": \"2025-12-12T21:03:13.160Z\",\n                    \"createdAt\": \"2025-12-12T21:03:13.164Z\",\n                    \"updatedAt\": \"2025-12-12T21:03:13.164Z\",\n                    \"__v\": 0\n                }\n            },\n            \"ipAddress\": null,\n            \"userAgent\": null,\n            \"entityType\": \"asset\",\n            \"entityId\": \"693c831196c6dc64f4251338\",\n            \"action\": \"registered\",\n            \"performedBy\": {\n                \"role\": \"system_admin\",\n                \"isEmailVerified\": false,\n                \"status\": \"active\",\n                \"mustChangePassword\": false,\n                \"devicePlatform\": null,\n                \"mfaEnabled\": false,\n                \"name\": \"System administrator\",\n                \"email\": \"systemadministrator@example.com\",\n                \"id\": \"693b65ca7d3db2621ce74b7f\"\n            },\n            \"companyId\": \"69382f989eb6cfbb7368a1af\",\n            \"timestamp\": \"2025-12-12T21:03:13.504Z\",\n            \"id\": \"693c831196c6dc64f425133c\"\n        }\n    ],\n    \"page\": 1,\n    \"limit\": 50,\n    \"totalPages\": 1,\n    \"totalResults\": 5\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Entity Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/audit-logs/entity/asset/{{assetId}}?limit=50&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs",
+								"entity",
+								"asset",
+								"{{assetId}}"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get audit logs for specific entity. Types: asset, verification, qr_code, user, company."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/audit-logs/user/{{userId}}?entityType=&action=&limit=50&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs",
+								"user",
+								"{{userId}}"
+							],
+							"query": [
+								{
+									"key": "entityType",
+									"value": "",
+									"description": "Filter: asset, verification, qr_code, user, company"
+								},
+								{
+									"key": "action",
+									"value": "",
+									"description": "Filter: created, updated, deleted, verified, etc."
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get audit logs for specific user (admin only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/audit-logs?entityType=&entityId=&action=&performedBy=&startDate=&endDate=&sortBy=timestamp:desc&limit=50&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "entityType",
+									"value": "",
+									"description": "Filter: asset, verification, qr_code, user, company"
+								},
+								{
+									"key": "entityId",
+									"value": "",
+									"description": "Filter by entity ID"
+								},
+								{
+									"key": "action",
+									"value": "",
+									"description": "Filter action type"
+								},
+								{
+									"key": "performedBy",
+									"value": "",
+									"description": "Filter by user ID"
+								},
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Filter from date"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "Filter to date"
+								},
+								{
+									"key": "sortBy",
+									"value": "timestamp:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get all audit logs with filters (admin only)."
+					},
+					"response": []
+				}
+			],
+			"description": "Audit trail endpoints"
+		},
+		{
+			"name": "9. Reports",
+			"item": [
+				{
+					"name": "Get Verification Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/reports/verifications?startDate=&endDate=&status=&assetId=&verifiedBy=&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"verifications"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Start date (ISO format)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "End date (ISO format)"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter: on_time, due_soon, overdue"
+								},
+								{
+									"key": "assetId",
+									"value": "",
+									"description": "Filter by asset ID"
+								},
+								{
+									"key": "verifiedBy",
+									"value": "",
+									"description": "Filter by user ID"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get verification report with filters."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Overdue Assets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/reports/overdue?minDaysOverdue=&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"overdue"
+							],
+							"query": [
+								{
+									"key": "minDaysOverdue",
+									"value": "",
+									"description": "Minimum days overdue"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get overdue assets report."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Map Assets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/reports/map?status=",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"map"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter: on_time, due_soon, overdue"
+								}
+							]
+						},
+						"description": "Get assets for map display."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/reports/dashboard?startDate=&endDate=",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"dashboard"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Start date (ISO format)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "End date (ISO format)"
+								}
+							]
+						},
+						"description": "Get dashboard statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/reports/export?format=csv&reportType=verifications&startDate=&endDate=&status=",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"reports",
+								"export"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "csv",
+									"description": "Export format: csv, pdf"
+								},
+								{
+									"key": "reportType",
+									"value": "verifications",
+									"description": "Report type: verifications, overdue, assets"
+								},
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Start date (ISO format)"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "End date (ISO format)"
+								},
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter: on_time, due_soon, overdue"
+								}
+							]
+						},
+						"description": "Export report as CSV or PDF."
+					},
+					"response": []
+				}
+			],
+			"description": "Reporting endpoints"
+		},
+		{
+			"name": "10. Offline Sync",
+			"item": [
+				{
+					"name": "Upload Sync Data",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deviceId\": \"device-uuid-abc123\",\n  \"syncData\": [\n    {\n      \"type\": \"verification\",\n      \"timestamp\": \"2024-01-15T08:30:00Z\",\n      \"data\": {\n        \"assetId\": \"{{assetId}}\",\n        \"location\": {\n          \"latitude\": 37.7749,\n          \"longitude\": -122.4194\n        },\n        \"locationAccuracy\": 10,\n        \"photos\": [\n          \"base64-encoded-image...\"\n        ],\n        \"checklist\": {\n          \"conditionStatus\": \"good\",\n          \"operationalStatus\": \"operational\",\n          \"repairNotes\": \"\"\n        },\n        \"gpsRetryCount\": 0\n      }\n    },\n    {\n      \"type\": \"registration\",\n      \"timestamp\": \"2024-01-15T09:00:00Z\",\n      \"data\": {\n        \"qrCode\": \"QR-2024-NEW\",\n        \"serialNumber\": \"SN-NEW-001\",\n        \"make\": \"John Deere\",\n        \"model\": \"9620R\",\n        \"location\": {\n          \"latitude\": 37.78,\n          \"longitude\": -122.42\n        },\n        \"photos\": [\n          \"base64-encoded-image...\"\n        ]\n      }\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/sync/upload",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sync",
+								"upload"
+							]
+						},
+						"description": "Upload offline data from mobile device. Types: registration, verification. Data processed asynchronously."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sync Queue",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/sync?syncStatus=&deviceId=&sortBy=createdAt:desc&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sync"
+							],
+							"query": [
+								{
+									"key": "syncStatus",
+									"value": "",
+									"description": "Filter: pending, processing, completed, failed"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"description": "Filter by device ID"
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt:desc",
+									"description": "Sort field:order"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get sync queue list."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sync Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/sync/stats?startDate=&endDate=",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sync",
+								"stats"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "",
+									"description": "Start date"
+								},
+								{
+									"key": "endDate",
+									"value": "",
+									"description": "End date"
+								}
+							]
+						},
+						"description": "Get sync statistics."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sync by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/sync/{{syncId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sync",
+								"{{syncId}}"
+							]
+						},
+						"description": "Get single sync entry details."
+					},
+					"response": []
+				},
+				{
+					"name": "Retry Failed Sync",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/sync/{{syncId}}/retry",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"sync",
+								"{{syncId}}",
+								"retry"
+							]
+						},
+						"description": "Retry processing a failed sync entry."
+					},
+					"response": []
+				}
+			],
+			"description": "Offline sync endpoints for mobile devices"
+		},
+		{
+			"name": "11. Notifications",
+			"item": [
+				{
+					"name": "Register Device",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fcmToken\": \"firebase-cloud-messaging-token-here\",\n  \"platform\": \"android\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/notifications/register-device",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"register-device"
+							]
+						},
+						"description": "Register device for push notifications."
+					},
+					"response": []
+				},
+				{
+					"name": "Unregister Device",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/notifications/unregister-device",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"unregister-device"
+							]
+						},
+						"description": "Unregister device from push notifications."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/notifications/status",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"status"
+							]
+						},
+						"description": "Get notification registration status."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Test Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Test Notification\",\n  \"body\": \"This is a test push notification.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/notifications/test",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"test"
+							]
+						},
+						"description": "Send test notification (development only)."
+					},
+					"response": []
+				}
+			],
+			"description": "Push notification endpoints"
+		},
+		{
+			"name": "12. Scheduled Reports",
+			"item": [
+				{
+					"name": "Create Scheduled Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Weekly Verification Summary\",\n  \"reportType\": \"verification_summary\",\n  \"frequency\": \"weekly\",\n  \"format\": \"csv\",\n  \"recipients\": [\n    \"admin@company.com\",\n    \"manager@company.com\"\n  ],\n  \"filters\": {\n    \"includePhotos\": false\n  },\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports"
+							]
+						},
+						"description": "Create scheduled report. Types: verification_summary, asset_status, overdue_assets, compliance. Frequencies: daily, weekly, monthly, quarterly."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scheduled Reports",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports?reportType=&frequency=&isActive=&limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports"
+							],
+							"query": [
+								{
+									"key": "reportType",
+									"value": "",
+									"description": "Filter by type"
+								},
+								{
+									"key": "frequency",
+									"value": "",
+									"description": "Filter by frequency"
+								},
+								{
+									"key": "isActive",
+									"value": "",
+									"description": "Filter: true/false"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get list of scheduled reports."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Scheduled Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports",
+								"{{reportId}}"
+							]
+						},
+						"description": "Get single scheduled report."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Scheduled Report",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Report Name\",\n  \"frequency\": \"monthly\",\n  \"recipients\": [\n    \"updated@company.com\"\n  ],\n  \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports",
+								"{{reportId}}"
+							]
+						},
+						"description": "Update scheduled report."
+					},
+					"response": []
+				},
+				{
+					"name": "Toggle Report Active",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}/toggle",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports",
+								"{{reportId}}",
+								"toggle"
+							]
+						},
+						"description": "Toggle scheduled report active/inactive."
+					},
+					"response": []
+				},
+				{
+					"name": "Run Report Now",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}/run",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports",
+								"{{reportId}}",
+								"run"
+							]
+						},
+						"description": "Run scheduled report immediately."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Scheduled Report",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/scheduled-reports/{{reportId}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"scheduled-reports",
+								"{{reportId}}"
+							]
+						},
+						"description": "Delete scheduled report."
+					},
+					"response": []
+				}
+			],
+			"description": "Scheduled report management"
+		},
+		{
+			"name": "13. Admin & Monitoring",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/health",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"health"
+							]
+						},
+						"description": "**Purpose:** Public health check endpoint. Returns system status.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"status\": \"healthy\",\n    \"timestamp\": \"2025-12-17T12:19:21.235Z\",\n    \"services\": {\n        \"mongodb\": {\n            \"status\": \"connected\",\n            \"readyState\": 1\n        },\n        \"redis\": {\n            \"status\": \"disconnected\"\n        }\n    }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get System Monitoring",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/monitoring",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"monitoring"
+							]
+						},
+						"description": "**Purpose:** Get comprehensive system monitoring dashboard.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"data\": {\n        \"timestamp\": \"2025-12-17T12:29:30.984Z\",\n        \"sync\": {\n            \"pending\": 0,\n            \"failed\": 0,\n            \"last24Hours\": 0,\n            \"byStatus\": {}\n        },\n        \"verifications\": {\n            \"flaggedForInvestigation\": 0,\n            \"needsRepair\": 0,\n            \"last24Hours\": 1,\n            \"last7Days\": 1\n        },\n        \"assets\": {\n            \"total\": 4,\n            \"overdue\": 0,\n            \"dueSoon\": 0,\n            \"byStatus\": {\n                \"active\": 4\n            }\n        },\n        \"companies\": {\n            \"total\": 6,\n            \"active\": 6\n        },\n        \"users\": {\n            \"total\": 24,\n            \"active\": 21,\n            \"byRole\": {\n                \"system_admin\": 9,\n                \"customer_admin\": 7,\n                \"user\": 1,\n                \"field_user\": 7\n            }\n        },\n        \"qrCodes\": {\n            \"total\": 31,\n            \"byStatus\": {\n                \"used\": 4,\n                \"allocated\": 12,\n                \"available\": 14,\n                \"retired\": 1\n            }\n        }\n    }\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flagged Verifications (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/flagged-verifications?limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"flagged-verifications"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get all flagged verifications across companies."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Failed Syncs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/failed-syncs?limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"failed-syncs"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "Get all failed sync entries across companies."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Overdue Assets (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/overdue-assets?limit=20&page=1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"overdue-assets"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Results per page"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								}
+							]
+						},
+						"description": "**Purpose:** Get all overdue assets across companies.\n\n**Who Uses it:** system admin\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"results\": [],\n    \"page\": 1,\n    \"limit\": 20,\n    \"totalPages\": 0,\n    \"totalResults\": 0\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Company Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/companies/summary",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"companies",
+								"summary"
+							]
+						},
+						"description": "**Purpose:** Get summary of all companies with asset/user counts.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"companies\": [\n        {\n            \"_id\": \"693b6af77d3db2621ce74ba0\",\n            \"isActive\": true,\n            \"companyName\": \"Systems Limited\",\n            \"createdAt\": \"2025-12-12T01:08:07.701Z\",\n            \"assetCount\": 2,\n            \"userCount\": 2,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"693826d75b3fbd7fea1559c6\",\n            \"isActive\": true,\n            \"companyName\": \"Acme Corp Updated\",\n            \"createdAt\": \"2025-12-09T13:40:39.871Z\",\n            \"assetCount\": 1,\n            \"userCount\": 5,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"69383138d9f390c29af9b498\",\n            \"isActive\": true,\n            \"companyName\": \"jenpharm\",\n            \"createdAt\": \"2025-12-09T14:24:56.644Z\",\n            \"assetCount\": 1,\n            \"userCount\": 2,\n            \"verificationCount\": 1\n        },\n        {\n            \"_id\": \"69382f989eb6cfbb7368a1af\",\n            \"isActive\": true,\n            \"companyName\": \"the ordinary\",\n            \"createdAt\": \"2025-12-09T14:18:00.183Z\",\n            \"assetCount\": 0,\n            \"userCount\": 1,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"693f11b1d4138a7cf3122540\",\n            \"isActive\": true,\n            \"companyName\": \"Demo Company\",\n            \"createdAt\": \"2025-12-14T19:36:17.315Z\",\n            \"assetCount\": 0,\n            \"userCount\": 2,\n            \"verificationCount\": 0\n        },\n        {\n            \"_id\": \"6941c5b20e57d9821a9e1b26\",\n            \"isActive\": true,\n            \"companyName\": \"Pak Suzuki\",\n            \"createdAt\": \"2025-12-16T20:48:50.052Z\",\n            \"assetCount\": 0,\n            \"userCount\": 0,\n            \"verificationCount\": 0\n        }\n    ]\n}\n\n ```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Database Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/admin/database/stats",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"admin",
+								"database",
+								"stats"
+							]
+						},
+						"description": "**Purpose:** Get MongoDB database statistics.\n\n**Who Uses it: system admin**\n\n**Response:**\n\n``` json\n{\n    \"success\": true,\n    \"stats\": {\n        \"collections\": 9,\n        \"dataSize\": 43388,\n        \"storageSize\": 274432,\n        \"indexes\": 52,\n        \"indexSize\": 1499136,\n        \"avgObjSize\": 323.7910447761194,\n        \"objects\": 134\n    }\n}\n\n ```"
+					},
+					"response": []
+				}
+			],
+			"description": "System admin endpoints (system_admin only)"
+		},
+		{
+			"name": "14. Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/api/v1/dashboard",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"dashboard"
+							]
+						},
+						"description": "**Purpose:** Get consolidated dashboard data in a single API call.\n\n**Who Uses it:**\n- **system_admin**: Gets global stats (total companies, users, assets, QR codes) + recent companies list\n- **customer_admin**: Gets company-specific stats + recent users\n\n**Response (system_admin):**\n```json\n{\n  \"success\": true,\n  \"stats\": {\n    \"totalCompanies\": 15,\n    \"totalUsers\": 150,\n    \"totalAssets\": 500,\n    \"totalQRCodes\": 1000\n  },\n  \"recentCompanies\": [\n    {\n      \"_id\": \"...\",\n      \"companyName\": \"Company Name\",\n      \"contactEmail\": \"email@company.com\",\n      \"createdAt\": \"2024-01-15T10:30:00Z\",\n      \"totalUsers\": 10\n    }\n  ]\n}\n```\n\n**Response (customer_admin):**\n```json\n{\n  \"success\": true,\n  \"company\": {\n    \"companyName\": \"My Company\",\n    \"contactEmail\": \"admin@mycompany.com\",\n    \"settings\": {...},\n    \"isActive\": true\n  },\n  \"stats\": {\n    \"totalUsers\": 25,\n    \"totalAssets\": 100,\n    \"totalQRCodes\": 150\n  },\n  \"recentUsers\": [...]\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Consolidated dashboard endpoint - replaces multiple API calls for dashboard data"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "companyId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "assetId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "qrCodeId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "verificationId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "syncId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reportId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

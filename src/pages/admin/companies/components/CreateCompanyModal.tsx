@@ -18,8 +18,9 @@ interface CreateCompanyModalProps {
 interface FormValues {
 	companyName: string;
 	contactEmail: string;
-	phone: string;
-	address: string;
+	adminName: string;
+	adminEmail: string;
+	adminPassword: string;
 }
 
 interface CreatedCredentials {
@@ -37,8 +38,9 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 		defaultValues: {
 			companyName: "",
 			contactEmail: "",
-			phone: "",
-			address: "",
+			adminName: "",
+			adminEmail: "",
+			adminPassword: "",
 		},
 	});
 
@@ -49,9 +51,10 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 			// Show credentials screen
 			setCredentials({
 				companyName: variables.companyName,
-				email: variables.contactEmail,
-				temporaryPassword: data.temporaryPassword || "TempPass@123",
+				email: variables.admin.email,
+				temporaryPassword: variables.admin.password,
 			});
+			toast.success("Company created successfully");
 		},
 		onError: () => {
 			toast.error("Failed to create company");
@@ -69,8 +72,11 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 		mutation.mutate({
 			companyName: values.companyName,
 			contactEmail: values.contactEmail,
-			phone: values.phone || undefined,
-			address: values.address || undefined,
+			admin: {
+				name: values.adminName,
+				email: values.adminEmail,
+				password: values.adminPassword,
+			},
 		});
 	};
 
@@ -171,66 +177,95 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-						<FormField
-							control={form.control}
-							name="companyName"
-							rules={{ required: "Company name is required" }}
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Company Name *</FormLabel>
-									<FormControl>
-										<Input placeholder="Enter company name" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+						<div className="space-y-4">
+							<div className="text-sm font-medium text-muted-foreground">Company Information</div>
+							<FormField
+								control={form.control}
+								name="companyName"
+								rules={{ required: "Company name is required" }}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Company Name *</FormLabel>
+										<FormControl>
+											<Input placeholder="Enter company name" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<FormField
-							control={form.control}
-							name="contactEmail"
-							rules={{
-								required: "Email is required",
-								pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
-							}}
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Admin Email *</FormLabel>
-									<FormControl>
-										<Input type="email" placeholder="admin@company.com" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+							<FormField
+								control={form.control}
+								name="contactEmail"
+								rules={{
+									required: "Contact email is required",
+									pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
+								}}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Contact Email *</FormLabel>
+										<FormControl>
+											<Input type="email" placeholder="contact@company.com" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
-						<FormField
-							control={form.control}
-							name="phone"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Phone Number</FormLabel>
-									<FormControl>
-										<Input type="tel" placeholder="+92 300 1234567" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+						<div className="space-y-4 pt-4 border-t">
+							<div className="text-sm font-medium text-muted-foreground">Default Admin Account</div>
+							<FormField
+								control={form.control}
+								name="adminName"
+								rules={{ required: "Admin name is required" }}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Admin Name *</FormLabel>
+										<FormControl>
+											<Input placeholder="John Doe" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 
-						<FormField
-							control={form.control}
-							name="address"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Address</FormLabel>
-									<FormControl>
-										<Input placeholder="Company address" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+							<FormField
+								control={form.control}
+								name="adminEmail"
+								rules={{
+									required: "Admin email is required",
+									pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
+								}}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Admin Email *</FormLabel>
+										<FormControl>
+											<Input type="email" placeholder="admin@company.com" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="adminPassword"
+								rules={{
+									required: "Password is required",
+									minLength: { value: 8, message: "Password must be at least 8 characters" },
+								}}
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Admin Password *</FormLabel>
+										<FormControl>
+											<Input type="password" placeholder="Min 8 characters" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
 
 						<DialogFooter>
 							<Button type="button" variant="outline" onClick={handleClose}>

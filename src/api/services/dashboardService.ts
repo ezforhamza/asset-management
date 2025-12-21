@@ -1,40 +1,37 @@
 import apiClient from "../apiClient";
-
-import type { DashboardStats, RecentActivity } from "#/entity";
+import API_ENDPOINTS from "../endpoints";
 
 // ============================================
 // Dashboard Types
 // ============================================
 
-export interface DashboardStatsRes {
-	success: boolean;
-	data: DashboardStats;
+export interface DashboardStats {
+	totalCompanies: number;
+	totalUsers: number;
+	totalAssets: number;
+	totalQRCodes: number;
 }
 
-export interface RecentActivityRes {
-	success: boolean;
-	data: RecentActivity[];
+export interface RecentCompany {
+	_id: string;
+	companyName: string;
+	contactEmail: string;
+	createdAt: string;
+	totalUsers: number;
 }
 
-// ============================================
-// API Endpoints
-// ============================================
-
-enum DashboardApi {
-	Stats = "/dashboard/stats",
-	RecentActivity = "/dashboard/recent-activity",
+export interface DashboardResponse {
+	success: boolean;
+	stats: DashboardStats;
+	recentCompanies: RecentCompany[];
 }
 
 // ============================================
 // Dashboard Service
 // ============================================
 
-const getStats = () => apiClient.get<DashboardStats>({ url: DashboardApi.Stats });
-
-const getRecentActivity = (limit = 10) =>
-	apiClient.get<RecentActivity[]>({ url: DashboardApi.RecentActivity, params: { limit } });
+const getDashboardData = () => apiClient.get<DashboardResponse>({ url: API_ENDPOINTS.DASHBOARD });
 
 export default {
-	getStats,
-	getRecentActivity,
+	getDashboardData,
 };

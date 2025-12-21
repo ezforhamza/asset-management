@@ -19,8 +19,6 @@ interface EditCompanyModalProps {
 interface FormValues {
 	companyName: string;
 	contactEmail: string;
-	phone: string;
-	address: string;
 }
 
 export function EditCompanyModal({ company, open, onClose }: EditCompanyModalProps) {
@@ -30,8 +28,6 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 		defaultValues: {
 			companyName: "",
 			contactEmail: "",
-			phone: "",
-			address: "",
 		},
 	});
 
@@ -40,8 +36,6 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 			form.reset({
 				companyName: company.companyName || "",
 				contactEmail: company.contactEmail || "",
-				phone: company.phone || "",
-				address: company.address || "",
 			});
 		}
 	}, [company, form]);
@@ -99,34 +93,6 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 									<FormLabel>Contact Email *</FormLabel>
 									<FormControl>
 										<Input type="email" placeholder="admin@company.com" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="phone"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Phone Number</FormLabel>
-									<FormControl>
-										<Input type="tel" placeholder="+92 300 1234567" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="address"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Address</FormLabel>
-									<FormControl>
-										<Input placeholder="Company address" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { MoreHorizontal, QrCode, Trash2 } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil, QrCode, Trash2 } from "lucide-react";
 import type { Company, QRCode as QRCodeType } from "#/entity";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -11,7 +11,16 @@ interface QRTableProps {
 	qrCodes: QRCodeType[];
 	companies: Company[];
 	isLoading: boolean;
+	pagination?: {
+		page: number;
+		limit: number;
+		totalPages: number;
+		totalResults: number;
+	};
+	onPageChange?: (page: number) => void;
 	onRetire?: (qrCode: QRCodeType) => void;
+	onView?: (qrCode: QRCodeType) => void;
+	onEdit?: (qrCode: QRCodeType) => void;
 }
 
 const getStatusBadge = (status: string) => {
@@ -41,9 +50,19 @@ const getStatusBadge = (status: string) => {
 	}
 };
 
-export function QRTable({ qrCodes, companies, isLoading, onRetire }: QRTableProps) {
-	const getCompanyName = (companyId: string | null) => {
+export function QRTable({
+	qrCodes,
+	companies,
+	isLoading,
+	pagination,
+	onPageChange,
+	onRetire,
+	onView,
+	onEdit,
+}: QRTableProps) {
+	const getCompanyName = (companyId: string | { id: string; companyName: string } | null) => {
 		if (!companyId) return "—";
+		if (typeof companyId === "object") return companyId.companyName;
 		const company = companies.find((c) => c._id === companyId);
 		return company?.companyName || "Unknown";
 	};
@@ -102,58 +121,101 @@ export function QRTable({ qrCodes, companies, isLoading, onRetire }: QRTableProp
 	}
 
 	return (
-		<div className="rounded-md border h-full overflow-auto">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead>QR Code</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead>Company</TableHead>
-						<TableHead>Asset</TableHead>
-						<TableHead>Created</TableHead>
-						<TableHead className="w-[50px]" />
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{qrCodes.map((qr) => (
-						<TableRow key={qr._id}>
-							<TableCell>
-								<div className="flex items-center gap-2">
-									<QrCode className="h-4 w-4 text-muted-foreground" />
-									<span className="font-mono text-sm">{qr.qrCode}</span>
-								</div>
-							</TableCell>
-							<TableCell>{getStatusBadge(qr.status)}</TableCell>
-							<TableCell className="text-sm">{getCompanyName(qr.companyId)}</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{qr.assetSerialNumber || qr.assetId || "—"}
-							</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{format(new Date(qr.createdAt), "MMM d, yyyy")}
-							</TableCell>
-							<TableCell>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon" className="h-8 w-8">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem
-											onClick={() => onRetire?.(qr)}
-											disabled={qr.status === "retired"}
-											className="text-destructive"
-										>
-											<Trash2 className="h-4 w-4 mr-2" />
-											Retire
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</TableCell>
+		<div className="rounded-md border flex flex-col" style={{ height: "calc(100vh - 320px)" }}>
+			<div className="flex-1 overflow-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>QR Code</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Company</TableHead>
+							<TableHead>Asset</TableHead>
+							<TableHead>Created</TableHead>
+							<TableHead className="w-[50px]" />
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{qrCodes.map((qr) => (
+							<TableRow key={qr.id || qr._id}>
+								<TableCell>
+									<div className="flex items-center gap-2">
+										<QrCode className="h-4 w-4 text-muted-foreground" />
+										<span className="font-mono text-sm">{qr.qrCode}</span>
+									</div>
+								</TableCell>
+								<TableCell>{getStatusBadge(qr.status)}</TableCell>
+								<TableCell className="text-sm">{getCompanyName(qr.companyId)}</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{typeof qr.assetId === "object" && qr.assetId
+										? qr.assetId.serialNumber
+										: typeof qr.assetId === "string"
+											? qr.assetId
+											: qr.assetSerialNumber || "—"}
+								</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{qr.createdAt ? format(new Date(qr.createdAt), "MMM d, yyyy") : "—"}
+								</TableCell>
+								<TableCell>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon" className="h-8 w-8">
+												<MoreHorizontal className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => onView?.(qr)}>
+												<Eye className="h-4 w-4 mr-2" />
+												View Details
+											</DropdownMenuItem>
+											<DropdownMenuItem onClick={() => onEdit?.(qr)} disabled={qr.status === "retired"}>
+												<Pencil className="h-4 w-4 mr-2" />
+												Edit Status
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => onRetire?.(qr)}
+												disabled={qr.status === "retired"}
+												className="text-destructive"
+											>
+												<Trash2 className="h-4 w-4 mr-2" />
+												Retire
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
+			{pagination && pagination.totalPages > 1 && (
+				<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="text-sm text-muted-foreground">
+						Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+						{Math.min(pagination.page * pagination.limit, pagination.totalResults)} of {pagination.totalResults} results
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange?.(pagination.page - 1)}
+							disabled={pagination.page === 1}
+						>
+							Previous
+						</Button>
+						<span className="text-sm">
+							Page {pagination.page} of {pagination.totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange?.(pagination.page + 1)}
+							disabled={pagination.page === pagination.totalPages}
+						>
+							Next
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

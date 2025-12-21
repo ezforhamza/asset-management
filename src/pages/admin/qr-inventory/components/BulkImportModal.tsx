@@ -2,41 +2,50 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileUp, Loader2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import adminService from "@/api/services/adminService";
+import type { Company } from "#/entity";
+import qrService from "@/api/services/qrService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { Label } from "@/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 
 interface BulkImportModalProps {
 	open: boolean;
 	onClose: () => void;
+	companies: Company[];
 }
 
 interface ImportResult {
 	imported: number;
 	duplicates: number;
+	duplicatesList: string[];
 	errors: string[];
 }
 
-export function BulkImportModal({ open, onClose }: BulkImportModalProps) {
+export function BulkImportModal({ open, onClose, companies }: BulkImportModalProps) {
 	const queryClient = useQueryClient();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [file, setFile] = useState<File | null>(null);
+	const [companyId, setCompanyId] = useState("none");
 	const [result, setResult] = useState<ImportResult | null>(null);
 
 	const mutation = useMutation({
-		mutationFn: adminService.bulkImportQRCodes,
+		mutationFn: (data: { file: File; companyId?: string }) => qrService.bulkImportQRCodes(data.file, data.companyId),
 		onSuccess: (data) => {
 			setResult(data);
-			queryClient.invalidateQueries({ queryKey: ["admin", "qr-codes"] });
-			toast.success(`Imported ${data.imported} QR codes`);
+			queryClient.invalidateQueries({ queryKey: ["qr"] });
+			toast.success(
+				`Imported ${data.imported} QR codes${data.duplicates > 0 ? `, ${data.duplicates} duplicates skipped` : ""}`,
+			);
 		},
-		onError: () => {
-			toast.error("Failed to import QR codes");
+		onError: (error: any) => {
+			toast.error(error.response?.data?.message || "Failed to import QR codes");
 		},
 	});
 
 	const handleClose = () => {
 		setFile(null);
+		setCompanyId("none");
 		setResult(null);
 		onClose();
 	};
@@ -47,7 +56,7 @@ export function BulkImportModal({ open, onClose }: BulkImportModalProps) {
 	};
 
 	const handleImport = () => {
-		if (file) mutation.mutate(file);
+		if (file) mutation.mutate({ file, companyId: companyId === "none" ? undefined : companyId });
 	};
 
 	// Show result
@@ -93,9 +102,27 @@ export function BulkImportModal({ open, onClose }: BulkImportModalProps) {
 			<DialogContent className="sm:max-w-[500px]">
 				<DialogHeader>
 					<DialogTitle>Bulk Import QR Codes</DialogTitle>
-					<DialogDescription>Upload a CSV file with QR codes to import.</DialogDescription>
+					<DialogDescription>
+						Upload a CSV file with QR codes to import. Optionally allocate all to a company.
+					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 py-4">
+					<div className="space-y-2">
+						<Label>Company (Optional)</Label>
+						<Select value={companyId} onValueChange={setCompanyId}>
+							<SelectTrigger>
+								<SelectValue placeholder="Allocate all QR codes to company" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">No Company (Available)</SelectItem>
+								{companies.map((company) => (
+									<SelectItem key={company._id} value={company._id}>
+										{company.companyName}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
 					<input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} className="hidden" />
 					<div
 						onClick={() => fileInputRef.current?.click()}

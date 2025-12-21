@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ClipboardList, Eye, Search } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import auditLogService, { type AuditLog } from "@/api/services/auditLogService";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -10,6 +9,7 @@ import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { AuditLogDetailModal } from "./components/AuditLogDetailModal";
 
 const getActionBadge = (action: string) => {
 	const actionMap: Record<string, { label: string; className: string }> = {
@@ -48,12 +48,13 @@ const getEntityBadge = (entityType: string) => {
 };
 
 export default function AdminAuditLogsPage() {
-	const navigate = useNavigate();
 	const [entityTypeFilter, setEntityTypeFilter] = useState<string | undefined>(undefined);
 	const [actionFilter, setActionFilter] = useState<string | undefined>(undefined);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(20);
+	const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+	const [detailModalOpen, setDetailModalOpen] = useState(false);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["audit-logs", entityTypeFilter, actionFilter, searchQuery, page, limit],
@@ -78,24 +79,13 @@ export default function AdminAuditLogsPage() {
 	};
 
 	const handleViewDetails = (log: AuditLog) => {
-		navigate(`/admin/audit-logs/${log.id}`, { state: { log } });
+		setSelectedLog(log);
+		setDetailModalOpen(true);
 	};
 
-	const getSummary = (log: AuditLog) => {
-		if (!log.changes) return "—";
-		if (!log.changes.before && log.changes.after) {
-			const after = log.changes.after;
-			if (after.serialNumber) return `Asset ${after.serialNumber} registered`;
-			if (after.name) return `${after.name} created`;
-			return "New record created";
-		}
-		if (log.changes.before && log.changes.after) {
-			const changedFields = Object.keys(log.changes.after).filter(
-				(key) => JSON.stringify(log.changes.before[key]) !== JSON.stringify(log.changes.after[key]),
-			);
-			return `${changedFields.length} field(s) updated`;
-		}
-		return "—";
+	const handleCloseDetail = () => {
+		setDetailModalOpen(false);
+		setTimeout(() => setSelectedLog(null), 300);
 	};
 
 	return (
@@ -175,12 +165,11 @@ export default function AdminAuditLogsPage() {
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead className="w-[180px]">Timestamp</TableHead>
-										<TableHead className="w-[200px]">Entity</TableHead>
-										<TableHead className="w-[120px]">Action</TableHead>
-										<TableHead className="w-[200px]">Performed By</TableHead>
-										<TableHead>Summary</TableHead>
-										<TableHead className="w-[100px]">Actions</TableHead>
+										<TableHead>Timestamp</TableHead>
+										<TableHead>Entity</TableHead>
+										<TableHead>Action</TableHead>
+										<TableHead>Performed By</TableHead>
+										<TableHead>Changes</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -201,9 +190,6 @@ export default function AdminAuditLogsPage() {
 											<TableCell>
 												<Skeleton className="h-5 w-48" />
 											</TableCell>
-											<TableCell>
-												<Skeleton className="h-8 w-8" />
-											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
@@ -218,61 +204,9 @@ export default function AdminAuditLogsPage() {
 							<Table>
 								<TableHeader>
 									<TableRow>
-										<TableHead className="w-[180px]">Timestamp</TableHead>
-										<TableHead className="w-[200px]">Entity</TableHead>
-										<TableHead className="w-[120px]">Action</TableHead>
-										<TableHead className="w-[200px]">Performed By</TableHead>
-										<TableHead>Summary</TableHead>
-										<TableHead className="w-[100px]">Actions</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{logs.map((log) => (
-										<TableRow
-											key={log.id}
-											className="cursor-pointer hover:bg-muted/50"
-											onClick={() => handleViewDetails(log)}
-										>
-											<TableCell className="text-sm">
-												<div>
-													<p className="font-medium">{format(new Date(log.timestamp), "MMM d, yyyy")}</p>
-													<p className="text-xs text-muted-foreground">{format(new Date(log.timestamp), "HH:mm:ss")}</p>
-												</div>
-											</TableCell>
-											<TableCell>
-												<div className="space-y-1">
-													{getEntityBadge(log.entityType)}
-													<p className="text-xs text-muted-foreground font-mono">{log.entityId.slice(0, 12)}...</p>
-												</div>
-											</TableCell>
-											<TableCell>{getActionBadge(log.action)}</TableCell>
-											<TableCell className="text-sm">
-												<div>
-													<p className="font-medium truncate">{log.performedBy.name}</p>
-													<p className="text-xs text-muted-foreground truncate">{log.performedBy.email}</p>
-												</div>
-											</TableCell>
-											<TableCell className="text-sm text-muted-foreground">{getSummary(log)}</TableCell>
-											<TableCell>
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={(e) => {
-														e.stopPropagation();
-														handleViewDetails(log);
-													}}
-												>
-													<Eye className="h-4 w-4" />
-												</Button>
-											</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						)}
-					</div>
-					{data && data.totalPages > 1 && (
-						<div className="flex items-center justify-between px-4 py-3 border-t">
+										<TableHead>Timestamp</TableHead>
+										<TableHead>Entity</TableHead>
+										<TableHead>Action</TableHead>
 							<div className="text-sm text-muted-foreground">
 								Showing {(data.page - 1) * data.limit + 1} to {Math.min(data.page * data.limit, data.totalResults)} of{" "}
 								{data.totalResults} results
@@ -297,6 +231,9 @@ export default function AdminAuditLogsPage() {
 					)}
 				</div>
 			</div>
+
+			{/* Detail Modal */}
+			<AuditLogDetailModal log={selectedLog} open={detailModalOpen} onClose={handleCloseDetail} />
 		</div>
 	);
 }

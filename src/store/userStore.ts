@@ -69,8 +69,11 @@ export const useSignIn = () => {
 	const signIn = async (data: SignInReq) => {
 		try {
 			const res = await signInMutation.mutateAsync(data);
-			const { user, accessToken, refreshToken } = res;
-			setUserToken({ accessToken, refreshToken });
+			const { user, tokens } = res;
+			setUserToken({
+				accessToken: tokens.access.token,
+				refreshToken: tokens.refresh.token,
+			});
 			setUserInfo(user);
 			return { mustChangePassword: user.mustChangePassword };
 		} catch (err: unknown) {

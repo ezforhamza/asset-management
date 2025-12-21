@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Package } from "lucide-react";
-import adminService from "@/api/services/adminService";
+import assetService from "@/api/services/assetService";
 import { Badge } from "@/ui/badge";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
@@ -12,24 +12,24 @@ interface CompanyAssetsTabProps {
 
 const getStatusBadge = (status: string) => {
 	switch (status) {
-		case "on_time":
-			return <Badge className="bg-green-600">On Time</Badge>;
-		case "due_soon":
-			return <Badge className="bg-orange-500">Due Soon</Badge>;
-		case "overdue":
-			return <Badge variant="destructive">Overdue</Badge>;
+		case "active":
+			return <Badge className="bg-green-600">Active</Badge>;
+		case "retired":
+			return <Badge variant="secondary">Retired</Badge>;
+		case "transferred":
+			return <Badge className="bg-blue-500">Transferred</Badge>;
 		default:
-			return <Badge variant="secondary">{status}</Badge>;
+			return <Badge variant="outline">{status}</Badge>;
 	}
 };
 
 export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "company-assets", companyId],
-		queryFn: () => adminService.getCompanyAssets(companyId),
+		queryKey: ["assets", "company", companyId],
+		queryFn: () => assetService.getAssets({ companyId }),
 	});
 
-	const assets = data?.assets || [];
+	const assets = data?.results || [];
 
 	if (isLoading) {
 		return (
@@ -89,12 +89,12 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 				</TableHeader>
 				<TableBody>
 					{assets.map((asset) => (
-						<TableRow key={asset._id}>
+						<TableRow key={asset.id}>
 							<TableCell className="font-mono">{asset.serialNumber}</TableCell>
 							<TableCell>
 								{asset.make} {asset.model}
 							</TableCell>
-							<TableCell>{getStatusBadge(asset.verificationStatus)}</TableCell>
+							<TableCell>{getStatusBadge(asset.status)}</TableCell>
 							<TableCell className="text-sm text-muted-foreground">
 								{asset.lastVerifiedAt ? format(new Date(asset.lastVerifiedAt), "MMM d, yyyy") : "Never"}
 							</TableCell>

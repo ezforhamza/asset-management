@@ -29,7 +29,7 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 		queryFn: () => adminService.getAdminQRCodes({ companyId }),
 	});
 
-	const qrCodes = data?.qrCodes || [];
+	const qrCodes = data?.results || [];
 
 	if (isLoading) {
 		return (
@@ -89,12 +89,14 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 				</TableHeader>
 				<TableBody>
 					{qrCodes.map((qr) => (
-						<TableRow key={qr._id}>
+						<TableRow key={qr.id}>
 							<TableCell className="font-mono text-sm">{qr.qrCode}</TableCell>
 							<TableCell>{getStatusBadge(qr.status)}</TableCell>
 							<TableCell className="text-sm">
 								{qr.assetId ? (
-									<span className="text-primary">{qr.assetSerialNumber || qr.assetId}</span>
+									<span className="text-primary">
+										{typeof qr.assetId === "object" ? qr.assetId.serialNumber : qr.assetId}
+									</span>
 								) : (
 									<span className="text-muted-foreground">Not linked</span>
 								)}

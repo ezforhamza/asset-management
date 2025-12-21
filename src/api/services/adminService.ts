@@ -1,127 +1,179 @@
-import apiClient from "../apiClient";
-import type { Company, SystemMonitoringStats } from "#/entity";
 import type {
-	CreateCompanyReq,
-	UpdateCompanyReq,
-	CompaniesListRes,
-	AdminUsersListParams,
-	AdminUsersListRes,
-	CreateSuperuserReq,
 	AdminQRCodesListParams,
 	AdminQRCodesListRes,
+	AdminUsersListParams,
+	AdminUsersListRes,
 	AllocateQRCodesReq,
+	AuditLogListParams,
+	AuditLogListRes,
+	BulkCreateQRCodesReq,
+	BulkCreateQRCodesRes,
 	BulkImportQRRes,
+	CompaniesListRes,
+	CompanyWithDetails,
+	CreateCompanyReq,
+	CreateCompanyRes,
+	CreateQRCodeReq,
+	CreateUserReq,
+	SyncQueueListParams,
 	SyncQueueListRes,
+	UpdateCompanyReq,
+	UpdateQRCodeReq,
+	UpdateUserReq,
 	AuditLogListParams,
 	AuditLogListRes,
 } from "#/admin";
+import type { UserInfo } from "#/entity";
+import apiClient from "../apiClient";
+import API_ENDPOINTS from "../endpoints";
 
 // Re-export types for consumers
 export type {
 	CreateCompanyReq,
 	UpdateCompanyReq,
-	CompaniesListRes,
+	AdminCompaniesListRes,
 	AdminUsersListParams,
 	AdminUsersListRes,
-	CreateSuperuserReq,
+	CreateUserReq,
 	AdminQRCodesListParams,
 	AdminQRCodesListRes,
-	AllocateQRCodesReq,
-	BulkImportQRRes,
+	BulkCreateQRCodesRes,
 	SyncQueueListRes,
 	AuditLogListParams,
 	AuditLogListRes,
 };
 
-enum AdminApi {
-	Stats = "/admin/stats",
-	Settings = "/admin/settings",
-	Companies = "/admin/companies",
-	Users = "/admin/users",
-	QRCodes = "/admin/qr-codes",
-	Monitoring = "/admin/monitoring",
-	SyncQueue = "/admin/sync-queue",
-	FlaggedVerifications = "/admin/flagged-verifications",
-	AuditLogs = "/admin/audit-logs",
+// ============================================
+// Monitoring Response Types
+// ============================================
+
+interface MonitoringResponse {
+	timestamp: string;
+	sync: {
+		pending: number;
+		failed: number;
+		last24Hours: number;
+		byStatus: Record<string, number>;
+	};
+	verifications: {
+		flaggedForInvestigation: number;
+		needsRepair: number;
+		last24Hours: number;
+		last7Days: number;
+	};
+	assets: {
+		total: number;
+		overdue: number;
+		dueSoon: number;
+		byStatus: Record<string, number>;
+	};
+	companies: {
+		total: number;
+		active: number;
+	};
+	users: {
+		total: number;
+		active: number;
+		byRole: Record<string, number>;
+	};
+	qrCodes: {
+		total: number;
+		byStatus: Record<string, number>;
+	};
 }
 
-// Global Settings Types
-interface GlobalSettingsResponse {
-	defaultVerificationFrequency: number;
-	geofenceThreshold: number;
-	allowOverride: boolean;
-	imageRetentionDays: number;
-	maxImageSize: number;
-	requirePhotoOnVerification: boolean;
-	enableOfflineMode: boolean;
-	offlineSyncInterval: number;
+interface HealthResponse {
+	status: string;
+	timestamp: string;
+	services: {
+		mongodb: { status: string; readyState: number };
+		redis: { status: string };
+	};
 }
 
-// Admin Dashboard Stats Response
-interface AdminStatsResponse {
-	totalCompanies: number;
-	activeCompanies: number;
-	totalUsers: number;
-	totalAssets: number;
-	totalQRCodes: number;
-	availableQRCodes: number;
-	totalVerifications: number;
+interface CompanySummary {
+	_id: string;
+	isActive: boolean;
+	companyName: string;
+	createdAt: string;
+	assetCount: number;
+	userCount: number;
+	verificationCount: number;
+}
+
+interface CompanyWithDetails {
+	id: string;
+	companyName: string;
+	contactEmail: string;
+	settings: {
+		verificationFrequency: number;
+		geofenceThreshold: number;
+		allowGPSOverride: boolean;
+		imageRetentionDays: number;
+		repairNotificationEmails: string[];
+	};
+	isActive: boolean;
+	stats?: {
+		totalUsers: number;
+		totalAssets: number;
+		totalQRCodes: number;
+		totalVerifications: number;
+	};
+	users?: UserInfo[];
+	assets?: Array<{
+		id: string;
+		serialNumber: string;
+		make: string;
+		model: string;
+		status: string;
+	}>;
 }
 
 // ============================================
-// Admin Dashboard Stats
+// Health & Monitoring
 // ============================================
 
-const getAdminStats = () => apiClient.get<AdminStatsResponse>({ url: AdminApi.Stats });
+const getHealth = () => apiClient.get<HealthResponse>({ url: API_ENDPOINTS.ADMIN.HEALTH });
+
+const getMonitoring = () => apiClient.get<{ success: boolean; data: MonitoringResponse }>({ url: API_ENDPOINTS.ADMIN.MONITORING });
 
 // ============================================
 // Company Management Service
 // ============================================
 
-const getCompanies = (params?: { page?: number; limit?: number; search?: string }) =>
-	apiClient.get<CompaniesListRes>({ url: AdminApi.Companies, params });
+const getCompanies = (params?: {
+	companyName?: string;
+	isActive?: boolean;
+	sortBy?: string;
+	page?: number;
+	limit?: number;
+}) => apiClient.get<CompaniesListRes>({ url: API_ENDPOINTS.COMPANIES.BASE, params });
 
 const getCompany = (companyId: string) =>
-	apiClient.get<
-		Company & { userCount?: number; assetCount?: number; qrCodeCount?: number; verificationCount?: number }
-	>({
-		url: `${AdminApi.Companies}/${companyId}`,
-	});
+	apiClient.get<CompanyWithDetails>({ url: API_ENDPOINTS.COMPANIES.BY_ID(companyId) });
 
-const getCompanyAssets = (companyId: string) =>
-	apiClient.get<{
-		assets: Array<{
-			_id: string;
-			serialNumber: string;
-			make: string;
-			model: string;
-			verificationStatus: string;
-			lastVerifiedAt?: string;
-		}>;
-	}>({
-		url: `${AdminApi.Companies}/${companyId}/assets`,
+const getCompanySummary = () =>
+	apiClient.get<{ success: boolean; companies: CompanySummary[] }>({
+		url: "/companies/summary",
 	});
 
 const createCompany = (data: CreateCompanyReq) =>
-	apiClient.post<{ success: boolean; companyId: string; message: string; temporaryPassword?: string }>({
-		url: AdminApi.Companies,
-		data,
-	});
+	apiClient.post<{ company: CompanyWithDetails; admin: UserInfo }>({ url: API_ENDPOINTS.COMPANIES.BASE, data });
 
 const updateCompany = (companyId: string, data: UpdateCompanyReq) =>
-	apiClient.put<{ success: boolean; message: string }>({
-		url: `${AdminApi.Companies}/${companyId}`,
-		data,
-	});
+	apiClient.patch<CompanyWithDetails>({ url: API_ENDPOINTS.COMPANIES.BY_ID(companyId), data });
 
-const deactivateCompany = (companyId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({
-		url: `${AdminApi.Companies}/${companyId}/deactivate`,
-	});
+const deleteCompany = (companyId: string) => apiClient.delete<void>({ url: API_ENDPOINTS.COMPANIES.BY_ID(companyId) });
 
-const activateCompany = (companyId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({
-		url: `${AdminApi.Companies}/${companyId}/activate`,
+const getCompanySettings = (companyId: string) =>
+	apiClient.get<{
+		verificationFrequency: number;
+		geofenceThreshold: number;
+		allowGPSOverride: boolean;
+		imageRetentionDays: number;
+		repairNotificationEmails: string[];
+	}>({
+		url: API_ENDPOINTS.COMPANIES.SETTINGS(companyId),
 	});
 
 // ============================================
@@ -129,18 +181,23 @@ const activateCompany = (companyId: string) =>
 // ============================================
 
 const getAdminUsers = (params?: AdminUsersListParams) =>
-	apiClient.get<AdminUsersListRes>({ url: AdminApi.Users, params });
+	apiClient.get<AdminUsersListRes>({ url: API_ENDPOINTS.USERS.BASE, params });
 
-const createSuperuser = (data: CreateSuperuserReq) =>
-	apiClient.post<{ success: boolean; userId: string; temporaryPassword: string; message: string }>({
-		url: `${AdminApi.Users}/create-superuser`,
-		data,
-	});
+const getAdminUser = (userId: string) => apiClient.get<UserInfo>({ url: API_ENDPOINTS.USERS.BY_ID(userId) });
 
-const assignUserToCompany = (userId: string, companyId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({
-		url: `${AdminApi.Users}/${userId}/assign-company`,
-		data: { companyId },
+const createUser = (data: CreateSuperuserReq) =>
+	apiClient.post<{ user: UserInfo; message: string; temporaryPassword?: string }>({ url: API_ENDPOINTS.USERS.BASE, data });
+
+const updateUser = (userId: string, data: { name?: string; email?: string; role?: string; status?: string }) =>
+	apiClient.patch<UserInfo>({ url: API_ENDPOINTS.USERS.BY_ID(userId), data });
+
+const deleteUser = (userId: string) => apiClient.delete<void>({ url: API_ENDPOINTS.USERS.BY_ID(userId) });
+
+const deactivateUser = (userId: string) => apiClient.put<UserInfo>({ url: API_ENDPOINTS.USERS.DEACTIVATE(userId) });
+
+const resetUserPassword = (userId: string) =>
+	apiClient.post<{ success: boolean; temporaryPassword?: string; message: string }>({
+		url: API_ENDPOINTS.USERS.RESET_PASSWORD(userId),
 	});
 
 // ============================================
@@ -148,46 +205,54 @@ const assignUserToCompany = (userId: string, companyId: string) =>
 // ============================================
 
 const getAdminQRCodes = (params?: AdminQRCodesListParams) =>
-	apiClient.get<AdminQRCodesListRes>({ url: AdminApi.QRCodes, params });
+	apiClient.get<AdminQRCodesListRes>({ url: API_ENDPOINTS.QR_CODES.BASE, params });
+
+const getQRCodeStats = () =>
+	apiClient.get<{ available: number; allocated: number; used: number; retired: number }>({
+		url: `${API_ENDPOINTS.QR_CODES.BASE}/stats`,
+	});
+
+const createQRCode = (data: { qrCode: string; companyId?: string }) =>
+	apiClient.post<{ id: string; qrCode: string; status: string }>({ url: API_ENDPOINTS.QR_CODES.BASE, data });
+
+const bulkCreateQRCodes = (data: { qrCodes: string[]; companyId?: string }) =>
+	apiClient.post<{ created: number; duplicates: number }>({ url: API_ENDPOINTS.QR_CODES.BULK, data });
 
 const allocateQRCodes = (data: AllocateQRCodesReq) =>
-	apiClient.post<{ success: boolean; allocated: number }>({
-		url: "/qr/allocate",
-		data,
-	});
+	apiClient.post<{ allocated: number; message: string }>({ url: `${API_ENDPOINTS.QR_CODES.BASE}/allocate`, data });
 
-const bulkImportQRCodes = (file: File) => {
+const bulkImportQRCodes = (file: File, companyId?: string) => {
 	const formData = new FormData();
 	formData.append("file", file);
-	return apiClient.post<BulkImportQRRes>({
-		url: "/qr/bulk-import",
-		data: formData,
-		headers: { "Content-Type": "multipart/form-data" },
-	});
+	const url = companyId ? `${API_ENDPOINTS.QR_CODES.BULK_IMPORT}?companyId=${companyId}` : API_ENDPOINTS.QR_CODES.BULK_IMPORT;
+	return apiClient.post<BulkImportQRRes>({ url, data: formData, headers: { "Content-Type": "multipart/form-data" } });
 };
 
-const retireQRCode = (qrCodeId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({
-		url: `${AdminApi.QRCodes}/${qrCodeId}/retire`,
-	});
+const updateQRCode = (qrCodeId: string, data: { status?: string; companyId?: string }) =>
+	apiClient.patch<{ id: string; qrCode: string; status: string }>({ url: API_ENDPOINTS.QR_CODES.BY_ID(qrCodeId), data });
+
+const deleteQRCode = (qrCodeId: string) => apiClient.delete<void>({ url: API_ENDPOINTS.QR_CODES.BY_ID(qrCodeId) });
 
 // ============================================
-// System Monitoring Service
+// Flagged Verifications & Sync
 // ============================================
 
-const getMonitoringStats = () => apiClient.get<SystemMonitoringStats>({ url: AdminApi.Monitoring });
+const getFlaggedVerifications = (params?: { investigationStatus?: string; page?: number; limit?: number }) =>
+	apiClient.get<AdminUsersListRes>({ url: API_ENDPOINTS.VERIFICATIONS.FLAGGED, params });
 
-const getSyncQueue = (params?: { status?: string; page?: number; limit?: number }) =>
-	apiClient.get<SyncQueueListRes>({ url: AdminApi.SyncQueue, params });
+const getFailedSyncs = (params?: { page?: number; limit?: number }) =>
+	apiClient.get<SyncQueueListRes>({ url: "/admin/failed-syncs", params });
 
-const retrySyncItem = (syncId: string) =>
-	apiClient.post<{ success: boolean; message: string }>({
-		url: `${AdminApi.SyncQueue}/${syncId}/retry`,
-	});
-
-const getFlaggedVerifications = (params?: { page?: number; limit?: number }) =>
-	apiClient.get<{ verifications: unknown[]; pagination: { total: number; page: number; pages: number } }>({
-		url: AdminApi.FlaggedVerifications,
+const getOverdueAssets = (params?: { page?: number; limit?: number }) =>
+	apiClient.get<{
+		success: boolean;
+		results: unknown[];
+		page: number;
+		limit: number;
+		totalPages: number;
+		totalResults: number;
+	}>({
+		url: "/admin/overdue-assets",
 		params,
 	});
 
@@ -196,45 +261,58 @@ const getFlaggedVerifications = (params?: { page?: number; limit?: number }) =>
 // ============================================
 
 const getAuditLogs = (params?: AuditLogListParams) =>
-	apiClient.get<AuditLogListRes>({ url: AdminApi.AuditLogs, params });
+	apiClient.get<AuditLogListRes>({ url: API_ENDPOINTS.AUDIT_LOGS.BASE, params });
+
+const getMyAuditLogs = () =>
+	apiClient.get<{ success: boolean; results: unknown[] }>({ url: `${API_ENDPOINTS.AUDIT_LOGS.BASE}/me` });
+
+const getEntityAuditLogs = (entityType: string, entityId: string, params?: { page?: number; limit?: number }) =>
+	apiClient.get<AuditLogListRes>({ url: `${API_ENDPOINTS.AUDIT_LOGS.BASE}/entity/${entityType}/${entityId}`, params });
 
 // ============================================
-// Global Settings Service
+// Dashboard Reports
 // ============================================
 
-const getGlobalSettings = () => apiClient.get<GlobalSettingsResponse>({ url: AdminApi.Settings });
-
-const updateGlobalSettings = (data: GlobalSettingsResponse) =>
-	apiClient.put<{ success: boolean }>({ url: AdminApi.Settings, data });
+const getDashboardStats = (params?: { startDate?: string; endDate?: string }) =>
+	apiClient.get<unknown>({ url: API_ENDPOINTS.REPORTS.DASHBOARD_STATS, params });
 
 export default {
-	// Dashboard
-	getAdminStats,
+	// Health & Monitoring
+	getHealth,
+	getMonitoring,
 	// Companies
 	getCompanies,
 	getCompany,
-	getCompanyAssets,
+	getCompanySummary,
 	createCompany,
 	updateCompany,
-	deactivateCompany,
-	activateCompany,
+	deleteCompany,
+	getCompanySettings,
 	// Users
 	getAdminUsers,
-	createSuperuser,
-	assignUserToCompany,
+	getAdminUser,
+	createUser,
+	updateUser,
+	deleteUser,
+	deactivateUser,
+	resetUserPassword,
 	// QR Codes
 	getAdminQRCodes,
+	getQRCodeStats,
+	createQRCode,
+	bulkCreateQRCodes,
 	allocateQRCodes,
 	bulkImportQRCodes,
-	retireQRCode,
-	// Monitoring
-	getMonitoringStats,
-	getSyncQueue,
-	retrySyncItem,
+	updateQRCode,
+	deleteQRCode,
+	// Flagged & Sync
 	getFlaggedVerifications,
+	getFailedSyncs,
+	getOverdueAssets,
 	// Audit Logs
 	getAuditLogs,
-	// Global Settings
-	getGlobalSettings,
-	updateGlobalSettings,
+	getMyAuditLogs,
+	getEntityAuditLogs,
+	// Dashboard
+	getDashboardStats,
 };

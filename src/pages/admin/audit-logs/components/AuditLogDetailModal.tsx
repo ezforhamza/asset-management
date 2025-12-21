@@ -1,0 +1,229 @@
+import { format } from "date-fns";
+import { X } from "lucide-react";
+import type { AuditLog } from "@/api/services/auditLogService";
+import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { ScrollArea } from "@/ui/scroll-area";
+
+interface AuditLogDetailModalProps {
+	log: AuditLog | null;
+	open: boolean;
+	onClose: () => void;
+}
+
+const getActionBadge = (action: string) => {
+	const actionMap: Record<string, { label: string; className: string }> = {
+		created: { label: "Created", className: "bg-green-600" },
+		registered: { label: "Registered", className: "bg-green-600" },
+		updated: { label: "Updated", className: "text-blue-600 border-blue-600" },
+		deleted: { label: "Deleted", className: "bg-destructive" },
+		verified: { label: "Verified", className: "bg-purple-600" },
+		status_changed: { label: "Status Changed", className: "text-orange-600 border-orange-600" },
+	};
+
+	const config = actionMap[action];
+	if (config) {
+		return (
+			<Badge
+				variant={action === "updated" || action === "status_changed" ? "outline" : "default"}
+				className={config.className}
+			>
+				{config.label}
+			</Badge>
+		);
+	}
+	return <Badge variant="secondary">{action}</Badge>;
+};
+
+const renderValue = (value: any): string => {
+	if (value === null || value === undefined) return "—";
+	if (typeof value === "boolean") return value ? "Yes" : "No";
+	if (typeof value === "object") {
+		if (Array.isArray(value)) return `[${value.length} items]`;
+		if (value.type === "Point" && value.coordinates) {
+			return `${value.coordinates[1]}, ${value.coordinates[0]}`;
+		}
+		return JSON.stringify(value, null, 2);
+	}
+	return String(value);
+};
+
+const renderChanges = (changes: any) => {
+	if (!changes) return null;
+
+	const { before, after } = changes;
+
+	if (!before && after) {
+		// Creation - show all fields
+		return (
+			<div className="space-y-3">
+				<p className="text-sm font-medium text-green-600">New Record Created</p>
+				<div className="grid grid-cols-1 gap-2">
+					{Object.entries(after).map(([key, value]) => {
+						if (key.startsWith("_") || key === "__v") return null;
+						return (
+							<div
+								key={key}
+								className="p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900"
+							>
+								<p className="text-xs font-medium text-muted-foreground mb-1">{key}</p>
+								<p className="text-sm font-mono break-all">{renderValue(value)}</p>
+							</div>
+						);
+					})}
+				</div>
+			</div>
+		);
+	}
+
+	if (before && after) {
+		// Update - show differences
+		const changedFields = Object.keys(after).filter((key) => {
+			if (key.startsWith("_") || key === "__v") return false;
+			return JSON.stringify(before[key]) !== JSON.stringify(after[key]);
+		});
+
+		if (changedFields.length === 0) {
+			return <p className="text-sm text-muted-foreground">No changes detected</p>;
+		}
+
+		return (
+			<div className="space-y-3">
+				<p className="text-sm font-medium text-blue-600">{changedFields.length} Field(s) Updated</p>
+				<div className="grid grid-cols-1 gap-3">
+					{changedFields.map((key) => (
+						<div key={key} className="p-3 rounded-lg bg-muted/50 border">
+							<p className="text-xs font-medium text-muted-foreground mb-2">{key}</p>
+							<div className="grid grid-cols-2 gap-2">
+								<div className="p-2 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
+									<p className="text-xs text-red-600 dark:text-red-400 mb-1">Before</p>
+									<p className="text-sm font-mono break-all">{renderValue(before[key])}</p>
+								</div>
+								<div className="p-2 rounded bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900">
+									<p className="text-xs text-green-600 dark:text-green-400 mb-1">After</p>
+									<p className="text-sm font-mono break-all">{renderValue(after[key])}</p>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		);
+	}
+
+	return null;
+};
+
+export function AuditLogDetailModal({ log, open, onClose }: AuditLogDetailModalProps) {
+	if (!log) return null;
+
+	return (
+		<Dialog open={open} onOpenChange={onClose}>
+			<DialogContent className="max-w-4xl max-h-[90vh]">
+				<DialogHeader>
+					<div className="flex items-center justify-between">
+						<DialogTitle className="flex items-center gap-3">
+							<span>Audit Log Details</span>
+							{getActionBadge(log.action)}
+						</DialogTitle>
+						<Button variant="ghost" size="icon" onClick={onClose}>
+							<X className="h-4 w-4" />
+						</Button>
+					</div>
+				</DialogHeader>
+
+				<ScrollArea className="max-h-[calc(90vh-120px)]">
+					<div className="space-y-6 pr-4">
+						{/* Overview */}
+						<div className="grid grid-cols-2 gap-4">
+							<div className="p-4 rounded-lg bg-muted/50">
+								<p className="text-xs text-muted-foreground mb-1">Timestamp</p>
+								<p className="text-sm font-medium">{format(new Date(log.timestamp), "PPpp")}</p>
+							</div>
+							<div className="p-4 rounded-lg bg-muted/50">
+								<p className="text-xs text-muted-foreground mb-1">Entity Type</p>
+								<p className="text-sm font-medium capitalize">{log.entityType}</p>
+							</div>
+							<div className="p-4 rounded-lg bg-muted/50">
+								<p className="text-xs text-muted-foreground mb-1">Entity ID</p>
+								<p className="text-sm font-mono">{log.entityId}</p>
+							</div>
+							<div className="p-4 rounded-lg bg-muted/50">
+								<p className="text-xs text-muted-foreground mb-1">Action</p>
+								<p className="text-sm font-medium capitalize">{log.action}</p>
+							</div>
+						</div>
+
+						{/* Performed By */}
+						<div className="p-4 rounded-lg border bg-card">
+							<p className="text-sm font-medium mb-3">Performed By</p>
+							<div className="grid grid-cols-2 gap-4">
+								<div>
+									<p className="text-xs text-muted-foreground mb-1">Name</p>
+									<p className="text-sm font-medium">{log.performedBy.name}</p>
+								</div>
+								<div>
+									<p className="text-xs text-muted-foreground mb-1">Email</p>
+									<p className="text-sm">{log.performedBy.email}</p>
+								</div>
+								<div>
+									<p className="text-xs text-muted-foreground mb-1">Role</p>
+									<Badge variant="secondary" className="capitalize">
+										{log.performedBy.role.replace("_", " ")}
+									</Badge>
+								</div>
+								<div>
+									<p className="text-xs text-muted-foreground mb-1">User ID</p>
+									<p className="text-sm font-mono">{log.performedBy.id}</p>
+								</div>
+							</div>
+						</div>
+
+						{/* Metadata */}
+						{log.metadata && Object.keys(log.metadata).length > 0 && (
+							<div className="p-4 rounded-lg border bg-card">
+								<p className="text-sm font-medium mb-3">Metadata</p>
+								<div className="grid grid-cols-2 gap-3">
+									{Object.entries(log.metadata).map(([key, value]) => (
+										<div key={key}>
+											<p className="text-xs text-muted-foreground mb-1">{key}</p>
+											<p className="text-sm font-mono">{renderValue(value)}</p>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
+
+						{/* Technical Details */}
+						{(log.ipAddress || log.userAgent) && (
+							<div className="p-4 rounded-lg border bg-card">
+								<p className="text-sm font-medium mb-3">Technical Details</p>
+								<div className="space-y-2">
+									{log.ipAddress && (
+										<div>
+											<p className="text-xs text-muted-foreground mb-1">IP Address</p>
+											<p className="text-sm font-mono">{log.ipAddress}</p>
+										</div>
+									)}
+									{log.userAgent && (
+										<div>
+											<p className="text-xs text-muted-foreground mb-1">User Agent</p>
+											<p className="text-sm font-mono text-wrap break-all">{log.userAgent}</p>
+										</div>
+									)}
+								</div>
+							</div>
+						)}
+
+						{/* Changes */}
+						<div className="p-4 rounded-lg border bg-card">
+							<p className="text-sm font-medium mb-4">Changes</p>
+							{renderChanges(log.changes)}
+						</div>
+					</div>
+				</ScrollArea>
+			</DialogContent>
+		</Dialog>
+	);
+}

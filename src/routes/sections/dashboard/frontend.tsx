@@ -37,6 +37,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "qr-inventory", element: Component("/pages/admin/qr-inventory") },
 				{ path: "monitoring", element: Component("/pages/admin/monitoring") },
 				{ path: "audit-logs", element: Component("/pages/admin/audit-logs") },
+				{ path: "audit-logs/:id", element: Component("/pages/admin/audit-logs/detail") },
 				{ path: "settings", element: Component("/pages/admin/settings") },
 			],
 		},

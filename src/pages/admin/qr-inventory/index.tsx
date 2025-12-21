@@ -1,49 +1,86 @@
-import { useQuery } from "@tanstack/react-query";
-import { QrCode, Search, Upload } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, QrCode, Search, Upload } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import type { QRCode as QRCodeType } from "#/entity";
 import adminService from "@/api/services/adminService";
+import qrService from "@/api/services/qrService";
+import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { AllocateModal } from "./components/AllocateModal";
+import { BulkCreateModal } from "./components/BulkCreateModal";
 import { BulkImportModal } from "./components/BulkImportModal";
+import { CreateQRModal } from "./components/CreateQRModal";
 import { QRTable } from "./components/QRTable";
 
 export default function AdminQRInventoryPage() {
+	const queryClient = useQueryClient();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [statusFilter, setStatusFilter] = useState("all");
-	const [companyFilter, setCompanyFilter] = useState("all");
+	const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+	const [companyFilter, setCompanyFilter] = useState<string | undefined>(undefined);
+	const [page, setPage] = useState(1);
+	const [limit] = useState(20);
 	const [importModalOpen, setImportModalOpen] = useState(false);
 	const [allocateModalOpen, setAllocateModalOpen] = useState(false);
+	const [createModalOpen, setCreateModalOpen] = useState(false);
+	const [bulkCreateModalOpen, setBulkCreateModalOpen] = useState(false);
+	const [qrToRetire, setQrToRetire] = useState<QRCodeType | null>(null);
+	const [confirmRetireOpen, setConfirmRetireOpen] = useState(false);
 
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
 		queryFn: () => adminService.getCompanies({ limit: 100 }),
 	});
 
+	const { data: statsData } = useQuery({
+		queryKey: ["qr", "stats"],
+		queryFn: () => qrService.getQRCodeStats(),
+	});
+
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "qr-codes", statusFilter, companyFilter],
+		queryKey: ["qr", "list", searchQuery, statusFilter, companyFilter, page, limit],
 		queryFn: () =>
-			adminService.getAdminQRCodes({
-				status: statusFilter !== "all" ? statusFilter : undefined,
-				companyId: companyFilter !== "all" ? companyFilter : undefined,
+			qrService.getQRCodes({
+				qrCode: searchQuery || undefined,
+				status: statusFilter,
+				companyId: companyFilter,
+				page,
+				limit,
 			}),
 	});
 
-	const qrCodes = data?.qrCodes || [];
-	const companies = companiesData?.companies || [];
-
-	// Client-side search filter
-	const filteredQRCodes = qrCodes.filter((qr) => {
-		if (!searchQuery) return true;
-		return qr.qrCode.toLowerCase().includes(searchQuery.toLowerCase());
+	const retireMutation = useMutation({
+		mutationFn: (qrCode: QRCodeType) => qrService.updateQRCode(qrCode.id || qrCode._id, { status: "retired" }),
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ["qr"] });
+			setConfirmRetireOpen(false);
+			setQrToRetire(null);
+		},
+		onSuccess: () => {
+			toast.success("QR code retired successfully");
+		},
+		onError: (error: any) => {
+			toast.error(error.response?.data?.message || "Failed to retire QR code");
+		},
 	});
 
-	// Stats
-	const totalQR = data?.pagination?.total || 0;
-	const availableCount = qrCodes.filter((q) => q.status === "available").length;
-	const allocatedCount = qrCodes.filter((q) => q.status === "allocated").length;
-	const usedCount = qrCodes.filter((q) => q.status === "used").length;
+	const handleRetire = (qrCode: QRCodeType) => {
+		setQrToRetire(qrCode);
+		setConfirmRetireOpen(true);
+	};
+
+	const handleConfirmRetire = () => {
+		if (qrToRetire) {
+			retireMutation.mutate(qrToRetire);
+		}
+	};
+
+	const qrCodes = data?.results || [];
+	const companies = companiesData?.results || [];
+	const stats = statsData?.stats || { available: 0, allocated: 0, used: 0, retired: 0, total: 0 };
+	const totalQR = data?.totalResults || 0;
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -62,9 +99,19 @@ export default function AdminQRInventoryPage() {
 					<div className="flex gap-2">
 						<Button variant="outline" onClick={() => setImportModalOpen(true)}>
 							<Upload className="h-4 w-4 mr-2" />
-							Bulk Import
+							CSV Import
 						</Button>
-						<Button onClick={() => setAllocateModalOpen(true)}>Allocate to Company</Button>
+						<Button variant="outline" onClick={() => setBulkCreateModalOpen(true)}>
+							<Plus className="h-4 w-4 mr-2" />
+							Bulk Create
+						</Button>
+						<Button variant="outline" onClick={() => setAllocateModalOpen(true)}>
+							Allocate to Company
+						</Button>
+						<Button onClick={() => setCreateModalOpen(true)}>
+							<Plus className="h-4 w-4 mr-2" />
+							Create QR Code
+						</Button>
 					</div>
 				</div>
 			</div>
@@ -75,31 +122,49 @@ export default function AdminQRInventoryPage() {
 					<div className="flex items-center gap-2">
 						<QrCode className="h-4 w-4 text-muted-foreground" />
 						<span className="text-sm">
-							<strong>{totalQR}</strong> Total
+							<strong>{stats.total}</strong> Total
 						</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="h-2 w-2 rounded-full bg-blue-500" />
 						<span className="text-sm">
-							<strong>{availableCount}</strong> Available
+							<strong>{stats.available}</strong> Available
 						</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="h-2 w-2 rounded-full bg-orange-500" />
 						<span className="text-sm">
-							<strong>{allocatedCount}</strong> Allocated
+							<strong>{stats.allocated}</strong> Allocated
 						</span>
 					</div>
 					<div className="flex items-center gap-2">
 						<span className="h-2 w-2 rounded-full bg-green-500" />
 						<span className="text-sm">
-							<strong>{usedCount}</strong> Used
+							<strong>{stats.used}</strong> Used
+						</span>
+					</div>
+					<div className="flex items-center gap-2">
+						<span className="h-2 w-2 rounded-full bg-gray-500" />
+						<span className="text-sm">
+							<strong>{stats.retired}</strong> Retired
 						</span>
 					</div>
 				</div>
 				<div className="flex-1" />
-				<Select value={statusFilter} onValueChange={setStatusFilter}>
-					<SelectTrigger className="w-[150px]">
+				<div className="relative w-64">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+					<Input
+						placeholder="Search QR codes..."
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="pl-9"
+					/>
+				</div>
+				<Select
+					value={statusFilter || "all"}
+					onValueChange={(value) => setStatusFilter(value === "all" ? undefined : value)}
+				>
+					<SelectTrigger className="w-[140px]">
 						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent>
@@ -110,7 +175,10 @@ export default function AdminQRInventoryPage() {
 						<SelectItem value="retired">Retired</SelectItem>
 					</SelectContent>
 				</Select>
-				<Select value={companyFilter} onValueChange={setCompanyFilter}>
+				<Select
+					value={companyFilter || "all"}
+					onValueChange={(value) => setCompanyFilter(value === "all" ? undefined : value)}
+				>
 					<SelectTrigger className="w-[180px]">
 						<SelectValue placeholder="Company" />
 					</SelectTrigger>
@@ -123,25 +191,46 @@ export default function AdminQRInventoryPage() {
 						))}
 					</SelectContent>
 				</Select>
-				<div className="relative w-64">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder="Search QR codes..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-						className="pl-9"
-					/>
-				</div>
 			</div>
 
 			{/* Table */}
-			<div className="flex-1 overflow-hidden px-6 py-4">
-				<QRTable qrCodes={filteredQRCodes} companies={companies} isLoading={isLoading} />
+			<div className="flex-1 overflow-auto px-6 py-4">
+				<QRTable
+					qrCodes={qrCodes}
+					companies={companies}
+					isLoading={isLoading}
+					pagination={{
+						page: data?.page || 1,
+						limit: data?.limit || limit,
+						totalPages: data?.totalPages || 1,
+						totalResults: data?.totalResults || 0,
+					}}
+					onPageChange={setPage}
+					onRetire={handleRetire}
+				/>
 			</div>
 
 			{/* Modals */}
-			<BulkImportModal open={importModalOpen} onClose={() => setImportModalOpen(false)} />
-			<AllocateModal open={allocateModalOpen} onClose={() => setAllocateModalOpen(false)} />
+			<CreateQRModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} companies={companies} />
+			<BulkCreateModal open={bulkCreateModalOpen} onClose={() => setBulkCreateModalOpen(false)} companies={companies} />
+			<BulkImportModal open={importModalOpen} onClose={() => setImportModalOpen(false)} companies={companies} />
+			<AllocateModal open={allocateModalOpen} onClose={() => setAllocateModalOpen(false)} companies={companies} />
+
+			{/* Confirmation Modal */}
+			<ConfirmationModal
+				open={confirmRetireOpen}
+				onClose={() => {
+					setConfirmRetireOpen(false);
+					setQrToRetire(null);
+				}}
+				onConfirm={handleConfirmRetire}
+				title="Retire QR Code"
+				description={`Are you sure you want to retire QR code "${qrToRetire?.qrCode}"? This action will mark it as retired and it will no longer be available for allocation.`}
+				confirmText="Retire"
+				cancelText="Cancel"
+				variant="destructive"
+				isLoading={retireMutation.isPending}
+			/>
 		</div>
 	);
 }

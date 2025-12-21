@@ -1,10 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { UserCircle } from "lucide-react";
+import { Plus, UserCircle } from "lucide-react";
+import { useState } from "react";
 import adminService from "@/api/services/adminService";
 import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { AddUserModal } from "./AddUserModal";
 
 interface CompanyUsersTabProps {
 	companyId: string;
@@ -22,12 +25,14 @@ const getRoleBadge = (role: string) => {
 };
 
 export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
+	const [addUserOpen, setAddUserOpen] = useState(false);
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "company-users", companyId],
 		queryFn: () => adminService.getAdminUsers({ companyId }),
 	});
 
-	const users = data?.users || [];
+	const users = data?.results || [];
 
 	if (isLoading) {
 		return (
@@ -66,38 +71,60 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 
 	if (users.length === 0) {
 		return (
-			<div className="flex flex-col items-center justify-center py-12 text-center">
-				<UserCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
-				<h3 className="text-lg font-medium">No users found</h3>
-				<p className="text-sm text-muted-foreground">This company has no users yet.</p>
-			</div>
+			<>
+				<div className="flex justify-end mb-4">
+					<Button onClick={() => setAddUserOpen(true)}>
+						<Plus className="h-4 w-4 mr-2" />
+						Add User
+					</Button>
+				</div>
+				<div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
+					<UserCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
+					<h3 className="text-lg font-medium">No users found</h3>
+					<p className="text-sm text-muted-foreground mb-4">This company has no users yet.</p>
+					<Button onClick={() => setAddUserOpen(true)}>
+						<Plus className="h-4 w-4 mr-2" />
+						Add First User
+					</Button>
+				</div>
+				<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
+			</>
 		);
 	}
 
 	return (
-		<div className="rounded-md border overflow-auto">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead>Name</TableHead>
-						<TableHead>Email</TableHead>
-						<TableHead>Role</TableHead>
-						<TableHead>Last Login</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{users.map((user) => (
-						<TableRow key={user.id || user.email}>
-							<TableCell className="font-medium">{user.name}</TableCell>
-							<TableCell>{user.email}</TableCell>
-							<TableCell>{getRoleBadge(user.role)}</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy") : "Never"}
-							</TableCell>
+		<>
+			<div className="flex justify-end mb-4">
+				<Button onClick={() => setAddUserOpen(true)}>
+					<Plus className="h-4 w-4 mr-2" />
+					Add User
+				</Button>
+			</div>
+			<div className="rounded-md border overflow-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Name</TableHead>
+							<TableHead>Email</TableHead>
+							<TableHead>Role</TableHead>
+							<TableHead>Last Login</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
-		</div>
+					</TableHeader>
+					<TableBody>
+						{users.map((user) => (
+							<TableRow key={user.id || user.email}>
+								<TableCell className="font-medium">{user.name}</TableCell>
+								<TableCell>{user.email}</TableCell>
+								<TableCell>{getRoleBadge(user.role)}</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy") : "Never"}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
+			<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
+		</>
 	);
 }

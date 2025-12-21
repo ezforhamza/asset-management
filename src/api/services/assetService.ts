@@ -1,24 +1,28 @@
-import apiClient from "../apiClient";
-
 import type { Asset, Verification } from "#/entity";
+import apiClient from "../apiClient";
 
 // ============================================
 // Asset Types
 // ============================================
 
 export interface AssetsListParams {
+	companyId?: string;
+	serialNumber?: string;
+	make?: string;
+	model?: string;
 	status?: string;
+	verificationStatus?: string;
+	sortBy?: string;
 	page?: number;
 	limit?: number;
 }
 
 export interface AssetsListRes {
-	assets: Asset[];
-	pagination: {
-		total: number;
-		page: number;
-		pages: number;
-	};
+	results: Asset[];
+	page: number;
+	limit: number;
+	totalPages: number;
+	totalResults: number;
 }
 
 export interface UpdateAssetReq {

@@ -7,9 +7,9 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Skeleton } from "@/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
-import { CompanyUsersTab } from "./components/CompanyUsersTab";
 import { CompanyAssetsTab } from "./components/CompanyAssetsTab";
 import { CompanyQRCodesTab } from "./components/CompanyQRCodesTab";
+import { CompanyUsersTab } from "./components/CompanyUsersTab";
 
 export default function CompanyDetailPage() {
 	const { companyId } = useParams<{ companyId: string }>();
@@ -77,7 +77,7 @@ export default function CompanyDetailPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<p className="text-2xl font-bold">{company.userCount || 0}</p>
+							<p className="text-2xl font-bold">{company.stats?.totalUsers || 0}</p>
 						</CardContent>
 					</Card>
 					<Card>
@@ -87,7 +87,7 @@ export default function CompanyDetailPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<p className="text-2xl font-bold">{company.assetCount || 0}</p>
+							<p className="text-2xl font-bold">{company.stats?.totalAssets || 0}</p>
 						</CardContent>
 					</Card>
 					<Card>
@@ -95,7 +95,7 @@ export default function CompanyDetailPage() {
 							<CardTitle className="text-sm font-medium">QR Codes</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<p className="text-2xl font-bold">{company.qrCodeCount || 0}</p>
+							<p className="text-2xl font-bold">{company.stats?.totalQRCodes || 0}</p>
 						</CardContent>
 					</Card>
 					<Card>
@@ -103,7 +103,7 @@ export default function CompanyDetailPage() {
 							<CardTitle className="text-sm font-medium">Verifications</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<p className="text-2xl font-bold">{company.verificationCount || 0}</p>
+							<p className="text-2xl font-bold">{company.stats?.totalVerifications || 0}</p>
 						</CardContent>
 					</Card>
 				</div>

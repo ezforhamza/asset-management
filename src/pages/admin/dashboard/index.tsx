@@ -1,29 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Building2, Package, QrCode, Shield, Users } from "lucide-react";
+import { format } from "date-fns";
+import { Building2, Package, QrCode, Shield, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router";
-import adminService from "@/api/services/adminService";
+import dashboardService from "@/api/services/dashboardService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Skeleton } from "@/ui/skeleton";
 
 export default function AdminDashboardPage() {
 	const navigate = useNavigate();
 
-	const { data: stats, isLoading } = useQuery({
-		queryKey: ["admin", "dashboard-stats"],
-		queryFn: adminService.getAdminStats,
+	const { data: dashboardData, isLoading } = useQuery({
+		queryKey: ["dashboard"],
+		queryFn: dashboardService.getDashboardData,
 	});
 
-	const { data: companiesData } = useQuery({
-		queryKey: ["admin", "companies"],
-		queryFn: () => adminService.getCompanies({ limit: 5 }),
-	});
-
-	const { data: monitoringData } = useQuery({
-		queryKey: ["admin", "monitoring"],
-		queryFn: adminService.getMonitoringStats,
-	});
-
-	const recentCompanies = companiesData?.companies?.slice(0, 5) || [];
+	const stats = dashboardData?.stats;
+	const recentCompanies = dashboardData?.recentCompanies || [];
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -58,7 +50,10 @@ export default function AdminDashboardPage() {
 							) : (
 								<>
 									<div className="text-2xl font-bold">{stats?.totalCompanies ?? 0}</div>
-									<p className="text-xs text-muted-foreground">{stats?.activeCompanies ?? 0} active</p>
+									<p className="text-xs text-muted-foreground flex items-center gap-1">
+										<TrendingUp className="h-3 w-3" />
+										Registered companies
+									</p>
 								</>
 							)}
 						</CardContent>
@@ -103,7 +98,7 @@ export default function AdminDashboardPage() {
 						onClick={() => navigate("/admin/qr-inventory")}
 					>
 						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">QR Codes</CardTitle>
+							<CardTitle className="text-sm font-medium">Total QR Codes</CardTitle>
 							<QrCode className="h-4 w-4 text-muted-foreground" />
 						</CardHeader>
 						<CardContent>
@@ -112,89 +107,73 @@ export default function AdminDashboardPage() {
 							) : (
 								<>
 									<div className="text-2xl font-bold">{stats?.totalQRCodes ?? 0}</div>
-									<p className="text-xs text-muted-foreground">{stats?.availableQRCodes ?? 0} available</p>
+									<p className="text-xs text-muted-foreground">In inventory</p>
 								</>
 							)}
 						</CardContent>
 					</Card>
 				</div>
 
-				{/* Second Row */}
-				<div className="grid gap-6 lg:grid-cols-2">
-					{/* Recent Companies */}
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Building2 className="h-5 w-5" />
-								Recent Companies
-							</CardTitle>
-							<CardDescription>Latest registered companies</CardDescription>
-						</CardHeader>
-						<CardContent>
+				{/* Recent Companies */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Building2 className="h-5 w-5" />
+							Recent Companies
+						</CardTitle>
+						<CardDescription>Latest registered companies</CardDescription>
+					</CardHeader>
+					<CardContent>
+						{isLoading ? (
 							<div className="space-y-3">
-								{recentCompanies.length === 0 ? (
-									<p className="text-sm text-muted-foreground text-center py-4">No companies yet</p>
-								) : (
-									recentCompanies.map((company) => (
-										<div
-											key={company._id}
-											className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
-											onClick={() => navigate(`/admin/companies/${company._id}`)}
-										>
-											<div className="flex items-center gap-3">
-												<div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-													<Building2 className="h-4 w-4 text-primary" />
-												</div>
-												<div>
-													<p className="font-medium text-sm">{company.companyName}</p>
-													<p className="text-xs text-muted-foreground">{company.contactEmail}</p>
-												</div>
-											</div>
-											<div className="flex items-center gap-2 text-xs text-muted-foreground">
-												<Users className="h-3 w-3" />
-												{company.totalUsers ?? 0}
+								{Array.from({ length: 5 }).map((_, i) => (
+									<div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+										<div className="flex items-center gap-3 flex-1">
+											<Skeleton className="h-8 w-8 rounded-lg" />
+											<div className="space-y-2 flex-1">
+												<Skeleton className="h-4 w-32" />
+												<Skeleton className="h-3 w-48" />
 											</div>
 										</div>
-									))
-								)}
+										<Skeleton className="h-4 w-8" />
+									</div>
+								))}
 							</div>
-						</CardContent>
-					</Card>
-
-					{/* System Health */}
-					<Card
-						className="cursor-pointer hover:shadow-md transition-shadow"
-						onClick={() => navigate("/admin/monitoring")}
-					>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Activity className="h-5 w-5" />
-								System Health
-							</CardTitle>
-							<CardDescription>Quick monitoring overview</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="grid grid-cols-2 gap-4">
-								<div className="p-4 rounded-lg bg-muted/50">
-									<p className="text-sm text-muted-foreground">Queued Uploads</p>
-									<p className="text-2xl font-bold">{monitoringData?.queuedUploads ?? 0}</p>
-								</div>
-								<div className="p-4 rounded-lg bg-muted/50">
-									<p className="text-sm text-muted-foreground">Failed Syncs</p>
-									<p className="text-2xl font-bold text-destructive">{monitoringData?.failedSyncs ?? 0}</p>
-								</div>
-								<div className="p-4 rounded-lg bg-muted/50">
-									<p className="text-sm text-muted-foreground">Flagged Items</p>
-									<p className="text-2xl font-bold text-orange-500">{monitoringData?.flaggedVerifications ?? 0}</p>
-								</div>
-								<div className="p-4 rounded-lg bg-muted/50">
-									<p className="text-sm text-muted-foreground">API Response</p>
-									<p className="text-2xl font-bold text-green-500">{monitoringData?.apiResponseTime ?? 0}ms</p>
-								</div>
+						) : recentCompanies.length === 0 ? (
+							<p className="text-sm text-muted-foreground text-center py-8">No companies yet</p>
+						) : (
+							<div className="space-y-3">
+								{recentCompanies.map((company) => (
+									<div
+										key={company._id}
+										className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
+										onClick={() => navigate(`/admin/companies/${company._id}`)}
+									>
+										<div className="flex items-center gap-3 flex-1">
+											<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+												<Building2 className="h-5 w-5 text-primary" />
+											</div>
+											<div className="flex-1 min-w-0">
+												<p className="font-medium text-sm truncate">{company.companyName}</p>
+												<p className="text-xs text-muted-foreground truncate">{company.contactEmail}</p>
+												<p className="text-xs text-muted-foreground mt-1">
+													Registered {format(new Date(company.createdAt), "MMM d, yyyy")}
+												</p>
+											</div>
+										</div>
+										<div className="flex flex-col items-end gap-1">
+											<div className="flex items-center gap-1 text-xs text-muted-foreground">
+												<Users className="h-3 w-3" />
+												<span className="font-medium">{company.totalUsers}</span>
+											</div>
+											<span className="text-xs text-muted-foreground">users</span>
+										</div>
+									</div>
+								))}
 							</div>
-						</CardContent>
-					</Card>
-				</div>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

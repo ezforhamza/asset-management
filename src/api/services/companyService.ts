@@ -1,7 +1,8 @@
 import apiClient from "../apiClient";
+import type { PaginatedResponse } from "./userService";
 
 // ============================================
-// Company Types (for Customer Portal)
+// Company Types
 // ============================================
 
 export interface CompanySettings {
@@ -10,98 +11,115 @@ export interface CompanySettings {
 	allowGPSOverride: boolean;
 	imageRetentionDays: number;
 	repairNotificationEmails: string[];
-	dueSoonDays: number;
 }
 
-export interface CompanyProfile {
-	_id: string;
+export interface Company {
+	id: string;
 	companyName: string;
 	contactEmail: string;
-	phone?: string;
-	address?: string;
 	settings: CompanySettings;
 	isActive: boolean;
-	createdAt: string;
+	createdAt?: string;
+	updatedAt?: string;
 }
 
-export interface UpdateCompanyProfileReq {
+export interface CompanyWithStats extends Company {
+	stats?: {
+		totalUsers: number;
+		totalAssets: number;
+		totalQRCodes: number;
+		totalVerifications: number;
+	};
+	users?: Array<{
+		id: string;
+		name: string;
+		email: string;
+		role: string;
+		status: string;
+	}>;
+	assets?: Array<{
+		id: string;
+		serialNumber: string;
+		make: string;
+		model: string;
+		status: string;
+	}>;
+}
+
+export interface CreateCompanyReq {
+	companyName: string;
+	contactEmail: string;
+	settings?: Partial<CompanySettings>;
+	admin: {
+		name: string;
+		email: string;
+		password: string;
+	};
+}
+
+export interface CreateCompanyRes {
+	company: Company;
+	admin: {
+		id: string;
+		name: string;
+		email: string;
+		role: string;
+		isDefaultAdmin: boolean;
+	};
+}
+
+export interface UpdateCompanyReq {
 	companyName?: string;
 	contactEmail?: string;
-	phone?: string;
-	address?: string;
+	settings?: Partial<CompanySettings>;
+	isActive?: boolean;
 }
 
-export interface UpdateCompanySettingsReq {
-	verificationFrequency?: number;
-	geofenceThreshold?: number;
-	allowGPSOverride?: boolean;
-	imageRetentionDays?: number;
-	repairNotificationEmails?: string[];
-	dueSoonDays?: number;
+export interface GetCompaniesParams {
+	companyName?: string;
+	isActive?: boolean;
+	sortBy?: string;
+	limit?: number;
+	page?: number;
 }
 
-// ============================================
-// Asset Template Types
-// ============================================
-
-export interface AssetTemplate {
-	_id: string;
-	name: string;
-	description: string;
-	verificationFrequency: number;
-	checklistItems: string[];
-	assetCount: number;
-}
-
-export interface CreateAssetTemplateReq {
-	name: string;
-	description: string;
-	verificationFrequency: number;
-	checklistItems: string[];
-}
+export interface CompaniesListRes extends PaginatedResponse<Company> {}
 
 // ============================================
 // API Endpoints
 // ============================================
 
 enum CompanyApi {
-	Profile = "/company/profile",
-	Settings = "/company/settings",
-	Templates = "/company/asset-templates",
+	Companies = "/companies",
 }
 
 // ============================================
-// Company Service (Customer Portal)
+// Company Service (System Admin)
 // ============================================
 
-const getProfile = () => apiClient.get<CompanyProfile>({ url: CompanyApi.Profile });
+const getCompanies = (params?: GetCompaniesParams) =>
+	apiClient.get<CompaniesListRes>({ url: CompanyApi.Companies, params });
 
-const updateProfile = (data: UpdateCompanyProfileReq) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: CompanyApi.Profile, data });
+const getCompanyById = (companyId: string) =>
+	apiClient.get<CompanyWithStats>({ url: `${CompanyApi.Companies}/${companyId}` });
 
-const getSettings = () => apiClient.get<CompanySettings>({ url: CompanyApi.Settings });
+const createCompany = (data: CreateCompanyReq) =>
+	apiClient.post<CreateCompanyRes>({ url: CompanyApi.Companies, data });
 
-const updateSettings = (data: UpdateCompanySettingsReq) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: CompanyApi.Settings, data });
+const updateCompany = (companyId: string, data: UpdateCompanyReq) =>
+	apiClient.patch<Company>({ url: `${CompanyApi.Companies}/${companyId}`, data });
 
-// ============================================
-// Asset Template Service
-// ============================================
+const deleteCompany = (companyId: string) =>
+	apiClient.delete<void>({ url: `${CompanyApi.Companies}/${companyId}` });
 
-const getAssetTemplates = () => apiClient.get<AssetTemplate[]>({ url: CompanyApi.Templates });
-
-const createAssetTemplate = (data: CreateAssetTemplateReq) =>
-	apiClient.post<{ success: boolean; templateId: string }>({ url: CompanyApi.Templates, data });
-
-const deleteAssetTemplate = (templateId: string) =>
-	apiClient.delete<{ success: boolean }>({ url: `${CompanyApi.Templates}/${templateId}` });
+const getCompanySettings = (companyId: string) =>
+	apiClient.get<CompanySettings>({ url: `${CompanyApi.Companies}/${companyId}/settings` });
 
 export default {
-	getProfile,
-	updateProfile,
-	getSettings,
-	updateSettings,
-	getAssetTemplates,
-	createAssetTemplate,
-	deleteAssetTemplate,
+	getCompanies,
+	getCompanyById,
+	createCompany,
+	updateCompany,
+	deleteCompany,
+	getCompanySettings,
 };

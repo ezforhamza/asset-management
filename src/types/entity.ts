@@ -1,13 +1,13 @@
 import type { NavItemDataProps } from "@/components/nav/types";
 import type {
+	AssetStatus,
 	BasicStatus,
+	ConditionStatus,
+	InvestigationStatus,
+	OperationalStatus,
 	PermissionType,
 	UserRole,
-	AssetStatus,
 	VerificationStatus,
-	ConditionStatus,
-	OperationalStatus,
-	InvestigationStatus,
 } from "./enum";
 
 export interface UserToken {
@@ -18,14 +18,19 @@ export interface UserToken {
 export interface UserInfo {
 	id: string;
 	email: string;
-	username: string;
+	username?: string;
 	name: string;
 	password?: string;
 	avatar?: string;
+	profilePic?: string | null;
 	role: UserRole;
-	companyId?: string; // Optional for system_admin who doesn't belong to a company
-	status?: BasicStatus;
+	companyId?: string;
+	status?: "active" | "inactive";
+	isEmailVerified?: boolean;
 	mustChangePassword?: boolean;
+	mfaEnabled?: boolean;
+	devicePlatform?: string | null;
+	isDefaultAdmin?: boolean;
 	lastLogin?: string;
 	roles?: Role[];
 	permissions?: Permission[];
@@ -117,23 +122,34 @@ export interface GeoLocation {
 }
 
 export interface Asset {
-	_id: string;
+	id: string;
+	_id?: string; // Backward compatibility
 	companyId: string;
-	qrCodeId: string;
+	qrCodeId:
+		| string
+		| {
+				id: string;
+				qrCode: string;
+				status: string;
+				companyId: string;
+				assetId: string;
+				allocatedAt: string;
+				linkedAt: string | null;
+		  };
 	serialNumber: string;
 	make: string;
 	model: string;
-	registeredLocation: GeoLocation;
+	registeredLocation: { type: string; coordinates: [number, number] } | GeoLocation;
 	locationAccuracy: number;
-	registeredBy: string;
+	registeredBy: string | { id: string; name: string; email: string; role: string; status: string; companyId: string };
 	registeredAt: string;
 	status: AssetStatus;
-	verificationFrequency: number;
+	verificationFrequency: number | null;
 	lastVerifiedAt: string | null;
 	nextVerificationDue: string;
 	photos: string[];
-	createdAt: string;
-	updatedAt: string;
+	createdAt?: string;
+	updatedAt?: string;
 	// Computed field for UI
 	verificationStatus?: VerificationStatus;
 }
@@ -212,17 +228,24 @@ export interface CompanySettings {
 
 export interface Company {
 	_id: string;
+	id?: string; // Backward compatibility
 	companyName: string;
 	contactEmail: string;
 	phone?: string;
 	address?: string;
-	settings: CompanySettings;
+	settings?: CompanySettings;
 	isActive: boolean;
-	createdAt: string;
+	createdAt?: string;
 	updatedAt?: string;
-	// Computed fields for admin panel
 	totalAssets?: number;
 	totalUsers?: number;
+	stats?: {
+		totalUsers: number;
+		totalAssets: number;
+		totalQRCodes: number;
+		totalVerifications: number;
+	};
+	users?: UserInfo[];
 }
 
 export enum QRCodeStatus {
@@ -233,16 +256,17 @@ export enum QRCodeStatus {
 }
 
 export interface QRCode {
-	_id: string;
+	id: string;
+	_id?: string; // Backward compatibility
 	qrCode: string;
-	companyId: string | null;
+	companyId: string | { id: string; companyName: string; contactEmail: string; isActive: boolean } | null;
 	companyName?: string;
-	assetId: string | null;
+	assetId: string | { id: string; serialNumber: string; make: string; model: string; status: string } | null;
 	assetSerialNumber?: string;
 	status: QRCodeStatus;
 	allocatedAt: string | null;
 	linkedAt: string | null;
-	createdAt: string;
+	createdAt?: string;
 }
 
 export enum SyncStatus {

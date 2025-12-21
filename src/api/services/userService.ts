@@ -11,11 +11,26 @@ export interface SignInReq {
 	password: string;
 }
 
+export interface TokenInfo {
+	token: string;
+	expires: string;
+}
+
 export interface SignInRes {
-	success: boolean;
-	accessToken: string;
-	refreshToken: string;
 	user: UserInfo;
+	tokens: {
+		access: TokenInfo;
+		refresh: TokenInfo;
+	};
+}
+
+export interface RefreshTokenReq {
+	refreshToken: string;
+}
+
+export interface RefreshTokenRes {
+	access: TokenInfo;
+	refresh: TokenInfo;
 }
 
 export interface ForgotPasswordReq {
@@ -58,25 +73,33 @@ export interface MFAVerifyReq {
 export interface CreateUserReq {
 	name: string;
 	email: string;
+	password?: string;
 	role: "field_user" | "customer_admin";
 }
 
 export interface CreateUserRes {
-	success: boolean;
-	userId: string;
-	temporaryPassword: string;
+	user: UserInfo;
 	message: string;
+	temporaryPassword?: string;
 }
 
 export interface UpdateUserReq {
 	name?: string;
+	email?: string;
 	role?: "field_user" | "customer_admin";
+	status?: "active" | "inactive";
 }
 
-export interface UsersListRes {
-	success: boolean;
-	users: UserInfo[];
+// Paginated response from real API
+export interface PaginatedResponse<T> {
+	results: T[];
+	page: number;
+	limit: number;
+	totalPages: number;
+	totalResults: number;
 }
+
+export interface UsersListRes extends PaginatedResponse<UserInfo> {}
 
 // ============================================
 // API Endpoints
@@ -115,17 +138,33 @@ const changePassword = (data: ChangePasswordReq) =>
 // User Management Service (Customer Admin)
 // ============================================
 
-const getUsers = (params?: { role?: string; status?: string }) =>
-	apiClient.get<UserInfo[]>({ url: UserApi.Users, params });
+export interface GetUsersParams {
+	name?: string;
+	role?: string;
+	status?: string;
+	companyId?: string;
+	sortBy?: string;
+	limit?: number;
+	page?: number;
+}
 
-const createFieldWorker = (data: CreateUserReq) =>
-	apiClient.post<CreateUserRes>({ url: UserApi.CreateFieldWorker, data });
+const getUsers = (params?: GetUsersParams) =>
+	apiClient.get<UsersListRes>({ url: UserApi.Users, params });
+
+const getUserById = (userId: string) =>
+	apiClient.get<UserInfo>({ url: `${UserApi.Users}/${userId}` });
+
+const createUser = (data: CreateUserReq) =>
+	apiClient.post<CreateUserRes>({ url: UserApi.Users, data });
 
 const updateUser = (userId: string, data: UpdateUserReq) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: `${UserApi.Users}/${userId}`, data });
+	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data });
 
 const deactivateUser = (userId: string) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: `${UserApi.Users}/${userId}/deactivate` });
+	apiClient.put<UserInfo>({ url: `${UserApi.Users}/${userId}/deactivate` });
+
+const deleteUser = (userId: string) =>
+	apiClient.delete<void>({ url: `${UserApi.Users}/${userId}` });
 
 const resetUserPassword = (userId: string) =>
 	apiClient.post<{ success: boolean; temporaryPassword: string; message: string }>({
@@ -152,9 +191,11 @@ export default {
 	changePassword,
 	// User Management
 	getUsers,
-	createFieldWorker,
+	getUserById,
+	createUser,
 	updateUser,
 	deactivateUser,
+	deleteUser,
 	resetUserPassword,
 	// MFA
 	getMFAStatus,

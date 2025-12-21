@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { UserRole } from "#/enum";
 import type { SignInReq } from "@/api/services/userService";
 import { GLOBAL_CONFIG } from "@/global-config";
 import { useSignIn } from "@/store/userStore";
@@ -45,7 +46,9 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 				return;
 			}
 
-			navigate(GLOBAL_CONFIG.defaultRoute, { replace: true });
+			// Redirect based on user role
+			const redirectPath = result.role === UserRole.SYSTEM_ADMIN ? "/admin/dashboard" : GLOBAL_CONFIG.defaultRoute;
+			navigate(redirectPath, { replace: true });
 			toast.success("Welcome back!", { closeButton: true });
 		} catch {
 			// Error already handled in signIn

@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import adminService from "@/api/services/adminService";
+import type { Company } from "#/entity";
+import qrService from "@/api/services/qrService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Label } from "@/ui/label";
@@ -12,28 +13,23 @@ import { Textarea } from "@/ui/textarea";
 interface AllocateModalProps {
 	open: boolean;
 	onClose: () => void;
+	companies: Company[];
 }
 
-export function AllocateModal({ open, onClose }: AllocateModalProps) {
+export function AllocateModal({ open, onClose, companies }: AllocateModalProps) {
 	const queryClient = useQueryClient();
 	const [companyId, setCompanyId] = useState("");
 	const [qrCodesText, setQrCodesText] = useState("");
 
-	const { data: companiesData } = useQuery({
-		queryKey: ["admin", "companies"],
-		queryFn: () => adminService.getCompanies({ limit: 100 }),
-		enabled: open,
-	});
-
 	const mutation = useMutation({
-		mutationFn: adminService.allocateQRCodes,
+		mutationFn: (data: { qrCodes: string[]; companyId: string }) => qrService.allocateQRCodes(data),
 		onSuccess: (data) => {
-			toast.success(`Allocated ${data.allocated} QR codes`);
-			queryClient.invalidateQueries({ queryKey: ["admin", "qr-codes"] });
+			toast.success(data.message || `Allocated ${data.allocated} QR codes successfully`);
+			queryClient.invalidateQueries({ queryKey: ["qr"] });
 			handleClose();
 		},
-		onError: () => {
-			toast.error("Failed to allocate QR codes");
+		onError: (error: any) => {
+			toast.error(error.response?.data?.message || "Failed to allocate QR codes");
 		},
 	});
 
@@ -62,7 +58,6 @@ export function AllocateModal({ open, onClose }: AllocateModalProps) {
 		mutation.mutate({ qrCodes, companyId });
 	};
 
-	const companies = companiesData?.companies || [];
 	const qrCodeCount = qrCodesText
 		.split(/[\n,]/)
 		.map((code) => code.trim())

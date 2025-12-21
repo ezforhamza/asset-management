@@ -140,7 +140,7 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 								</Badge>
 							</TableCell>
 							<TableCell className="text-sm text-muted-foreground">
-								{format(new Date(company.createdAt), "MMM d, yyyy")}
+								{company.createdAt ? format(new Date(company.createdAt), "MMM d, yyyy") : "N/A"}
 							</TableCell>
 							<TableCell onClick={(e) => e.stopPropagation()}>
 								<DropdownMenu>
