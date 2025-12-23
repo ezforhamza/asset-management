@@ -27,16 +27,44 @@ export function BulkCreateModal({ open, onClose, companies }: BulkCreateModalPro
 				companyId: data.companyId || undefined,
 			}),
 		onSuccess: (data) => {
-			toast.success(
-				`Successfully created ${data.created} QR codes${data.duplicates > 0 ? `, ${data.duplicates} duplicates skipped` : ""}`,
-			);
+			// Show different messages based on result
+			if (data.created === 0 && data.duplicates > 0) {
+				toast.warning(`All ${data.duplicates} QR codes were duplicates - no new codes created`);
+			} else if (data.created > 0 && data.duplicates > 0) {
+				toast.success(`Created ${data.created} QR codes, ${data.duplicates} duplicates skipped`);
+			} else if (data.created > 0) {
+				toast.success(`Successfully created ${data.created} QR codes`);
+			} else {
+				toast.info("No QR codes were created");
+			}
+
 			queryClient.invalidateQueries({ queryKey: ["qr"] });
 			setQrCodes("");
 			setCompanyId("none");
 			onClose();
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to create QR codes");
+			const responseData = error.response?.data;
+
+			// Check if error response contains duplicate info
+			if (responseData && typeof responseData.duplicates !== 'undefined') {
+				queryClient.invalidateQueries({ queryKey: ["qr"] });
+
+				if (responseData.created === 0 && responseData.duplicates > 0) {
+					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes created`);
+				} else if (responseData.created > 0 && responseData.duplicates > 0) {
+					toast.success(`Created ${responseData.created} QR codes, ${responseData.duplicates} duplicates skipped`);
+				} else {
+					toast.error(responseData.message || "Failed to create QR codes");
+				}
+
+				// Still close modal and clear form on duplicate scenario
+				setQrCodes("");
+				setCompanyId("none");
+				onClose();
+			} else {
+				toast.error(error.response?.data?.message || "Failed to create QR codes");
+			}
 		},
 	});
 

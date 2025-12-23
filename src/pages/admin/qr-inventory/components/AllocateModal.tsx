@@ -29,7 +29,39 @@ export function AllocateModal({ open, onClose, companies }: AllocateModalProps) 
 			handleClose();
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to allocate QR codes");
+			const responseData = error.response?.data;
+
+			// Check if response contains detailed error info
+			if (responseData && !responseData.success) {
+				const { allocated, notFound, alreadyAllocated } = responseData;
+				const messages: string[] = [];
+
+				if (allocated > 0) {
+					messages.push(`${allocated} QR code(s) allocated successfully`);
+				}
+
+				if (notFound && notFound.length > 0) {
+					messages.push(`${notFound.length} QR code(s) not found: ${notFound.slice(0, 3).join(", ")}${notFound.length > 3 ? "..." : ""}`);
+				}
+
+				if (alreadyAllocated && alreadyAllocated.length > 0) {
+					messages.push(`${alreadyAllocated.length} QR code(s) already allocated: ${alreadyAllocated.slice(0, 3).join(", ")}${alreadyAllocated.length > 3 ? "..." : ""}`);
+				}
+
+				if (messages.length > 0) {
+					if (allocated === 0) {
+						toast.error(messages.join(". "));
+					} else {
+						toast.warning(messages.join(". "));
+						queryClient.invalidateQueries({ queryKey: ["qr"] });
+						handleClose();
+					}
+				} else {
+					toast.error(responseData.message || "Failed to allocate QR codes");
+				}
+			} else {
+				toast.error(error.response?.data?.message || "Failed to allocate QR codes");
+			}
 		},
 	});
 
