@@ -75,10 +75,14 @@ export const useSignIn = () => {
 				refreshToken: tokens.refresh.token,
 			});
 			setUserInfo(user);
-			return { mustChangePassword: user.mustChangePassword };
+			return { mustChangePassword: user.mustChangePassword, role: user.role };
 		} catch (err: unknown) {
-			const error = err as Error;
-			toast.error(error.message || "Login failed", {
+			// Extract error message from API response
+			const axiosError = err as { response?: { data?: { message?: string; error?: string } }; message?: string };
+			const errorMessage =
+				axiosError.response?.data?.message || axiosError.response?.data?.error || axiosError.message || "Login failed";
+
+			toast.error(errorMessage, {
 				position: "top-center",
 			});
 			throw err;
