@@ -124,54 +124,56 @@ export default function AdminDashboardPage() {
 						<CardDescription>Latest registered companies</CardDescription>
 					</CardHeader>
 					<CardContent>
-						{isLoading ? (
-							<div className="space-y-3">
-								{Array.from({ length: 5 }).map((_, i) => (
-									<div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-										<div className="flex items-center gap-3 flex-1">
-											<Skeleton className="h-8 w-8 rounded-lg" />
-											<div className="space-y-2 flex-1">
-												<Skeleton className="h-4 w-32" />
-												<Skeleton className="h-3 w-48" />
+						<div className="max-h-[350px] overflow-y-auto pr-2">
+							{isLoading ? (
+								<div className="space-y-3">
+									{Array.from({ length: 5 }).map((_, i) => (
+										<div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+											<div className="flex items-center gap-3 flex-1">
+												<Skeleton className="h-8 w-8 rounded-lg" />
+												<div className="space-y-2 flex-1">
+													<Skeleton className="h-4 w-32" />
+													<Skeleton className="h-3 w-48" />
+												</div>
+											</div>
+											<Skeleton className="h-4 w-8" />
+										</div>
+									))}
+								</div>
+							) : recentCompanies.length === 0 ? (
+								<p className="text-sm text-muted-foreground text-center py-8">No companies yet</p>
+							) : (
+								<div className="space-y-3">
+									{recentCompanies.map((company) => (
+										<div
+											key={company._id}
+											className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
+											onClick={() => navigate(`/admin/companies/${company._id}`)}
+										>
+											<div className="flex items-center gap-3 flex-1">
+												<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+													<Building2 className="h-5 w-5 text-primary" />
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="font-medium text-sm truncate">{company.companyName}</p>
+													<p className="text-xs text-muted-foreground truncate">{company.contactEmail}</p>
+													<p className="text-xs text-muted-foreground mt-1">
+														Registered {format(new Date(company.createdAt), "MMM d, yyyy")}
+													</p>
+												</div>
+											</div>
+											<div className="flex flex-col items-end gap-1">
+												<div className="flex items-center gap-1 text-xs text-muted-foreground">
+													<Users className="h-3 w-3" />
+													<span className="font-medium">{company.totalUsers}</span>
+												</div>
+												<span className="text-xs text-muted-foreground">users</span>
 											</div>
 										</div>
-										<Skeleton className="h-4 w-8" />
-									</div>
-								))}
-							</div>
-						) : recentCompanies.length === 0 ? (
-							<p className="text-sm text-muted-foreground text-center py-8">No companies yet</p>
-						) : (
-							<div className="space-y-3">
-								{recentCompanies.map((company) => (
-									<div
-										key={company._id}
-										className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer transition-colors"
-										onClick={() => navigate(`/admin/companies/${company._id}`)}
-									>
-										<div className="flex items-center gap-3 flex-1">
-											<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-												<Building2 className="h-5 w-5 text-primary" />
-											</div>
-											<div className="flex-1 min-w-0">
-												<p className="font-medium text-sm truncate">{company.companyName}</p>
-												<p className="text-xs text-muted-foreground truncate">{company.contactEmail}</p>
-												<p className="text-xs text-muted-foreground mt-1">
-													Registered {format(new Date(company.createdAt), "MMM d, yyyy")}
-												</p>
-											</div>
-										</div>
-										<div className="flex flex-col items-end gap-1">
-											<div className="flex items-center gap-1 text-xs text-muted-foreground">
-												<Users className="h-3 w-3" />
-												<span className="font-medium">{company.totalUsers}</span>
-											</div>
-											<span className="text-xs text-muted-foreground">users</span>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
+									))}
+								</div>
+							)}
+						</div>
 					</CardContent>
 				</Card>
 			</div>

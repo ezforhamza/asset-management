@@ -6,7 +6,8 @@ import { NavItem } from "./nav-item";
 export function NavList({ data, depth = 0 }: NavListProps) {
 	const hasChild = data.children && data.children.length > 0;
 	const location = useLocation();
-	const isActive = location.pathname.includes(data.path);
+	// Use exact match or starts-with to avoid false positives
+	const isActive = location.pathname === data.path || location.pathname.startsWith(`${data.path}/`);
 
 	if (data.hidden) {
 		return null;

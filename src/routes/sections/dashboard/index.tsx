@@ -5,6 +5,7 @@ import { MustChangePasswordGuard } from "@/routes/guards/MustChangePasswordGuard
 import { Navigate, type RouteObject } from "react-router";
 import { getBackendDashboardRoutes } from "./backend";
 import { getFrontendDashboardRoutes } from "./frontend";
+import { RoleBasedRedirect } from "./RoleBasedRedirect";
 
 const getRoutes = (): RouteObject[] => {
 	if (GLOBAL_CONFIG.routerMode === "frontend") {
@@ -22,6 +23,6 @@ export const dashboardRoutes: RouteObject[] = [
 				</MustChangePasswordGuard>
 			</LoginAuthGuard>
 		),
-		children: [{ index: true, element: <Navigate to={GLOBAL_CONFIG.defaultRoute} replace /> }, ...getRoutes()],
+		children: [{ index: true, element: <RoleBasedRedirect /> }, ...getRoutes()],
 	},
 ];

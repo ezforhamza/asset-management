@@ -30,7 +30,7 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 
 	if (isLoading) {
 		return (
-			<div className="rounded-md border h-full overflow-auto">
+			<div className="rounded-md border">
 				<Table>
 					<TableHeader>
 						<TableRow>
@@ -86,7 +86,7 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 	}
 
 	return (
-		<div className="rounded-md border h-full overflow-auto">
+		<div className="rounded-md border">
 			<Table>
 				<TableHeader>
 					<TableRow>

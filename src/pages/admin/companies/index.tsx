@@ -151,7 +151,7 @@ export default function AdminCompaniesPage() {
 			</div>
 
 			{/* Table */}
-			<div className="flex-1 overflow-hidden px-6 py-4">
+			<div className="flex-1 overflow-y-auto px-6 py-4">
 				<CompanyTable
 					companies={companies}
 					isLoading={isLoading}

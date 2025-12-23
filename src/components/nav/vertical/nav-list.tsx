@@ -6,7 +6,9 @@ import { NavItem } from "./nav-item";
 
 export function NavList({ data, depth = 1 }: NavListProps) {
 	const location = useLocation();
-	const isActive = location.pathname.includes(data.path);
+	// Use exact match or starts-with to avoid false positives
+	// e.g., /dashboard won't match /admin/dashboard
+	const isActive = location.pathname === data.path || location.pathname.startsWith(`${data.path}/`);
 	const [open, setOpen] = useState(isActive);
 	const hasChild = data.children && data.children.length > 0;
 
