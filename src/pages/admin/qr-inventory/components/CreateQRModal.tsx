@@ -33,7 +33,7 @@ export function CreateQRModal({ open, onClose, companies }: CreateQRModalProps) 
 	const mutation = useMutation({
 		mutationFn: (data: FormValues) =>
 			qrService.createQRCode({
-				qrCode: data.qrCode,
+				qrCode: data.qrCode.trim(),
 				companyId: data.companyId === "none" ? undefined : data.companyId,
 			}),
 		onSuccess: () => {
@@ -41,9 +41,6 @@ export function CreateQRModal({ open, onClose, companies }: CreateQRModalProps) 
 			queryClient.invalidateQueries({ queryKey: ["qr"] });
 			form.reset();
 			onClose();
-		},
-		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to create QR code");
 		},
 	});
 
@@ -64,7 +61,10 @@ export function CreateQRModal({ open, onClose, companies }: CreateQRModalProps) 
 						<FormField
 							control={form.control}
 							name="qrCode"
-							rules={{ required: "QR code is required" }}
+							rules={{
+								required: "QR code is required",
+								validate: (value) => value.trim().length > 0 || "QR code cannot be empty or whitespace only",
+							}}
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>QR Code *</FormLabel>
