@@ -8,20 +8,25 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 interface ExportButtonsProps {
 	startDate?: string;
 	endDate?: string;
+	status?: string;
 }
 
-export function ExportButtons({ startDate, endDate }: ExportButtonsProps) {
+export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps) {
 	const [exporting, setExporting] = useState(false);
 
 	const handleExport = async (format: "csv" | "pdf") => {
 		setExporting(true);
 		try {
-			reportService.exportReport({
+			const params: any = {
 				format,
 				reportType: "verifications",
-				startDate,
-				endDate,
-			});
+			};
+
+			if (startDate) params.startDate = startDate;
+			if (endDate) params.endDate = endDate;
+			if (status && status !== "all") params.status = status;
+
+			reportService.exportReport(params);
 			toast.success(`Report exported as ${format.toUpperCase()}`);
 		} catch {
 			toast.error("Failed to export report");

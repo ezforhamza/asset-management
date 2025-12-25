@@ -48,12 +48,17 @@ const exportReport = (params: ExportReportParams) => {
 	const token = userToken?.accessToken;
 
 	// Create a temporary link with auth token in header (using fetch to download)
-	fetch(`${baseUrl}${API_ENDPOINTS.REPORTS.EXPORT}?${queryString}`, {
+	return fetch(`${baseUrl}${API_ENDPOINTS.REPORTS.EXPORT}?${queryString}`, {
 		headers: {
 			Authorization: `Bearer ${token}`,
 		},
 	})
-		.then((response) => response.blob())
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.blob();
+		})
 		.then((blob) => {
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement("a");
@@ -66,6 +71,7 @@ const exportReport = (params: ExportReportParams) => {
 		})
 		.catch((error) => {
 			console.error("Export failed:", error);
+			throw error;
 		});
 };
 
