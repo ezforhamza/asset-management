@@ -26,9 +26,10 @@ export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps
 			if (endDate) params.endDate = endDate;
 			if (status && status !== "all") params.status = status;
 
-			reportService.exportReport(params);
+			await reportService.exportReport(params);
 			toast.success(`Report exported as ${format.toUpperCase()}`);
-		} catch {
+		} catch (error) {
+			console.error("Export error:", error);
 			toast.error("Failed to export report");
 		} finally {
 			setTimeout(() => setExporting(false), 1000);
