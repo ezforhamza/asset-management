@@ -26,8 +26,10 @@ export interface AssetsListRes {
 }
 
 export interface UpdateAssetReq {
+	serialNumber?: string;
 	make?: string;
 	model?: string;
+	status?: string;
 	verificationFrequency?: number;
 }
 
@@ -94,7 +96,7 @@ const getAssets = (params?: AssetsListParams) => apiClient.get<AssetsListRes>({ 
 const getAssetById = (assetId: string) => apiClient.get<Asset>({ url: `${AssetApi.Assets}/${assetId}` });
 
 const updateAsset = (assetId: string, data: UpdateAssetReq) =>
-	apiClient.put<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}`, data });
+	apiClient.patch<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}`, data });
 
 const bulkImportAssets = (data: BulkImportAssetReq) =>
 	apiClient.post<BulkImportAssetRes>({ url: `${AssetApi.Assets}/bulk-import`, data });
@@ -107,6 +109,9 @@ const retireAsset = (assetId: string, reason?: string) =>
 		url: `${AssetApi.Assets}/${assetId}/retire`,
 		data: { reason },
 	});
+
+const deleteAsset = (assetId: string) =>
+	apiClient.delete<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}` });
 
 // ============================================
 // Verification Service
@@ -126,6 +131,7 @@ export default {
 	getAssets,
 	getAssetById,
 	updateAsset,
+	deleteAsset,
 	bulkImportAssets,
 	transferAsset,
 	retireAsset,
