@@ -9,6 +9,7 @@ import { Input } from "@/ui/input";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { CreateUserModal } from "./components/CreateUserModal";
 import { EditUserModal } from "./components/EditUserModal";
+import { PasswordResetModal } from "./components/PasswordResetModal";
 import { UserTable } from "./components/UserTable";
 
 export default function UsersPage() {
@@ -20,6 +21,10 @@ export default function UsersPage() {
 	const [editUser, setEditUser] = useState<UserInfo | null>(null);
 	const [resetPasswordUser, setResetPasswordUser] = useState<UserInfo | null>(null);
 	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
+	const [passwordResetResult, setPasswordResetResult] = useState<{
+		userName: string;
+		temporaryPassword: string;
+	} | null>(null);
 
 	// Fetch users
 	const { data, isLoading } = useQuery({
@@ -44,8 +49,9 @@ export default function UsersPage() {
 		if (!resetPasswordUser?.id) return;
 		try {
 			const result = await userService.resetUserPassword(resetPasswordUser.id);
-			toast.success(`Password reset successfully! Temporary password: ${result.temporaryPassword}`, {
-				duration: 10000,
+			setPasswordResetResult({
+				userName: resetPasswordUser.name || "",
+				temporaryPassword: result.temporaryPassword,
 			});
 			setResetPasswordUser(null);
 			handleRefresh();
@@ -154,6 +160,13 @@ export default function UsersPage() {
 				description={`Are you sure you want to deactivate ${deactivateUser?.name}? They will no longer be able to access the system.`}
 				confirmText="Deactivate"
 				variant="destructive"
+			/>
+
+			<PasswordResetModal
+				open={!!passwordResetResult}
+				onClose={() => setPasswordResetResult(null)}
+				userName={passwordResetResult?.userName || ""}
+				temporaryPassword={passwordResetResult?.temporaryPassword || ""}
 			/>
 		</div>
 	);

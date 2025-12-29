@@ -88,6 +88,7 @@ export default function ReportsPage() {
 					<ExportButtons
 						startDate={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
 						endDate={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
+						status={status}
 					/>
 				</div>
 			</div>

@@ -34,12 +34,36 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 		onSuccess: (data) => {
 			setResult(data);
 			queryClient.invalidateQueries({ queryKey: ["qr"] });
-			toast.success(
-				`Imported ${data.imported} QR codes${data.duplicates > 0 ? `, ${data.duplicates} duplicates skipped` : ""}`,
-			);
+
+			// Show different messages based on result
+			if (data.imported === 0 && data.duplicates > 0) {
+				toast.warning(`All ${data.duplicates} QR codes were duplicates - no new codes imported`);
+			} else if (data.imported > 0 && data.duplicates > 0) {
+				toast.success(`Imported ${data.imported} QR codes, ${data.duplicates} duplicates skipped`);
+			} else if (data.imported > 0) {
+				toast.success(`Successfully imported ${data.imported} QR codes`);
+			} else {
+				toast.info("No QR codes were imported");
+			}
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to import QR codes");
+			const responseData = error.response?.data;
+
+			// Check if error response contains duplicate info
+			if (responseData && typeof responseData.duplicates !== 'undefined') {
+				setResult(responseData);
+				queryClient.invalidateQueries({ queryKey: ["qr"] });
+
+				if (responseData.imported === 0 && responseData.duplicates > 0) {
+					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes imported`);
+				} else if (responseData.imported > 0 && responseData.duplicates > 0) {
+					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`);
+				} else {
+					toast.error(responseData.message || "Failed to import QR codes");
+				}
+			} else {
+				toast.error(error.response?.data?.message || "Failed to import QR codes");
+			}
 		},
 	});
 

@@ -9,15 +9,29 @@ import { StatsCard } from "./components/StatsCard";
 export default function DashboardPage() {
 	const userInfo = useUserInfo();
 
-	const { data: stats, isLoading: statsLoading } = useQuery({
+	const { data: response, isLoading: statsLoading } = useQuery({
 		queryKey: ["dashboard", "stats"],
 		queryFn: dashboardService.getStats,
 	});
 
-	const { data: recentActivity, isLoading: activityLoading } = useQuery({
+	const { data: activityResponse, isLoading: activityLoading } = useQuery({
 		queryKey: ["dashboard", "recent-activity"],
 		queryFn: () => dashboardService.getRecentActivity(10),
 	});
+
+	const stats = response?.stats;
+
+	// Transform API response to match RecentActivity component expectations
+	const recentActivity = (activityResponse?.results ?? []).map((item: any) => ({
+		_id: item.id,
+		assetSerialNumber: item.assetId?.serialNumber || "N/A",
+		assetMake: item.assetId?.make || "N/A",
+		assetModel: item.assetId?.model || "N/A",
+		verifiedBy: item.verifiedBy?.name || "N/A",
+		verifiedAt: item.verifiedAt,
+		status: "on_time", // Default to on_time since these are recent verifications
+		distance: item.distanceFromAsset || 0,
+	}));
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -33,27 +47,26 @@ export default function DashboardPage() {
 				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 					<StatsCard
 						title="Total Assets"
-						value={statsLoading ? "-" : (stats?.totalAssets ?? 0)}
+						value={statsLoading ? "-" : (stats?.assets.total ?? 0)}
 						icon={Package}
 						variant="default"
 					/>
 					<StatsCard
 						title="Verified This Month"
-						value={statsLoading ? "-" : (stats?.verifiedThisMonth ?? 0)}
-						subtitle={stats?.verifiedPercentage ? `${stats.verifiedPercentage}% of total` : undefined}
+						value={statsLoading ? "-" : (stats?.verificationStatus.onTime ?? 0)}
 						icon={CheckCircle}
 						variant="success"
 					/>
 					<StatsCard
 						title="Due Soon"
-						value={statsLoading ? "-" : (stats?.dueSoon ?? 0)}
+						value={statsLoading ? "-" : (stats?.verificationStatus.dueSoon ?? 0)}
 						subtitle="Within 7 days"
 						icon={Clock}
 						variant="warning"
 					/>
 					<StatsCard
 						title="Overdue"
-						value={statsLoading ? "-" : (stats?.overdue ?? 0)}
+						value={statsLoading ? "-" : (stats?.verificationStatus.overdue ?? 0)}
 						subtitle="Requires attention"
 						icon={AlertTriangle}
 						variant="danger"
@@ -61,7 +74,7 @@ export default function DashboardPage() {
 				</div>
 
 				{/* Recent Activity */}
-				<RecentActivity data={recentActivity ?? []} isLoading={activityLoading} />
+				<RecentActivity data={recentActivity} isLoading={activityLoading} />
 			</div>
 		</div>
 	);

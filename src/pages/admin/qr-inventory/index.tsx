@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, QrCode, Search, Upload } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { QRCode as QRCodeType } from "#/entity";
 import adminService from "@/api/services/adminService";
@@ -17,6 +17,7 @@ import { QRTable } from "./components/QRTable";
 
 export default function AdminQRInventoryPage() {
 	const queryClient = useQueryClient();
+	const [searchInput, setSearchInput] = useState("");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
 	const [companyFilter, setCompanyFilter] = useState<string | undefined>(undefined);
@@ -28,6 +29,15 @@ export default function AdminQRInventoryPage() {
 	const [bulkCreateModalOpen, setBulkCreateModalOpen] = useState(false);
 	const [qrToRetire, setQrToRetire] = useState<QRCodeType | null>(null);
 	const [confirmRetireOpen, setConfirmRetireOpen] = useState(false);
+
+	// Debounce search input
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setSearchQuery(searchInput);
+			setPage(1);
+		}, 500);
+		return () => clearTimeout(timer);
+	}, [searchInput]);
 
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
@@ -155,8 +165,8 @@ export default function AdminQRInventoryPage() {
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
 						placeholder="Search QR codes..."
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
+						value={searchInput}
+						onChange={(e) => setSearchInput(e.target.value)}
 						className="pl-9"
 					/>
 				</div>
