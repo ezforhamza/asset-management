@@ -86,23 +86,23 @@ export function SecuritySettings() {
 					</CardTitle>
 					<CardDescription>Manage your account security and authentication methods</CardDescription>
 				</CardHeader>
-				<CardContent className="space-y-6">
+				<CardContent className="space-y-4">
 					{/* MFA Toggle */}
-					<div className="flex items-center justify-between p-4 border rounded-lg">
+					<div className="flex items-center justify-between p-4 border rounded-lg bg-card">
 						<div className="flex items-center gap-4">
-							<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+							<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
 								<Smartphone className="h-5 w-5 text-primary" />
 							</div>
-							<div>
-								<p className="font-medium">Two-Factor Authentication (2FA)</p>
-								<p className="text-sm text-muted-foreground">
+							<div className="space-y-1">
+								<p className="text-sm font-medium leading-none">Two-Factor Authentication (2FA)</p>
+								<p className="text-xs text-muted-foreground">
 									Add an extra layer of security using an authenticator app
 								</p>
 							</div>
 						</div>
-						<div className="flex items-center gap-3">
+						<div className="flex items-center gap-3 shrink-0">
 							{mfaEnabled && (
-								<span className="flex items-center gap-1 text-sm text-green-600">
+								<span className="flex items-center gap-1 text-xs text-green-600">
 									<ShieldCheck className="h-4 w-4" />
 									Enabled
 								</span>
@@ -116,33 +116,33 @@ export function SecuritySettings() {
 					</div>
 
 					{/* Password Section */}
-					<div className="flex items-center justify-between p-4 border rounded-lg">
+					<div className="flex items-center justify-between p-4 border rounded-lg bg-card">
 						<div className="flex items-center gap-4">
-							<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+							<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
 								<Key className="h-5 w-5 text-primary" />
 							</div>
-							<div>
-								<p className="font-medium">Password</p>
-								<p className="text-sm text-muted-foreground">Change your account password</p>
+							<div className="space-y-1">
+								<p className="text-sm font-medium leading-none">Password</p>
+								<p className="text-xs text-muted-foreground">Change your account password</p>
 							</div>
 						</div>
-						<Button variant="outline" onClick={() => (window.location.href = "/change-password")}>
+						<Button variant="outline" size="sm" onClick={() => (window.location.href = "/change-password")}>
 							Change Password
 						</Button>
 					</div>
 
 					{/* Active Sessions (future feature indicator) */}
-					<div className="flex items-center justify-between p-4 border rounded-lg opacity-60">
+					<div className="flex items-center justify-between p-4 border rounded-lg bg-card opacity-60">
 						<div className="flex items-center gap-4">
-							<div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+							<div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
 								<Shield className="h-5 w-5 text-muted-foreground" />
 							</div>
-							<div>
-								<p className="font-medium">Active Sessions</p>
-								<p className="text-sm text-muted-foreground">View and manage your active login sessions</p>
+							<div className="space-y-1">
+								<p className="text-sm font-medium leading-none">Active Sessions</p>
+								<p className="text-xs text-muted-foreground">View and manage your active login sessions</p>
 							</div>
 						</div>
-						<Button variant="outline" disabled>
+						<Button variant="outline" size="sm" disabled>
 							Coming Soon
 						</Button>
 					</div>

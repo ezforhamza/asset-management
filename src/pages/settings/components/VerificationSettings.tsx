@@ -102,9 +102,9 @@ export function VerificationSettings() {
 
 						<div className="space-y-2">
 							<Label>GPS Override</Label>
-							<div className="flex items-center justify-between rounded-lg border p-3">
-								<div className="space-y-0.5">
-									<p className="text-sm font-medium">Allow GPS Override</p>
+							<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+								<div className="space-y-1 pr-4">
+									<p className="text-sm font-medium leading-none">Allow GPS Override</p>
 									<p className="text-xs text-muted-foreground">Let users skip GPS check after 3 retries</p>
 								</div>
 								<Switch

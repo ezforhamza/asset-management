@@ -62,10 +62,10 @@ export function NotificationSettings() {
 				<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
 					{/* Toggle switches */}
 					<div className="space-y-4">
-						<div className="flex items-center justify-between rounded-lg border p-4">
-							<div className="space-y-0.5">
-								<p className="font-medium">Email Notifications</p>
-								<p className="text-sm text-muted-foreground">Enable email notifications for important events</p>
+						<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+							<div className="space-y-1 pr-4">
+								<p className="text-sm font-medium leading-none">Email Notifications</p>
+								<p className="text-xs text-muted-foreground">Enable email notifications for important events</p>
 							</div>
 							<Switch
 								checked={form.watch("emailNotifications")}
@@ -73,10 +73,10 @@ export function NotificationSettings() {
 							/>
 						</div>
 
-						<div className="flex items-center justify-between rounded-lg border p-4">
-							<div className="space-y-0.5">
-								<p className="font-medium">Overdue Alerts</p>
-								<p className="text-sm text-muted-foreground">Get notified when assets become overdue</p>
+						<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+							<div className="space-y-1 pr-4">
+								<p className="text-sm font-medium leading-none">Overdue Alerts</p>
+								<p className="text-xs text-muted-foreground">Get notified when assets become overdue</p>
 							</div>
 							<Switch
 								checked={form.watch("overdueAlerts")}
@@ -84,10 +84,10 @@ export function NotificationSettings() {
 							/>
 						</div>
 
-						<div className="flex items-center justify-between rounded-lg border p-4">
-							<div className="space-y-0.5">
-								<p className="font-medium">Repair Alerts</p>
-								<p className="text-sm text-muted-foreground">Get notified when assets need repair</p>
+						<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+							<div className="space-y-1 pr-4">
+								<p className="text-sm font-medium leading-none">Repair Alerts</p>
+								<p className="text-xs text-muted-foreground">Get notified when assets need repair</p>
 							</div>
 							<Switch
 								checked={form.watch("repairAlerts")}
