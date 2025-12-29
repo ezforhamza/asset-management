@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Building2, Loader2, Save } from "lucide-react";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import companyService from "@/api/services/companyService";
@@ -8,7 +7,6 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
-import { Skeleton } from "@/ui/skeleton";
 
 interface CompanyProfileForm {
 	companyName: string;
@@ -18,13 +16,6 @@ interface CompanyProfileForm {
 }
 
 export function CompanyProfile() {
-	const queryClient = useQueryClient();
-
-	const { data: profile, isLoading } = useQuery({
-		queryKey: ["company", "profile"],
-		queryFn: companyService.getProfile,
-	});
-
 	const form = useForm<CompanyProfileForm>({
 		defaultValues: {
 			companyName: "",
@@ -34,23 +25,10 @@ export function CompanyProfile() {
 		},
 	});
 
-	// Update form when data loads
-	useEffect(() => {
-		if (profile) {
-			form.reset({
-				companyName: profile.companyName || "",
-				contactEmail: profile.contactEmail || "",
-				phone: profile.phone || "",
-				address: profile.address || "",
-			});
-		}
-	}, [profile, form]);
-
 	const mutation = useMutation({
 		mutationFn: companyService.updateProfile,
 		onSuccess: () => {
 			toast.success("Company profile updated");
-			queryClient.invalidateQueries({ queryKey: ["company", "profile"] });
 		},
 		onError: () => {
 			toast.error("Failed to update profile");
@@ -60,25 +38,6 @@ export function CompanyProfile() {
 	const handleSubmit = (values: CompanyProfileForm) => {
 		mutation.mutate(values);
 	};
-
-	if (isLoading) {
-		return (
-			<Card>
-				<CardHeader>
-					<Skeleton className="h-6 w-48" />
-					<Skeleton className="h-4 w-64 mt-2" />
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid gap-4 md:grid-cols-2">
-						<Skeleton className="h-10 w-full" />
-						<Skeleton className="h-10 w-full" />
-						<Skeleton className="h-10 w-full" />
-						<Skeleton className="h-10 w-full" />
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
 
 	return (
 		<Card>

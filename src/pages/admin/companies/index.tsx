@@ -18,7 +18,7 @@ export default function AdminCompaniesPage() {
 	const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 	const [sortBy, setSortBy] = useState("createdAt:desc");
 	const [page, setPage] = useState(1);
-	const [limit] = useState(10);
+	const [limit] = useState(100);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editCompany, setEditCompany] = useState<Company | null>(null);
 	const [toggleCompany, setToggleCompany] = useState<Company | null>(null);
@@ -151,7 +151,7 @@ export default function AdminCompaniesPage() {
 			</div>
 
 			{/* Table */}
-			<div className="flex-1 overflow-hidden px-6 py-4 flex flex-col">
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4 flex flex-col">
 				<CompanyTable
 					companies={companies}
 					isLoading={isLoading}

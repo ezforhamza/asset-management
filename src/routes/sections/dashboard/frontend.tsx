@@ -10,6 +10,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		// Client Panel Pages (Customer Admin & Field User)
 		// ============================================
 		{ path: "dashboard", element: Component("/pages/dashboard") },
+		{ path: "assets", element: Component("/pages/assets") },
 		{ path: "reports", element: Component("/pages/reports") },
 		{ path: "map", element: Component("/pages/map") },
 

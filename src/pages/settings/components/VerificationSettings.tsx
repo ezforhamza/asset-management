@@ -1,6 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Clock, Loader2, Save } from "lucide-react";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import companyService from "@/api/services/companyService";
@@ -8,7 +7,6 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
-import { Skeleton } from "@/ui/skeleton";
 import { Switch } from "@/ui/switch";
 
 interface VerificationSettingsForm {
@@ -19,13 +17,6 @@ interface VerificationSettingsForm {
 }
 
 export function VerificationSettings() {
-	const queryClient = useQueryClient();
-
-	const { data: settings, isLoading } = useQuery({
-		queryKey: ["company", "settings"],
-		queryFn: companyService.getSettings,
-	});
-
 	const form = useForm<VerificationSettingsForm>({
 		defaultValues: {
 			verificationFrequency: 30,
@@ -35,23 +26,10 @@ export function VerificationSettings() {
 		},
 	});
 
-	// Update form when data loads
-	useEffect(() => {
-		if (settings) {
-			form.reset({
-				verificationFrequency: settings.verificationFrequency || 30,
-				geofenceThreshold: settings.geofenceThreshold || 20,
-				allowGPSOverride: settings.allowGPSOverride ?? true,
-				dueSoonDays: settings.dueSoonDays || 7,
-			});
-		}
-	}, [settings, form]);
-
 	const mutation = useMutation({
 		mutationFn: companyService.updateSettings,
 		onSuccess: () => {
 			toast.success("Verification settings saved");
-			queryClient.invalidateQueries({ queryKey: ["company", "settings"] });
 		},
 		onError: () => {
 			toast.error("Failed to save settings");
@@ -61,25 +39,6 @@ export function VerificationSettings() {
 	const handleSubmit = (values: VerificationSettingsForm) => {
 		mutation.mutate(values);
 	};
-
-	if (isLoading) {
-		return (
-			<Card>
-				<CardHeader>
-					<Skeleton className="h-6 w-48" />
-					<Skeleton className="h-4 w-72 mt-2" />
-				</CardHeader>
-				<CardContent className="space-y-4">
-					<div className="grid gap-6 md:grid-cols-2">
-						<Skeleton className="h-16 w-full" />
-						<Skeleton className="h-16 w-full" />
-						<Skeleton className="h-16 w-full" />
-						<Skeleton className="h-16 w-full" />
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
 
 	return (
 		<Card>

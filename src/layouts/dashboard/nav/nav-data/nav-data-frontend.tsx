@@ -14,6 +14,12 @@ export const clientNavData: NavProps["data"] = [
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
 			{
+				title: "Assets",
+				path: "/assets",
+				icon: <Icon icon="solar:box-bold-duotone" size="24" />,
+				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
+			},
+			{
 				title: "Reports",
 				path: "/reports",
 				icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
