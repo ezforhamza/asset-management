@@ -80,7 +80,7 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 				profilePic: profilePicUrl,
 			});
 
-			setTempPassword(result.temporaryPassword);
+			setTempPassword(result?.temporaryPassword || null);
 			toast.success("User created successfully");
 		} catch {
 			toast.error("Failed to create user");

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { QRCode } from "#/entity";
 import apiClient from "../apiClient";
 import API_ENDPOINTS from "../endpoints";

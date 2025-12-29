@@ -85,13 +85,13 @@ export default function AdminAuditLogsPage() {
 		if (!log.changes) return "—";
 		if (!log.changes.before && log.changes.after) {
 			const after = log.changes.after;
-			if (after.serialNumber) return `Asset ${after.serialNumber} registered`;
-			if (after.name) return `${after.name} created`;
+			if (after?.serialNumber) return `Asset ${after.serialNumber} registered`;
+			if (after?.name) return `${after.name} created`;
 			return "New record created";
 		}
-		if (log.changes.before && log.changes.after) {
-			const changedFields = Object.keys(log.changes.after).filter(
-				(key) => JSON.stringify(log.changes.before[key]) !== JSON.stringify(log.changes.after[key]),
+		if (log.changes?.before && log.changes?.after) {
+			const changedFields = Object.keys(log.changes?.after || {}).filter(
+				(key) => JSON.stringify(log.changes?.before?.[key]) !== JSON.stringify(log.changes?.after?.[key]),
 			);
 			return `${changedFields.length} field(s) updated`;
 		}

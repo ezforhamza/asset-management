@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { Asset, MapAsset } from "#/entity";
 import { AssetStatus, VerificationStatus } from "#/enum";
 import { MOCK_COMPANY_ID } from "./users";

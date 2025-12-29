@@ -130,8 +130,16 @@ export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactiva
 								{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy HH:mm") : "Never"}
 							</TableCell>
 							<TableCell>
-								<Badge variant={user.status !== 0 ? "default" : "secondary"}>
-									{user.status !== 0 ? "Active" : "Inactive"}
+								<Badge
+									variant={
+										(user.status as any) === "active" || (user.status as any) === true || (user.status as any) === 1
+											? "default"
+											: "secondary"
+									}
+								>
+									{(user.status as any) === "active" || (user.status as any) === true || (user.status as any) === 1
+										? "Active"
+										: "Inactive"}
 								</Badge>
 							</TableCell>
 							<TableCell>

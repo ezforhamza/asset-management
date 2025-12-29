@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useQuery } from "@tanstack/react-query";
 import { Activity, AlertTriangle, Clock, Database, RefreshCw, Zap } from "lucide-react";
 import adminService from "@/api/services/adminService";

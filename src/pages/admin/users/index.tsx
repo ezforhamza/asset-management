@@ -26,18 +26,18 @@ export default function AdminUsersPage() {
 			}),
 	});
 
-	const users = data?.users || [];
-	const companies = companiesData?.companies || [];
+	const users = data?.results || [];
+	const companies = companiesData?.results || [];
 
 	// Client-side search filter
-	const filteredUsers = users.filter((user) => {
+	const filteredUsers = users.filter((user: any) => {
 		if (!searchQuery) return true;
 		const query = searchQuery.toLowerCase();
 		return user.name?.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query);
 	});
 
-	const totalUsers = data?.pagination?.total || 0;
-	const adminCount = users.filter((u) => u.role === "customer_admin" || u.role === "system_admin").length;
+	const totalUsers = data?.totalResults || 0;
+	const adminCount = users.filter((u: any) => u.role === "customer_admin" || u.role === "system_admin").length;
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Companies</SelectItem>
-						{companies.map((company) => (
+						{companies.map((company: any) => (
 							<SelectItem key={company._id} value={company._id}>
 								{company.companyName}
 							</SelectItem>

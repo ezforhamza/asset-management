@@ -17,11 +17,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 interface CompanyTableProps {
 	companies: Company[];
 	isLoading: boolean;
+	pagination?: {
+		page: number;
+		limit: number;
+		totalPages: number;
+		totalResults: number;
+	};
+	onPageChange?: (page: number) => void;
 	onEdit?: (company: Company) => void;
 	onToggleStatus?: (company: Company) => void;
 }
 
-export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
+export function CompanyTable({
+	companies,
+	isLoading,
+	pagination,
+	onPageChange,
+	onEdit,
+	onToggleStatus,
+}: CompanyTableProps) {
 	const navigate = useNavigate();
 
 	const handleRowClick = (companyId: string) => {
@@ -30,10 +44,10 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 
 	if (isLoading) {
 		return (
-			<div className="rounded-md border flex flex-col h-full min-h-0">
-				<div className="overflow-auto flex-1 min-h-0">
+			<div className="rounded-md border flex flex-col" style={{ height: "calc(100vh - 320px)" }}>
+				<div className="flex-1 overflow-auto">
 					<Table>
-						<TableHeader className="sticky top-0 bg-background z-10">
+						<TableHeader>
 							<TableRow>
 								<TableHead>Company</TableHead>
 								<TableHead>Contact</TableHead>
@@ -88,10 +102,10 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 	}
 
 	return (
-		<div className="rounded-md border flex flex-col h-full min-h-0">
-			<div className="overflow-auto flex-1 min-h-0">
+		<div className="rounded-md border flex flex-col" style={{ height: "calc(100vh - 320px)" }}>
+			<div className="flex-1 overflow-auto">
 				<Table>
-					<TableHeader className="sticky top-0 bg-background z-10">
+					<TableHeader>
 						<TableRow>
 							<TableHead>Company</TableHead>
 							<TableHead>Contact</TableHead>
@@ -174,6 +188,35 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 					</TableBody>
 				</Table>
 			</div>
+			{pagination && pagination.totalPages > 1 && (
+				<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="text-sm text-muted-foreground">
+						Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+						{Math.min(pagination.page * pagination.limit, pagination.totalResults)} of {pagination.totalResults} results
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange?.(pagination.page - 1)}
+							disabled={pagination.page === 1}
+						>
+							Previous
+						</Button>
+						<span className="text-sm">
+							Page {pagination.page} of {pagination.totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange?.(pagination.page + 1)}
+							disabled={pagination.page === pagination.totalPages}
+						>
+							Next
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { AlertTriangle, CheckCircle, Eye } from "lucide-react";
+import { CheckCircle, Eye } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";

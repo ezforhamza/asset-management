@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Package, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Package } from "lucide-react";
 
 import dashboardService from "@/api/services/dashboardService";
 import { useUserInfo } from "@/store/userStore";
@@ -22,7 +22,8 @@ export default function DashboardPage() {
 	const stats = response?.stats;
 
 	// Transform API response to match RecentActivity component expectations
-	const recentActivity = (activityResponse?.results ?? []).map((item: any) => ({
+	const activityData = Array.isArray(activityResponse) ? activityResponse : ((activityResponse as any)?.results ?? []);
+	const recentActivity = activityData.map((item: any) => ({
 		_id: item.id,
 		assetSerialNumber: item.assetId?.serialNumber || "N/A",
 		assetMake: item.assetId?.make || "N/A",

@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Check, Copy, Key, Loader2, QrCode, Shield, ShieldCheck, Smartphone } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import userService from "@/api/services/userService";
 import { Alert, AlertDescription } from "@/ui/alert";
@@ -12,6 +13,7 @@ import { Label } from "@/ui/label";
 import { Switch } from "@/ui/switch";
 
 export function SecuritySettings() {
+	const navigate = useNavigate();
 	const [setupModalOpen, setSetupModalOpen] = useState(false);
 	const [verificationCode, setVerificationCode] = useState("");
 	const [copiedCode, setCopiedCode] = useState(false);
@@ -126,7 +128,7 @@ export function SecuritySettings() {
 								<p className="text-sm text-muted-foreground">Change your account password</p>
 							</div>
 						</div>
-						<Button variant="outline" onClick={() => (window.location.href = "/change-password")}>
+						<Button variant="outline" onClick={() => navigate("/change-password")}>
 							Change Password
 						</Button>
 					</div>

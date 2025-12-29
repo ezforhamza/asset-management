@@ -17,7 +17,7 @@ export default function SettingsPage() {
 
 			{/* Settings Tabs */}
 			<Tabs defaultValue="company" className="flex-1 flex flex-col overflow-hidden">
-				<div className="flex-shrink-0 px-6 pt-4 border-b flex justify-center">
+				<div className="flex-shrink-0 px-6 pt-4 pb-4 border-b flex items-center justify-center">
 					<TabsList className="grid w-full max-w-2xl grid-cols-4">
 						<TabsTrigger value="company" className="gap-2">
 							<Building2 className="h-4 w-4 hidden sm:block" />

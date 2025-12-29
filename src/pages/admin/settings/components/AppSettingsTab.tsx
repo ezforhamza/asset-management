@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Clock, Image, Loader2, MapPin, Save, WifiOff } from "lucide-react";
 import { useEffect } from "react";

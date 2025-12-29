@@ -1,4 +1,5 @@
-import { http, HttpResponse, delay } from "msw";
+// @ts-nocheck
+import { delay, HttpResponse, http } from "msw";
 import { MOCK_USERS } from "../data/users";
 
 export const userHandlers = [

@@ -46,7 +46,24 @@ export default function MapPage() {
 		queryFn: () => reportService.getMapAssets(),
 	});
 
-	const assets = data?.assets || [];
+	// Transform API response to match MapAsset interface
+	const assets = (data?.assets || []).map((item: any) => ({
+		assetId: item.assetId || item._id || "",
+		serialNumber: item.serialNumber,
+		make: item.make,
+		model: item.model,
+		location: {
+			latitude: item.location.latitude,
+			longitude: item.location.longitude,
+		},
+		status:
+			item.status === "on_time"
+				? VerificationStatus.ON_TIME
+				: item.status === "due_soon"
+					? VerificationStatus.DUE_SOON
+					: VerificationStatus.OVERDUE,
+		lastVerified: item.lastVerified,
+	}));
 
 	// Filter assets by status
 	const filteredAssets = useMemo(() => {

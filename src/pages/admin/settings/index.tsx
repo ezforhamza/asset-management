@@ -1,7 +1,6 @@
-import { Key, Settings as SettingsIcon, Sliders, User } from "lucide-react";
+import { Key, Settings as SettingsIcon, User } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
-import { AppSettingsTab } from "./components/AppSettingsTab";
 import { PasswordTab } from "./components/PasswordTab";
 import { ProfileTab } from "./components/ProfileTab";
 
@@ -32,7 +31,7 @@ export default function AdminSettingsPage() {
 				<div className="px-6 py-6 pb-16">
 					<div className="max-w-5xl mx-auto">
 						<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-							<TabsList className="grid w-full grid-cols-3">
+							<TabsList className="grid w-full grid-cols-2">
 								<TabsTrigger value="profile" className="flex items-center gap-2">
 									<User className="h-4 w-4" />
 									Profile
@@ -40,10 +39,6 @@ export default function AdminSettingsPage() {
 								<TabsTrigger value="password" className="flex items-center gap-2">
 									<Key className="h-4 w-4" />
 									Password
-								</TabsTrigger>
-								<TabsTrigger value="app" className="flex items-center gap-2">
-									<Sliders className="h-4 w-4" />
-									App Settings
 								</TabsTrigger>
 							</TabsList>
 
@@ -53,10 +48,6 @@ export default function AdminSettingsPage() {
 
 							<TabsContent value="password" className="space-y-6">
 								<PasswordTab />
-							</TabsContent>
-
-							<TabsContent value="app" className="space-y-6">
-								<AppSettingsTab />
 							</TabsContent>
 						</Tabs>
 					</div>
