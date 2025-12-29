@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import assetService from "@/api/services/assetService";
 import { Alert, AlertDescription } from "@/ui/alert";
 import { Button } from "@/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Progress } from "@/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 
@@ -184,157 +183,146 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 	};
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<FileSpreadsheet className="h-5 w-5" />
-					Bulk Asset Import
-				</CardTitle>
-				<CardDescription>Import multiple assets from a CSV file</CardDescription>
-			</CardHeader>
-			<CardContent className="space-y-4">
-				{/* Download Template */}
-				<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-					<div>
-						<p className="text-sm font-medium">Download CSV Template</p>
-						<p className="text-xs text-muted-foreground">Use this template to format your asset data correctly</p>
-					</div>
-					<Button variant="outline" size="sm" onClick={downloadTemplate}>
-						<Download className="h-4 w-4 mr-2" />
-						Template
+		<div className="space-y-4">
+			{/* Download Template */}
+			<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+				<div>
+					<p className="text-sm font-medium">Download CSV Template</p>
+					<p className="text-xs text-muted-foreground">Use this template to format your asset data correctly</p>
+				</div>
+				<Button variant="outline" size="sm" onClick={downloadTemplate}>
+					<Download className="h-4 w-4 mr-2" />
+					Template
+				</Button>
+			</div>
+
+			{/* File Upload Area */}
+			{!file ? (
+				<div
+					className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+						dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
+					}`}
+					onDragEnter={handleDrag}
+					onDragLeave={handleDrag}
+					onDragOver={handleDrag}
+					onDrop={handleDrop}
+				>
+					<Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+					<p className="text-sm font-medium mb-1">Drag and drop your CSV file here</p>
+					<p className="text-xs text-muted-foreground mb-4">or click to browse</p>
+					<input
+						type="file"
+						accept=".csv"
+						className="hidden"
+						id="csv-upload"
+						onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+					/>
+					<Button variant="outline" asChild>
+						<label htmlFor="csv-upload" className="cursor-pointer">
+							Select File
+						</label>
 					</Button>
 				</div>
-
-				{/* File Upload Area */}
-				{!file ? (
-					<div
-						className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-							dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25"
-						}`}
-						onDragEnter={handleDrag}
-						onDragLeave={handleDrag}
-						onDragOver={handleDrag}
-						onDrop={handleDrop}
-					>
-						<Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-						<p className="text-sm font-medium mb-1">Drag and drop your CSV file here</p>
-						<p className="text-xs text-muted-foreground mb-4">or click to browse</p>
-						<input
-							type="file"
-							accept=".csv"
-							className="hidden"
-							id="csv-upload"
-							onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
-						/>
-						<Button variant="outline" asChild>
-							<label htmlFor="csv-upload" className="cursor-pointer">
-								Select File
-							</label>
+			) : (
+				<div className="space-y-4">
+					{/* File Info */}
+					<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+						<div className="flex items-center gap-3">
+							<FileSpreadsheet className="h-8 w-8 text-primary" />
+							<div>
+								<p className="text-sm font-medium">{file.name}</p>
+								<p className="text-xs text-muted-foreground">
+									{(file.size / 1024).toFixed(1)} KB • {preview.length}+ assets detected
+								</p>
+							</div>
+						</div>
+						<Button variant="ghost" size="icon" onClick={clearFile}>
+							<X className="h-4 w-4" />
 						</Button>
 					</div>
-				) : (
-					<div className="space-y-4">
-						{/* File Info */}
-						<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-							<div className="flex items-center gap-3">
-								<FileSpreadsheet className="h-8 w-8 text-primary" />
-								<div>
-									<p className="text-sm font-medium">{file.name}</p>
-									<p className="text-xs text-muted-foreground">
-										{(file.size / 1024).toFixed(1)} KB • {preview.length}+ assets detected
-									</p>
-								</div>
-							</div>
-							<Button variant="ghost" size="icon" onClick={clearFile}>
-								<X className="h-4 w-4" />
-							</Button>
-						</div>
 
-						{/* Preview Table */}
-						{preview.length > 0 && (
-							<div className="rounded-md border overflow-hidden">
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>Serial Number</TableHead>
-											<TableHead>Make</TableHead>
-											<TableHead>Model</TableHead>
-											<TableHead>Frequency</TableHead>
+					{/* Preview Table */}
+					{preview.length > 0 && (
+						<div className="rounded-md border overflow-hidden">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Serial Number</TableHead>
+										<TableHead>Make</TableHead>
+										<TableHead>Model</TableHead>
+										<TableHead>Frequency</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{preview.map((asset, idx) => (
+										<TableRow key={idx}>
+											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
+											<TableCell>{asset.make}</TableCell>
+											<TableCell>{asset.model}</TableCell>
+											<TableCell>{asset.verificationFrequency || 30} days</TableCell>
 										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{preview.map((asset, idx) => (
-											<TableRow key={idx}>
-												<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
-												<TableCell>{asset.make}</TableCell>
-												<TableCell>{asset.model}</TableCell>
-												<TableCell>{asset.verificationFrequency || 30} days</TableCell>
-											</TableRow>
-										))}
-									</TableBody>
-								</Table>
-								{preview.length === 5 && (
-									<div className="p-2 bg-muted/50 text-center text-xs text-muted-foreground">
-										Showing first 5 rows...
-									</div>
-								)}
-							</div>
-						)}
-
-						{/* Import Progress */}
-						{importMutation.isPending && (
-							<div className="space-y-2">
-								<div className="flex items-center gap-2">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									<span className="text-sm">Importing assets...</span>
-								</div>
-								<Progress value={50} />
-							</div>
-						)}
-
-						{/* Import Result */}
-						{importResult && (
-							<Alert variant={importResult.failed > 0 ? "destructive" : "default"}>
-								<AlertCircle className="h-4 w-4" />
-								<AlertDescription>
-									<div className="flex items-center gap-4">
-										<span className="flex items-center gap-1">
-											<Check className="h-4 w-4 text-green-600" />
-											{importResult.imported} imported
-										</span>
-										{importResult.failed > 0 && (
-											<span className="flex items-center gap-1 text-destructive">
-												<X className="h-4 w-4" />
-												{importResult.failed} failed
-											</span>
-										)}
-									</div>
-									{importResult.errors.length > 0 && (
-										<ul className="mt-2 text-xs space-y-1">
-											{importResult.errors.slice(0, 3).map((err, idx) => (
-												<li key={idx}>
-													Row {err.row}: {err.error}
-												</li>
-											))}
-										</ul>
-									)}
-								</AlertDescription>
-							</Alert>
-						)}
-
-						{/* Import Button */}
-						<div className="flex justify-end gap-2">
-							<Button variant="outline" onClick={clearFile}>
-								Cancel
-							</Button>
-							<Button onClick={handleImport} disabled={importMutation.isPending || preview.length === 0}>
-								{importMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-								Import {preview.length}+ Assets
-							</Button>
+									))}
+								</TableBody>
+							</Table>
+							{preview.length === 5 && (
+								<div className="p-2 bg-muted/50 text-center text-xs text-muted-foreground">Showing first 5 rows...</div>
+							)}
 						</div>
+					)}
+
+					{/* Import Progress */}
+					{importMutation.isPending && (
+						<div className="space-y-2">
+							<div className="flex items-center gap-2">
+								<Loader2 className="h-4 w-4 animate-spin" />
+								<span className="text-sm">Importing assets...</span>
+							</div>
+							<Progress value={50} />
+						</div>
+					)}
+
+					{/* Import Result */}
+					{importResult && (
+						<Alert variant={importResult.failed > 0 ? "destructive" : "default"}>
+							<AlertCircle className="h-4 w-4" />
+							<AlertDescription>
+								<div className="flex items-center gap-4">
+									<span className="flex items-center gap-1">
+										<Check className="h-4 w-4 text-green-600" />
+										{importResult.imported} imported
+									</span>
+									{importResult.failed > 0 && (
+										<span className="flex items-center gap-1 text-destructive">
+											<X className="h-4 w-4" />
+											{importResult.failed} failed
+										</span>
+									)}
+								</div>
+								{importResult.errors.length > 0 && (
+									<ul className="mt-2 text-xs space-y-1">
+										{importResult.errors.slice(0, 3).map((err, idx) => (
+											<li key={idx}>
+												Row {err.row}: {err.error}
+											</li>
+										))}
+									</ul>
+								)}
+							</AlertDescription>
+						</Alert>
+					)}
+
+					{/* Import Button */}
+					<div className="flex justify-end gap-2">
+						<Button variant="outline" onClick={clearFile}>
+							Cancel
+						</Button>
+						<Button onClick={handleImport} disabled={importMutation.isPending || preview.length === 0}>
+							{importMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Import {preview.length}+ Assets
+						</Button>
 					</div>
-				)}
-			</CardContent>
-		</Card>
+				</div>
+			)}
+		</div>
 	);
 }

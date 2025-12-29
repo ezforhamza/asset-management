@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Check, Copy, Key, Loader2, QrCode, Shield, ShieldCheck, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -12,15 +12,10 @@ import { Label } from "@/ui/label";
 import { Switch } from "@/ui/switch";
 
 export function SecuritySettings() {
-	const queryClient = useQueryClient();
 	const [setupModalOpen, setSetupModalOpen] = useState(false);
 	const [verificationCode, setVerificationCode] = useState("");
 	const [copiedCode, setCopiedCode] = useState(false);
-
-	const { data: mfaStatus, isLoading } = useQuery({
-		queryKey: ["user", "mfa-status"],
-		queryFn: userService.getMFAStatus,
-	});
+	const [mfaEnabled, setMfaEnabled] = useState(false);
 
 	const setupMutation = useMutation({
 		mutationFn: userService.setupMFA,
@@ -36,7 +31,7 @@ export function SecuritySettings() {
 		mutationFn: userService.verifyMFA,
 		onSuccess: () => {
 			toast.success("MFA enabled successfully");
-			queryClient.invalidateQueries({ queryKey: ["user", "mfa-status"] });
+			setMfaEnabled(true);
 			setSetupModalOpen(false);
 			setVerificationCode("");
 		},
@@ -49,7 +44,7 @@ export function SecuritySettings() {
 		mutationFn: userService.disableMFA,
 		onSuccess: () => {
 			toast.success("MFA disabled");
-			queryClient.invalidateQueries({ queryKey: ["user", "mfa-status"] });
+			setMfaEnabled(false);
 		},
 		onError: () => {
 			toast.error("Failed to disable MFA");
@@ -57,7 +52,7 @@ export function SecuritySettings() {
 	});
 
 	const handleToggleMFA = () => {
-		if (mfaStatus?.enabled) {
+		if (mfaEnabled) {
 			disableMutation.mutate();
 		} else {
 			setupMutation.mutate();
@@ -106,16 +101,16 @@ export function SecuritySettings() {
 							</div>
 						</div>
 						<div className="flex items-center gap-3">
-							{mfaStatus?.enabled && (
+							{mfaEnabled && (
 								<span className="flex items-center gap-1 text-sm text-green-600">
 									<ShieldCheck className="h-4 w-4" />
 									Enabled
 								</span>
 							)}
 							<Switch
-								checked={mfaStatus?.enabled ?? false}
+								checked={mfaEnabled}
 								onCheckedChange={handleToggleMFA}
-								disabled={isLoading || setupMutation.isPending || disableMutation.isPending}
+								disabled={setupMutation.isPending || disableMutation.isPending}
 							/>
 						</div>
 					</div>
@@ -128,9 +123,7 @@ export function SecuritySettings() {
 							</div>
 							<div>
 								<p className="font-medium">Password</p>
-								<p className="text-sm text-muted-foreground">
-									Last changed: {mfaStatus?.passwordLastChanged || "Unknown"}
-								</p>
+								<p className="text-sm text-muted-foreground">Change your account password</p>
 							</div>
 						</div>
 						<Button variant="outline" onClick={() => (window.location.href = "/change-password")}>
