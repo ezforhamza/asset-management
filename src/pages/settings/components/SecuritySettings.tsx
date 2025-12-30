@@ -128,11 +128,7 @@ export function SecuritySettings() {
 								<p className="text-xs text-muted-foreground">Change your account password</p>
 							</div>
 						</div>
-<<<<<<< HEAD
-						<Button variant="outline" onClick={() => navigate("/change-password")}>
-=======
-						<Button variant="outline" size="sm" onClick={() => (window.location.href = "/change-password")}>
->>>>>>> nafees
+						<Button variant="outline" size="sm" onClick={() => navigate("/change-password")}>
 							Change Password
 						</Button>
 					</div>
@@ -213,8 +209,8 @@ export function SecuritySettings() {
 										</Button>
 									</div>
 									<div className="mt-2 grid grid-cols-2 gap-1 text-xs font-mono">
-										{setupMutation.data.backupCodes.map((code, idx) => (
-											<span key={idx} className="bg-muted px-2 py-1 rounded">
+										{setupMutation.data.backupCodes.map((code) => (
+											<span key={code} className="bg-muted px-2 py-1 rounded">
 												{code}
 											</span>
 										))}
