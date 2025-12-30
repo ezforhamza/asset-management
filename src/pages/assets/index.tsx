@@ -1,16 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	ChevronLeft,
-	ChevronRight,
-	FileSpreadsheet,
-	Loader2,
-	MoreHorizontal,
-	Pencil,
-	Plus,
-	Search,
-	Trash2,
-	XCircle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, MoreHorizontal, Pencil, Search, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
@@ -29,15 +18,11 @@ import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { AssetImport } from "../settings/components/AssetImport";
-import { AssetTemplates } from "../settings/components/AssetTemplates";
 
 export default function AssetsPage() {
 	const queryClient = useQueryClient();
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [importModalOpen, setImportModalOpen] = useState(false);
-	const [templateModalOpen, setTemplateModalOpen] = useState(false);
 
 	// Edit modal state
 	const [editModalOpen, setEditModalOpen] = useState(false);
@@ -175,22 +160,8 @@ export default function AssetsPage() {
 		<div className="h-full flex flex-col overflow-hidden">
 			{/* Header */}
 			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/50">
-				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-					<div>
-						<h1 className="text-xl font-semibold">Assets</h1>
-						<p className="text-sm text-muted-foreground">View and manage your company assets</p>
-					</div>
-					<div className="flex items-center gap-2">
-						<Button variant="outline" onClick={() => setImportModalOpen(true)}>
-							<FileSpreadsheet className="h-4 w-4 mr-2" />
-							Import
-						</Button>
-						<Button variant="outline" onClick={() => setTemplateModalOpen(true)}>
-							<Plus className="h-4 w-4 mr-2" />
-							Template
-						</Button>
-					</div>
-				</div>
+				<h1 className="text-xl font-semibold">Assets</h1>
+				<p className="text-sm text-muted-foreground">View and manage your company assets</p>
 			</div>
 
 			{/* Search */}
@@ -333,26 +304,6 @@ export default function AssetsPage() {
 					)}
 				</div>
 			</div>
-
-			{/* Import Modal */}
-			<Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
-				<DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Bulk Asset Import</DialogTitle>
-					</DialogHeader>
-					<AssetImport />
-				</DialogContent>
-			</Dialog>
-
-			{/* Template Modal */}
-			<Dialog open={templateModalOpen} onOpenChange={setTemplateModalOpen}>
-				<DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Asset Templates</DialogTitle>
-					</DialogHeader>
-					<AssetTemplates />
-				</DialogContent>
-			</Dialog>
 
 			{/* Edit Modal */}
 			<Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
