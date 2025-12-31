@@ -31,6 +31,7 @@ export interface UpdateAssetReq {
 	model?: string;
 	status?: string;
 	verificationFrequency?: number;
+	geofenceThreshold?: number | null;
 }
 
 export interface BulkImportAssetReq {

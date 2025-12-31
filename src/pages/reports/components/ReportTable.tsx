@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { AlertTriangle, CheckCircle, Eye } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -9,9 +9,12 @@ interface ReportTableProps {
 	data: VerificationReportItem[];
 	isLoading: boolean;
 	onViewDetails: (verification: VerificationReportItem) => void;
+	page: number;
+	totalPages: number;
+	onPageChange: (page: number) => void;
 }
 
-export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps) {
+export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, onPageChange }: ReportTableProps) {
 	if (isLoading) {
 		return (
 			<div className="space-y-3">
@@ -97,7 +100,9 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 											: "text-emerald-500"
 								}`}
 							>
-								{item.daysUntilDue.toFixed(0)} days
+								{item.daysUntilDue < 0
+									? `${Math.abs(item.daysUntilDue).toFixed(0)} days overdue`
+									: `${item.daysUntilDue.toFixed(0)} days`}
 							</span>
 						</div>
 						<div className="text-sm">{item.totalVerifications}</div>
@@ -110,6 +115,35 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 					</div>
 				))}
 			</div>
+
+			{/* Pagination Footer */}
+			{totalPages > 1 && (
+				<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+					<p className="text-sm text-muted-foreground">
+						Page {page} of {totalPages}
+					</p>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange(Math.max(1, page - 1))}
+							disabled={page === 1}
+						>
+							<ChevronLeft className="h-4 w-4 mr-1" />
+							Previous
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+							disabled={page === totalPages}
+						>
+							Next
+							<ChevronRight className="h-4 w-4 ml-1" />
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Package, CheckCircle, Clock, AlertTriangle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, Package } from "lucide-react";
 
 import dashboardService from "@/api/services/dashboardService";
 import { useUserInfo } from "@/store/userStore";
@@ -22,16 +22,20 @@ export default function DashboardPage() {
 	const stats = response?.stats;
 
 	// Transform API response to match RecentActivity component expectations
-	const recentActivity = (activityResponse?.results ?? []).map((item: any) => ({
-		_id: item.id,
-		assetSerialNumber: item.assetId?.serialNumber || "N/A",
-		assetMake: item.assetId?.make || "N/A",
-		assetModel: item.assetId?.model || "N/A",
-		verifiedBy: item.verifiedBy?.name || "N/A",
-		verifiedAt: item.verifiedAt,
-		status: "on_time", // Default to on_time since these are recent verifications
-		distance: item.distanceFromAsset || 0,
-	}));
+	// Reverse the array to show most recent first (API returns oldest first)
+	const recentActivity = (activityResponse?.results ?? [])
+		.slice()
+		.reverse()
+		.map((item: any) => ({
+			_id: item.id,
+			assetSerialNumber: item.assetId?.serialNumber || "N/A",
+			assetMake: item.assetId?.make || "N/A",
+			assetModel: item.assetId?.model || "N/A",
+			verifiedBy: item.verifiedBy?.name || "N/A",
+			verifiedAt: item.verifiedAt,
+			status: "on_time", // Default to on_time since these are recent verifications
+			distance: item.distanceFromAsset || 0,
+		}));
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">

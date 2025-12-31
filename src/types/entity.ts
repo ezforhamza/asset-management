@@ -145,6 +145,7 @@ export interface Asset {
 	registeredAt: string;
 	status: AssetStatus;
 	verificationFrequency: number | null;
+	geofenceThreshold: number | null;
 	lastVerifiedAt: string | null;
 	nextVerificationDue: string;
 	photos: string[];

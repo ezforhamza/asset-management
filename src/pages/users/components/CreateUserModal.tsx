@@ -98,13 +98,14 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 	};
 
 	const handleClose = () => {
+		const hadTempPassword = !!tempPassword;
 		form.reset();
 		setTempPassword(null);
 		setCopied(false);
 		setSelectedFile(null);
 		setPreviewUrl(null);
 		onClose();
-		if (tempPassword) {
+		if (hadTempPassword) {
 			onSuccess();
 		}
 	};

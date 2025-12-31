@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { Edit, KeyRound, Mail, MoreHorizontal, UserX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, KeyRound, Mail, MoreHorizontal, UserX } from "lucide-react";
+import { useMemo, useState } from "react";
 import type { UserInfo } from "#/entity";
 import { UserRole } from "#/enum";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
@@ -22,6 +23,8 @@ interface UserTableProps {
 	onResetPassword: (user: UserInfo) => void;
 	onDeactivate: (user: UserInfo) => void;
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const getRoleBadge = (role?: UserRole) => {
 	if (role === UserRole.CUSTOMER_ADMIN) {
@@ -49,6 +52,23 @@ const getInitials = (name?: string) => {
 };
 
 export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactivate }: UserTableProps) {
+	const [page, setPage] = useState(1);
+
+	// Calculate pagination
+	const totalPages = Math.ceil((users?.length || 0) / ITEMS_PER_PAGE);
+	const paginatedUsers = useMemo(() => {
+		if (!users) return [];
+		const startIndex = (page - 1) * ITEMS_PER_PAGE;
+		return users.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+	}, [users, page]);
+
+	// Reset to page 1 when users list changes significantly
+	useMemo(() => {
+		if (page > totalPages && totalPages > 0) {
+			setPage(1);
+		}
+	}, [totalPages, page]);
+
 	if (isLoading) {
 		return (
 			<div className="space-y-3">
@@ -72,7 +92,7 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 	}
 
 	return (
-		<div className="rounded-xl border overflow-hidden">
+		<div className="rounded-xl border overflow-hidden flex flex-col h-full">
 			<Table>
 				<TableHeader>
 					<TableRow className="bg-muted/50">
@@ -84,7 +104,7 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{users.map((user) => (
+					{paginatedUsers.map((user) => (
 						<TableRow key={user.id} className="hover:bg-muted/30">
 							<TableCell>
 								<div className="flex items-center gap-3">
@@ -143,6 +163,39 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 					))}
 				</TableBody>
 			</Table>
+
+			{/* Pagination Footer */}
+			{totalPages > 1 && (
+				<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+					<p className="text-sm text-muted-foreground">
+						Showing {(page - 1) * ITEMS_PER_PAGE + 1} - {Math.min(page * ITEMS_PER_PAGE, users.length)} of{" "}
+						{users.length} users
+					</p>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+							disabled={page === 1}
+						>
+							<ChevronLeft className="h-4 w-4 mr-1" />
+							Previous
+						</Button>
+						<span className="text-sm text-muted-foreground px-2">
+							{page} / {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+							disabled={page === totalPages}
+						>
+							Next
+							<ChevronRight className="h-4 w-4 ml-1" />
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

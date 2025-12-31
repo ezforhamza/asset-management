@@ -23,22 +23,16 @@ export default function ReportsPage() {
 	const [selectedVerification, setSelectedVerification] = useState<VerificationReportItem | null>(null);
 	const [detailOpen, setDetailOpen] = useState(false);
 
-	// Build query params
+	// Build query params - date range filtering is done client-side for nextVerificationDue
 	const queryParams = useMemo(() => {
 		const params: Record<string, string | number> = { page, limit };
 
-		if (dateRange?.from) {
-			params.startDate = format(dateRange.from, "yyyy-MM-dd");
-		}
-		if (dateRange?.to) {
-			params.endDate = format(dateRange.to, "yyyy-MM-dd");
-		}
 		if (status !== "all") {
 			params.status = status;
 		}
 
 		return params;
-	}, [dateRange, status, page, limit]);
+	}, [status, page]);
 
 	// Fetch verifications
 	const { data, isLoading } = useQuery({
@@ -46,21 +40,47 @@ export default function ReportsPage() {
 		queryFn: () => reportService.getVerificationReport(queryParams),
 	});
 
-	// Client-side search filter
+	// Client-side filtering (search + date range by nextVerificationDue)
 	const filteredData = useMemo(() => {
 		if (!data?.results) return [];
-		if (!searchQuery) return data.results;
 
-		const query = searchQuery.toLowerCase();
-		return data.results.filter((v) => {
-			return (
-				v.serialNumber?.toLowerCase().includes(query) ||
-				v.make?.toLowerCase().includes(query) ||
-				v.model?.toLowerCase().includes(query) ||
-				v.makeModel?.toLowerCase().includes(query)
-			);
-		});
-	}, [data?.results, searchQuery]);
+		let results = data.results;
+
+		// Filter by date range (nextVerificationDue)
+		if (dateRange?.from || dateRange?.to) {
+			results = results.filter((v) => {
+				if (!v.nextVerificationDue) return false;
+				const nextDue = new Date(v.nextVerificationDue);
+				// Set time to start/end of day for accurate comparison
+				if (dateRange.from) {
+					const fromDate = new Date(dateRange.from);
+					fromDate.setHours(0, 0, 0, 0);
+					if (nextDue < fromDate) return false;
+				}
+				if (dateRange.to) {
+					const toDate = new Date(dateRange.to);
+					toDate.setHours(23, 59, 59, 999);
+					if (nextDue > toDate) return false;
+				}
+				return true;
+			});
+		}
+
+		// Filter by search query
+		if (searchQuery) {
+			const query = searchQuery.toLowerCase();
+			results = results.filter((v) => {
+				return (
+					v.serialNumber?.toLowerCase().includes(query) ||
+					v.make?.toLowerCase().includes(query) ||
+					v.model?.toLowerCase().includes(query) ||
+					v.makeModel?.toLowerCase().includes(query)
+				);
+			});
+		}
+
+		return results;
+	}, [data?.results, searchQuery, dateRange]);
 
 	const handleViewDetails = (verification: VerificationReportItem) => {
 		setSelectedVerification(verification);
@@ -133,7 +153,14 @@ export default function ReportsPage() {
 
 			{/* Table - Scrollable area */}
 			<div className="flex-1 overflow-hidden px-6 py-4">
-				<ReportTable data={filteredData} isLoading={isLoading} onViewDetails={handleViewDetails} />
+				<ReportTable
+					data={filteredData}
+					isLoading={isLoading}
+					onViewDetails={handleViewDetails}
+					page={page}
+					totalPages={totalPages}
+					onPageChange={setPage}
+				/>
 			</div>
 
 			{/* Detail Modal */}

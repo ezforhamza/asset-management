@@ -109,6 +109,7 @@ export default function AssetsPage() {
 			model: asset.model,
 			status: asset.status,
 			verificationFrequency: asset.verificationFrequency ?? undefined,
+			geofenceThreshold: asset.geofenceThreshold ?? undefined,
 		});
 		setEditModalOpen(true);
 	};
@@ -125,7 +126,20 @@ export default function AssetsPage() {
 
 	const handleUpdateSubmit = () => {
 		if (!editingAsset) return;
-		updateMutation.mutate({ assetId: getAssetId(editingAsset), data: editForm });
+		// Build submit data - only include geofenceThreshold if it has a value
+		// Backend must support geofenceThreshold field for this to work
+		const submitData: UpdateAssetReq = {
+			serialNumber: editForm.serialNumber,
+			make: editForm.make,
+			model: editForm.model,
+			status: editForm.status,
+			verificationFrequency: editForm.verificationFrequency,
+		};
+		// Only include geofenceThreshold if it's explicitly set (not undefined)
+		if (editForm.geofenceThreshold !== undefined) {
+			submitData.geofenceThreshold = editForm.geofenceThreshold;
+		}
+		updateMutation.mutate({ assetId: getAssetId(editingAsset), data: submitData });
 	};
 
 	const getStatusBadge = (status: string) => {
@@ -236,8 +250,10 @@ export default function AssetsPage() {
 											{asset.make} {asset.model}
 										</TableCell>
 										<TableCell>{getStatusBadge(asset.status)}</TableCell>
-										<TableCell>{getVerificationBadge(asset.verificationStatus || "unknown")}</TableCell>
-										<TableCell className="text-muted-foreground">{asset.verificationFrequency} days</TableCell>
+										<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
+										<TableCell className="text-muted-foreground">
+											{asset.verificationFrequency != null ? `${asset.verificationFrequency} days` : "—"}
+										</TableCell>
 										<TableCell>
 											<DropdownMenu>
 												<DropdownMenuTrigger asChild>
@@ -336,16 +352,33 @@ export default function AssetsPage() {
 								/>
 							</div>
 						</div>
-						<div className="space-y-2">
-							<Label>Verification Frequency (days)</Label>
-							<Input
-								type="number"
-								min={1}
-								value={editForm.verificationFrequency || ""}
-								onChange={(e) =>
-									setEditForm({ ...editForm, verificationFrequency: parseInt(e.target.value) || undefined })
-								}
-							/>
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label>Verification Frequency (days)</Label>
+								<Input
+									type="number"
+									min={1}
+									value={editForm.verificationFrequency || ""}
+									onChange={(e) =>
+										setEditForm({ ...editForm, verificationFrequency: parseInt(e.target.value) || undefined })
+									}
+								/>
+							</div>
+							<div className="space-y-2">
+								<Label>Geofence Threshold (meters)</Label>
+								<Input
+									type="number"
+									min={0}
+									placeholder="Optional"
+									value={editForm.geofenceThreshold ?? ""}
+									onChange={(e) =>
+										setEditForm({
+											...editForm,
+											geofenceThreshold: e.target.value ? parseInt(e.target.value) : undefined,
+										})
+									}
+								/>
+							</div>
 						</div>
 					</div>
 					<DialogFooter>

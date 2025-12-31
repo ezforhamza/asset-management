@@ -1,13 +1,13 @@
+import { format } from "date-fns";
+import { CalendarIcon, Search, X } from "lucide-react";
+import type { DateRange } from "react-day-picker";
 import { Button } from "@/ui/button";
+import { Calendar } from "@/ui/calendar";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
-import { Calendar } from "@/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
-import { CalendarIcon, Search, X } from "lucide-react";
-import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { cn } from "@/utils";
-import type { DateRange } from "react-day-picker";
 
 interface ReportFiltersProps {
 	dateRange: DateRange | undefined;
@@ -49,9 +49,9 @@ export function ReportFilters({
 				</div>
 			</div>
 
-			{/* Date Range */}
+			{/* Date Range - filters by Next Due Date */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Date Range</Label>
+				<Label className="text-sm font-medium mb-2 block">Next Due Date Range</Label>
 				<Popover>
 					<PopoverTrigger asChild>
 						<Button
@@ -68,7 +68,7 @@ export function ReportFilters({
 									format(dateRange.from, "LLL dd, y")
 								)
 							) : (
-								<span>Pick a date range</span>
+								<span>Filter by next due date</span>
 							)}
 						</Button>
 					</PopoverTrigger>

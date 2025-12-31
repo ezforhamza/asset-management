@@ -1,13 +1,13 @@
+import { VerificationStatus } from "#/enum";
 import { Badge } from "@/ui/badge";
 import { cn } from "@/utils";
-import { VerificationStatus } from "#/enum";
 
 interface StatusBadgeProps {
-	status: VerificationStatus;
+	status: VerificationStatus | string | undefined | null;
 	className?: string;
 }
 
-const statusConfig = {
+const statusConfig: Record<string, { label: string; className: string }> = {
 	[VerificationStatus.ON_TIME]: {
 		label: "On Time",
 		className: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20",
@@ -22,8 +22,14 @@ const statusConfig = {
 	},
 };
 
+const defaultConfig = {
+	label: "Unknown",
+	className: "bg-gray-500/10 text-gray-500 hover:bg-gray-500/20 border-gray-500/20",
+};
+
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-	const config = statusConfig[status];
+	// Handle undefined, null, or unknown status values
+	const config = status ? statusConfig[status] || defaultConfig : defaultConfig;
 
 	return (
 		<Badge variant="outline" className={cn(config.className, className)}>
