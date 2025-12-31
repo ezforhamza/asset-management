@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from "msw";
+import { delay, HttpResponse, http } from "msw";
 import { MOCK_USERS } from "../data/users";
 
 export const userHandlers = [
@@ -17,7 +17,7 @@ export const userHandlers = [
 		}
 
 		if (status) {
-			users = users.filter((u) => (status === "active" ? u.status !== 0 : u.status === 0));
+			users = users.filter((u) => (status === "active" ? u.status !== "inactive" : u.status === "inactive"));
 		}
 
 		return HttpResponse.json(users);

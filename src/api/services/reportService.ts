@@ -104,7 +104,7 @@ const getDashboardStats = (params?: DashboardStatsParams) =>
 	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
 
 const exportReport = (params: ExportReportParams) => {
-	const queryString = new URLSearchParams(params as Record<string, string>).toString();
+	const queryString = new URLSearchParams(params as unknown as Record<string, string>).toString();
 	const { userToken } = useUserStore.getState();
 	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "http://157.245.234.165/api/v1";
 	const token = userToken?.accessToken;

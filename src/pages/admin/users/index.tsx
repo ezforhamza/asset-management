@@ -26,8 +26,8 @@ export default function AdminUsersPage() {
 			}),
 	});
 
-	const users = data?.users || [];
-	const companies = companiesData?.companies || [];
+	const users = data?.results || [];
+	const companies = companiesData?.results || [];
 
 	// Client-side search filter
 	const filteredUsers = users.filter((user) => {
@@ -36,7 +36,7 @@ export default function AdminUsersPage() {
 		return user.name?.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query);
 	});
 
-	const totalUsers = data?.pagination?.total || 0;
+	const totalUsers = data?.totalResults || 0;
 	const adminCount = users.filter((u) => u.role === "customer_admin" || u.role === "system_admin").length;
 
 	return (

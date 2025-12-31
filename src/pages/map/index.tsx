@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import type { MapAsset } from "#/entity";
 import { VerificationStatus } from "#/enum";
 import reportService from "@/api/services/reportService";
 import { Button } from "@/ui/button";
@@ -188,7 +189,11 @@ export default function MapPage() {
 						>
 							<TileLayer attribution={currentTile.attribution} url={currentTile.url} />
 							{filteredAssets.map((asset) => (
-								<AssetMarker key={asset.assetId} asset={asset} onViewDetails={handleViewDetails} />
+								<AssetMarker
+									key={asset.assetId}
+									asset={asset as unknown as MapAsset}
+									onViewDetails={handleViewDetails}
+								/>
 							))}
 						</MapContainer>
 

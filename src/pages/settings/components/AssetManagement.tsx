@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRightLeft, Loader2, Package, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import assetService from "@/api/services/assetService";
 import adminService from "@/api/services/adminService";
+import assetService from "@/api/services/assetService";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
@@ -64,10 +64,10 @@ export function AssetManagement() {
 		},
 	});
 
-	const assets = assetsData?.assets || [];
-	const companies = companiesData?.companies || [];
+	const assets = assetsData?.results || [];
+	const companies = companiesData?.results || [];
 
-	const filteredAssets = assets.filter((asset) => {
+	const filteredAssets = assets.filter((asset: { serialNumber: string; make: string; model: string }) => {
 		if (!searchQuery) return true;
 		return (
 			asset.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -136,7 +136,7 @@ export function AssetManagement() {
 									</TableRow>
 								) : (
 									filteredAssets.slice(0, 20).map((asset) => (
-										<TableRow key={asset._id}>
+										<TableRow key={asset._id || asset.id}>
 											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
 											<TableCell>
 												{asset.make} {asset.model}
@@ -149,7 +149,9 @@ export function AssetManagement() {
 													<Button
 														variant="ghost"
 														size="icon"
-														onClick={() => setTransferModal({ _id: asset._id, serialNumber: asset.serialNumber })}
+														onClick={() =>
+															setTransferModal({ _id: asset._id || asset.id || "", serialNumber: asset.serialNumber })
+														}
 														title="Transfer"
 													>
 														<ArrowRightLeft className="h-4 w-4" />
@@ -157,7 +159,9 @@ export function AssetManagement() {
 													<Button
 														variant="ghost"
 														size="icon"
-														onClick={() => setRetireModal({ _id: asset._id, serialNumber: asset.serialNumber })}
+														onClick={() =>
+															setRetireModal({ _id: asset._id || asset.id || "", serialNumber: asset.serialNumber })
+														}
 														title="Retire"
 													>
 														<Trash2 className="h-4 w-4 text-destructive" />
@@ -193,7 +197,7 @@ export function AssetManagement() {
 									<SelectValue placeholder="Select company" />
 								</SelectTrigger>
 								<SelectContent>
-									{companies.map((company) => (
+									{companies.map((company: { _id: string; companyName: string }) => (
 										<SelectItem key={company._id} value={company._id}>
 											{company.companyName}
 										</SelectItem>

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ArrowLeft, Calendar, Clock, Code, FileText, Info, User } from "lucide-react";
+import { ArrowLeft, Clock, Code, FileText, Info, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 import type { AuditLog } from "@/api/services/auditLogService";
 import { Badge } from "@/ui/badge";

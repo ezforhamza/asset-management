@@ -17,6 +17,7 @@ const daysFromNow = (days: number) => {
 
 export const MOCK_ASSETS: Asset[] = [
 	{
+		id: "asset_001",
 		_id: "asset_001",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_001",
@@ -29,6 +30,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(60),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(5),
 		nextVerificationDue: daysFromNow(25),
 		photos: ["/mock/excavator1.jpg", "/mock/excavator2.jpg"],
@@ -37,6 +39,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.ON_TIME,
 	},
 	{
+		id: "asset_002",
 		_id: "asset_002",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_002",
@@ -49,6 +52,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(45),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(25),
 		nextVerificationDue: daysFromNow(5),
 		photos: ["/mock/loader1.jpg"],
@@ -57,6 +61,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.DUE_SOON,
 	},
 	{
+		id: "asset_003",
 		_id: "asset_003",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_003",
@@ -69,6 +74,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(90),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(35),
 		nextVerificationDue: daysAgo(5),
 		photos: ["/mock/bulldozer1.jpg", "/mock/bulldozer2.jpg"],
@@ -77,6 +83,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.OVERDUE,
 	},
 	{
+		id: "asset_004",
 		_id: "asset_004",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_004",
@@ -89,6 +96,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(30),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 14,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(2),
 		nextVerificationDue: daysFromNow(12),
 		photos: ["/mock/volvo1.jpg"],
@@ -97,6 +105,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.ON_TIME,
 	},
 	{
+		id: "asset_005",
 		_id: "asset_005",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_005",
@@ -109,6 +118,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(75),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(28),
 		nextVerificationDue: daysFromNow(2),
 		photos: ["/mock/catloader1.jpg", "/mock/catloader2.jpg"],
@@ -117,6 +127,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.DUE_SOON,
 	},
 	{
+		id: "asset_006",
 		_id: "asset_006",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_006",
@@ -129,6 +140,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(120),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(40),
 		nextVerificationDue: daysAgo(10),
 		photos: ["/mock/hitachi1.jpg"],
@@ -137,6 +149,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.OVERDUE,
 	},
 	{
+		id: "asset_007",
 		_id: "asset_007",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_007",
@@ -149,6 +162,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(55),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 30,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(10),
 		nextVerificationDue: daysFromNow(20),
 		photos: ["/mock/liebherr1.jpg", "/mock/liebherr2.jpg"],
@@ -157,6 +171,7 @@ export const MOCK_ASSETS: Asset[] = [
 		verificationStatus: VerificationStatus.ON_TIME,
 	},
 	{
+		id: "asset_008",
 		_id: "asset_008",
 		companyId: MOCK_COMPANY_ID,
 		qrCodeId: "qr_008",
@@ -169,6 +184,7 @@ export const MOCK_ASSETS: Asset[] = [
 		registeredAt: daysAgo(40),
 		status: AssetStatus.ACTIVE,
 		verificationFrequency: 14,
+		geofenceThreshold: null,
 		lastVerifiedAt: daysAgo(12),
 		nextVerificationDue: daysFromNow(2),
 		photos: ["/mock/bobcat1.jpg"],
@@ -180,11 +196,20 @@ export const MOCK_ASSETS: Asset[] = [
 
 export const getMapAssets = (): MapAsset[] => {
 	return MOCK_ASSETS.map((asset) => ({
-		assetId: asset._id,
+		assetId: asset.id,
 		serialNumber: asset.serialNumber,
 		make: asset.make,
 		model: asset.model,
-		location: asset.registeredLocation,
+		location: {
+			latitude:
+				"latitude" in asset.registeredLocation
+					? asset.registeredLocation.latitude
+					: asset.registeredLocation.coordinates[1],
+			longitude:
+				"longitude" in asset.registeredLocation
+					? asset.registeredLocation.longitude
+					: asset.registeredLocation.coordinates[0],
+		},
 		status: asset.verificationStatus || VerificationStatus.ON_TIME,
 		lastVerified: asset.lastVerifiedAt,
 	}));

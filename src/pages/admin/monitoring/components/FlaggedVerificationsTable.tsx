@@ -34,14 +34,19 @@ export function FlaggedVerificationsTable() {
 		queryFn: () => adminService.getFlaggedVerifications({ limit: 5 }),
 	});
 
-	const verifications = (data?.verifications || []) as Array<{
-		_id: string;
-		assetId: string;
-		verifiedAt: string;
-		distanceFromAsset: number;
-		investigationStatus: string | null;
-		asset?: { serialNumber: string };
-	}>;
+	const verifications =
+		(
+			data as unknown as {
+				results: Array<{
+					_id: string;
+					assetId: string;
+					verifiedAt: string;
+					distanceFromAsset: number;
+					investigationStatus: string | null;
+					asset?: { serialNumber: string };
+				}>;
+			}
+		)?.results || [];
 
 	if (isLoading) {
 		return (

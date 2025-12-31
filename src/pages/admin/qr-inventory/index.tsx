@@ -62,7 +62,7 @@ export default function AdminQRInventoryPage() {
 	});
 
 	const retireMutation = useMutation({
-		mutationFn: (qrCode: QRCodeType) => qrService.updateQRCode(qrCode.id || qrCode._id, { status: "retired" }),
+		mutationFn: (qrCode: QRCodeType) => qrService.updateQRCode(qrCode.id || qrCode._id || "", { status: "retired" }),
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["qr"] });
 			setConfirmRetireOpen(false);
@@ -90,7 +90,6 @@ export default function AdminQRInventoryPage() {
 	const qrCodes = data?.results || [];
 	const companies = companiesData?.results || [];
 	const stats = statsData?.stats || { available: 0, allocated: 0, used: 0, retired: 0, total: 0 };
-	const totalQR = data?.totalResults || 0;
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">

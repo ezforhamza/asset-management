@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Filter, Plus, Search } from "lucide-react";
+import { Building2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Company } from "#/entity";
@@ -37,7 +37,7 @@ export default function AdminCompaniesPage() {
 
 	const toggleCompanyMutation = useMutation({
 		mutationFn: (company: Company) => adminService.updateCompany(company._id, { isActive: !company.isActive }),
-		onSuccess: (data, variables) => {
+		onSuccess: (_data, variables) => {
 			toast.success(`Company ${variables.isActive ? "deactivated" : "activated"} successfully`);
 			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
 		},
