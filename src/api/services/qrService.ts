@@ -134,6 +134,15 @@ const updateQRCode = (id: string, data: UpdateQRCodeReq) =>
 // Delete QR code
 const deleteQRCode = (id: string) => apiClient.delete<void>({ url: API_ENDPOINTS.QR_CODES.BY_ID(id) });
 
+// Export QR codes to PDF
+const exportQRCodesPDF = async (companyId: string, status?: string): Promise<Blob> => {
+	const url = status
+		? `${API_ENDPOINTS.QR_CODES.BASE}/export/${companyId}/pdf?status=${status}`
+		: `${API_ENDPOINTS.QR_CODES.BASE}/export/${companyId}/pdf`;
+	const response = await apiClient.get<Blob>({ url, responseType: "blob" });
+	return response;
+};
+
 export default {
 	getQRCodes,
 	getQRCodeStats,
@@ -145,4 +154,5 @@ export default {
 	allocateQRCodes,
 	updateQRCode,
 	deleteQRCode,
+	exportQRCodesPDF,
 };

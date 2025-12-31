@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, QrCode, Search, Upload } from "lucide-react";
+import { Download, Plus, QrCode, Search, Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { QRCode as QRCodeType } from "#/entity";
@@ -14,6 +14,7 @@ import { AllocateModal } from "./components/AllocateModal";
 import { BulkCreateModal } from "./components/BulkCreateModal";
 import { BulkImportModal } from "./components/BulkImportModal";
 import { CreateQRModal } from "./components/CreateQRModal";
+import { ExportPDFModal } from "./components/ExportPDFModal";
 import { QRTable } from "./components/QRTable";
 
 export default function AdminQRInventoryPage() {
@@ -30,6 +31,7 @@ export default function AdminQRInventoryPage() {
 	const [bulkCreateModalOpen, setBulkCreateModalOpen] = useState(false);
 	const [qrToRetire, setQrToRetire] = useState<QRCodeType | null>(null);
 	const [confirmRetireOpen, setConfirmRetireOpen] = useState(false);
+	const [exportModalOpen, setExportModalOpen] = useState(false);
 
 	// Debounce search input
 	useEffect(() => {
@@ -110,6 +112,10 @@ export default function AdminQRInventoryPage() {
 						</div>
 					</div>
 					<div className="flex gap-2">
+						<Button variant="outline" onClick={() => setExportModalOpen(true)}>
+							<Download className="h-4 w-4 mr-2" />
+							Export PDF
+						</Button>
 						<Button variant="outline" onClick={() => setImportModalOpen(true)}>
 							<Upload className="h-4 w-4 mr-2" />
 							CSV Import
@@ -228,6 +234,7 @@ export default function AdminQRInventoryPage() {
 			<BulkCreateModal open={bulkCreateModalOpen} onClose={() => setBulkCreateModalOpen(false)} companies={companies} />
 			<BulkImportModal open={importModalOpen} onClose={() => setImportModalOpen(false)} companies={companies} />
 			<AllocateModal open={allocateModalOpen} onClose={() => setAllocateModalOpen(false)} companies={companies} />
+			<ExportPDFModal open={exportModalOpen} onClose={() => setExportModalOpen(false)} companies={companies} />
 
 			{/* Confirmation Modal */}
 			<ConfirmationModal
