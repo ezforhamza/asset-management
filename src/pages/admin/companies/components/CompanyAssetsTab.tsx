@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Package } from "lucide-react";
+import { useState } from "react";
 import assetService from "@/api/services/assetService";
 import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 
@@ -23,13 +25,24 @@ const getStatusBadge = (status: string) => {
 	}
 };
 
+const ROWS_PER_PAGE = 6;
+
 export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
+	const [currentPage, setCurrentPage] = useState(1);
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["assets", "company", companyId],
 		queryFn: () => assetService.getAssets({ companyId }),
 	});
 
 	const assets = data?.results || [];
+
+	// Pagination calculations
+	const totalResults = assets.length;
+	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+	const endIndex = startIndex + ROWS_PER_PAGE;
+	const paginatedAssets = assets.slice(startIndex, endIndex);
 
 	if (isLoading) {
 		return (
@@ -77,31 +90,61 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	}
 
 	return (
-		<div className="rounded-md border overflow-auto">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead>Serial Number</TableHead>
-						<TableHead>Make / Model</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead>Last Verified</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{assets.map((asset) => (
-						<TableRow key={asset.id}>
-							<TableCell className="font-mono">{asset.serialNumber}</TableCell>
-							<TableCell>
-								{asset.make} {asset.model}
-							</TableCell>
-							<TableCell>{getStatusBadge(asset.status)}</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{asset.lastVerifiedAt ? format(new Date(asset.lastVerifiedAt), "MMM d, yyyy") : "Never"}
-							</TableCell>
+		<div className="rounded-md border flex flex-col">
+			<div className="overflow-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Serial Number</TableHead>
+							<TableHead>Make / Model</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Last Verified</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{paginatedAssets.map((asset) => (
+							<TableRow key={asset.id}>
+								<TableCell className="font-mono">{asset.serialNumber}</TableCell>
+								<TableCell>
+									{asset.make} {asset.model}
+								</TableCell>
+								<TableCell>{getStatusBadge(asset.status)}</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{asset.lastVerifiedAt ? format(new Date(asset.lastVerifiedAt), "MMM d, yyyy") : "Never"}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
+			{totalPages > 1 && (
+				<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="text-sm text-muted-foreground">
+						Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev - 1)}
+							disabled={currentPage === 1}
+						>
+							Previous
+						</Button>
+						<span className="text-sm">
+							Page {currentPage} of {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev + 1)}
+							disabled={currentPage === totalPages}
+						>
+							Next
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

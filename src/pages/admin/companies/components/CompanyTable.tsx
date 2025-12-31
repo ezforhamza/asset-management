@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { Building2, Eye, MoreHorizontal, Pencil, Power, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Company } from "#/entity";
 import { Badge } from "@/ui/badge";
@@ -21,8 +22,18 @@ interface CompanyTableProps {
 	onToggleStatus?: (company: Company) => void;
 }
 
+const ROWS_PER_PAGE = 8;
+
 export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
 	const navigate = useNavigate();
+	const [currentPage, setCurrentPage] = useState(1);
+
+	// Pagination calculations
+	const totalResults = companies.length;
+	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+	const endIndex = startIndex + ROWS_PER_PAGE;
+	const paginatedCompanies = companies.slice(startIndex, endIndex);
 
 	const handleRowClick = (companyId: string) => {
 		navigate(`/admin/companies/${companyId}`);
@@ -103,7 +114,7 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{companies.map((company) => (
+						{paginatedCompanies.map((company) => (
 							<TableRow
 								key={company._id}
 								className="cursor-pointer hover:bg-muted/50"
@@ -174,6 +185,34 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 					</TableBody>
 				</Table>
 			</div>
+			{totalPages > 1 && (
+				<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="text-sm text-muted-foreground">
+						Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev - 1)}
+							disabled={currentPage === 1}
+						>
+							Previous
+						</Button>
+						<span className="text-sm">
+							Page {currentPage} of {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev + 1)}
+							disabled={currentPage === totalPages}
+						>
+							Next
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

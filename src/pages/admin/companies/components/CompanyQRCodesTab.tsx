@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { QrCode } from "lucide-react";
+import { useState } from "react";
 import adminService from "@/api/services/adminService";
 import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 
@@ -23,13 +25,24 @@ const getStatusBadge = (status: string) => {
 	}
 };
 
+const ROWS_PER_PAGE = 6;
+
 export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
+	const [currentPage, setCurrentPage] = useState(1);
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "company-qrcodes", companyId],
 		queryFn: () => adminService.getAdminQRCodes({ companyId }),
 	});
 
 	const qrCodes = data?.results || [];
+
+	// Pagination calculations
+	const totalResults = qrCodes.length;
+	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+	const endIndex = startIndex + ROWS_PER_PAGE;
+	const paginatedQRCodes = qrCodes.slice(startIndex, endIndex);
 
 	if (isLoading) {
 		return (
@@ -77,37 +90,67 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 	}
 
 	return (
-		<div className="rounded-md border overflow-auto">
-			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead>QR Code</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead>Linked Asset</TableHead>
-						<TableHead>Allocated</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{qrCodes.map((qr) => (
-						<TableRow key={qr.id}>
-							<TableCell className="font-mono text-sm">{qr.qrCode}</TableCell>
-							<TableCell>{getStatusBadge(qr.status)}</TableCell>
-							<TableCell className="text-sm">
-								{qr.assetId ? (
-									<span className="text-primary">
-										{typeof qr.assetId === "object" ? qr.assetId.serialNumber : qr.assetId}
-									</span>
-								) : (
-									<span className="text-muted-foreground">Not linked</span>
-								)}
-							</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{qr.allocatedAt ? format(new Date(qr.allocatedAt), "MMM d, yyyy") : "—"}
-							</TableCell>
+		<div className="rounded-md border flex flex-col">
+			<div className="overflow-auto">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>QR Code</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Linked Asset</TableHead>
+							<TableHead>Allocated</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{paginatedQRCodes.map((qr) => (
+							<TableRow key={qr.id}>
+								<TableCell className="font-mono text-sm">{qr.qrCode}</TableCell>
+								<TableCell>{getStatusBadge(qr.status)}</TableCell>
+								<TableCell className="text-sm">
+									{qr.assetId ? (
+										<span className="text-primary">
+											{typeof qr.assetId === "object" ? qr.assetId.serialNumber : qr.assetId}
+										</span>
+									) : (
+										<span className="text-muted-foreground">Not linked</span>
+									)}
+								</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{qr.allocatedAt ? format(new Date(qr.allocatedAt), "MMM d, yyyy") : "—"}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
+			{totalPages > 1 && (
+				<div className="flex items-center justify-between px-4 py-3 border-t">
+					<div className="text-sm text-muted-foreground">
+						Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
+					</div>
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev - 1)}
+							disabled={currentPage === 1}
+						>
+							Previous
+						</Button>
+						<span className="text-sm">
+							Page {currentPage} of {totalPages}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => setCurrentPage((prev) => prev + 1)}
+							disabled={currentPage === totalPages}
+						>
+							Next
+						</Button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }
