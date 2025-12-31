@@ -30,6 +30,120 @@ const getActionBadge = (action: string) => {
 	return <Badge variant="secondary">{action}</Badge>;
 };
 
+// Field label mappings for different entity types
+const fieldLabelMaps: Record<string, Record<string, string>> = {
+	user: {
+		role: "User Role",
+		isEmailVerified: "Email Verified",
+		mfaEnabled: "Multi-Factor Authentication",
+		isDefaultAdmin: "Default Admin",
+		email: "Email",
+		name: "Name",
+		companyId: "Company ID",
+		mustChangePassword: "Password Change Required",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		status: "Status",
+		profilePic: "Profile Picture",
+		devicePlatform: "Device Platform",
+		lastLogin: "Last Login",
+		id: "User ID",
+	},
+	company: {
+		companyName: "Company Name",
+		contactEmail: "Contact Email",
+		phone: "Phone Number",
+		address: "Address",
+		logo: "Logo",
+		isActive: "Active Status",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		settings: "Settings",
+		verificationFrequency: "Verification Frequency",
+		geofenceThreshold: "Geofence Threshold",
+		allowGPSOverride: "Allow GPS Override",
+		imageRetentionDays: "Image Retention Days",
+		repairNotificationEmails: "Repair Notification Emails",
+		dueSoonDays: "Due Soon Days",
+		totalAssets: "Total Assets",
+		totalUsers: "Total Users",
+		id: "Company ID",
+	},
+	verification: {
+		assetId: "Asset ID",
+		verifiedBy: "Verified By",
+		verificationDate: "Verification Date",
+		status: "Status",
+		location: "Location",
+		coordinates: "Coordinates",
+		imageUrl: "Image URL",
+		images: "Images",
+		notes: "Notes",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		companyId: "Company ID",
+		gpsAccuracy: "GPS Accuracy",
+		deviceInfo: "Device Info",
+		id: "Verification ID",
+	},
+	asset: {
+		serialNumber: "Serial Number",
+		make: "Make",
+		model: "Model",
+		status: "Status",
+		companyId: "Company ID",
+		qrCodeId: "QR Code ID",
+		qrCode: "QR Code",
+		location: "Location",
+		coordinates: "Coordinates",
+		lastVerifiedAt: "Last Verified",
+		nextVerificationDue: "Next Verification Due",
+		verificationFrequency: "Verification Frequency",
+		geofenceThreshold: "Geofence Threshold",
+		notes: "Notes",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		verificationStatus: "Verification Status",
+		id: "Asset ID",
+	},
+	qr_code: {
+		qrCode: "QR Code",
+		status: "Status",
+		companyId: "Company ID",
+		assetId: "Asset ID",
+		allocatedAt: "Allocated Date",
+		usedAt: "Used Date",
+		retiredAt: "Retired Date",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		id: "QR Code ID",
+	},
+	qrCode: {
+		qrCode: "QR Code",
+		status: "Status",
+		companyId: "Company ID",
+		assetId: "Asset ID",
+		allocatedAt: "Allocated Date",
+		usedAt: "Used Date",
+		retiredAt: "Retired Date",
+		createdAt: "Date Created",
+		updatedAt: "Date Updated",
+		id: "QR Code ID",
+	},
+};
+
+const getFieldLabel = (entityType: string, fieldKey: string): string => {
+	const entityMap = fieldLabelMaps[entityType] || {};
+	if (entityMap[fieldKey]) {
+		return entityMap[fieldKey];
+	}
+	// Fallback: convert camelCase to Title Case
+	return fieldKey
+		.replace(/([A-Z])/g, " $1")
+		.replace(/^./, (str) => str.toUpperCase())
+		.trim();
+};
+
 const renderValue = (value: any): string => {
 	if (value === null || value === undefined) return "—";
 	if (typeof value === "boolean") return value ? "Yes" : "No";
@@ -43,7 +157,7 @@ const renderValue = (value: any): string => {
 	return String(value);
 };
 
-const renderChanges = (changes: any) => {
+const renderChanges = (changes: any, entityType: string) => {
 	if (!changes) return null;
 
 	const { before, after } = changes;
@@ -60,7 +174,7 @@ const renderChanges = (changes: any) => {
 								key={key}
 								className="p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900"
 							>
-								<p className="text-xs font-medium text-muted-foreground mb-2">{key}</p>
+								<p className="text-xs font-medium text-muted-foreground mb-2">{getFieldLabel(entityType, key)}</p>
 								<p className="text-sm font-mono break-all">{renderValue(value)}</p>
 							</div>
 						);
@@ -86,7 +200,7 @@ const renderChanges = (changes: any) => {
 				<div className="grid grid-cols-1 gap-4">
 					{changedFields.map((key) => (
 						<div key={key} className="p-4 rounded-lg bg-muted/50 border">
-							<p className="text-sm font-medium text-foreground mb-3">{key}</p>
+							<p className="text-sm font-medium text-foreground mb-3">{getFieldLabel(entityType, key)}</p>
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 								<div className="p-3 rounded bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900">
 									<p className="text-xs text-red-600 dark:text-red-400 font-medium mb-2">Before</p>
@@ -197,7 +311,7 @@ export default function AuditLogDetailPage() {
 											<h2 className="text-lg font-semibold">Changes</h2>
 										</div>
 									</div>
-									<div className="p-6">{renderChanges(log.changes)}</div>
+									<div className="p-6">{renderChanges(log.changes, log.entityType)}</div>
 								</div>
 
 								{/* Metadata Section */}

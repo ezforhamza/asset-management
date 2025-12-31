@@ -26,13 +26,14 @@ export default function UsersPage() {
 		temporaryPassword: string;
 	} | null>(null);
 
-	// Fetch users
+	// Fetch users - request a high limit to get all users
 	const { data, isLoading } = useQuery({
 		queryKey: ["users"],
-		queryFn: () => userService.getUsers(),
+		queryFn: () => userService.getUsers({ limit: 100 }),
 	});
 
 	const users = data?.results || [];
+	const totalResults = data?.totalResults || users.length;
 
 	// Filter users by search
 	const filteredUsers = users?.filter((user: UserInfo) => {
@@ -72,8 +73,8 @@ export default function UsersPage() {
 		}
 	};
 
-	// Stats
-	const totalUsers = users?.length || 0;
+	// Stats - use totalResults from API for accurate count
+	const totalUsers = totalResults;
 	const adminCount = users?.filter((u: UserInfo) => u.role === "customer_admin").length || 0;
 	const fieldUserCount = users?.filter((u: UserInfo) => u.role === "field_user").length || 0;
 
@@ -127,8 +128,8 @@ export default function UsersPage() {
 				</div>
 			</div>
 
-			{/* Table - Scrollable */}
-			<div className="flex-1 overflow-hidden px-6 py-4">
+			{/* Table - Scrollable with max height */}
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
 				<UserTable
 					users={filteredUsers || []}
 					isLoading={isLoading}

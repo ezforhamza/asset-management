@@ -1,4 +1,4 @@
-import type { PaginatedResponse } from "./api";
+import type { PaginatedResponse } from "./admin";
 
 // ============================================
 // Verification Report Types

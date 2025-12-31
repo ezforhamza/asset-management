@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { CheckCircle, Eye } from "lucide-react";
+import { CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -9,9 +9,12 @@ interface ReportTableProps {
 	data: VerificationReportItem[];
 	isLoading: boolean;
 	onViewDetails: (verification: VerificationReportItem) => void;
+	page: number;
+	totalPages: number;
+	onPageChange: (page: number) => void;
 }
 
-export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps) {
+export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, onPageChange }: ReportTableProps) {
 	if (isLoading) {
 		return (
 			<div className="space-y-3">
@@ -48,7 +51,7 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 	};
 
 	return (
-		<div className="rounded-xl border bg-card flex flex-col h-full overflow-hidden">
+		<div className="rounded-xl border bg-card flex flex-col h-full max-h-full overflow-hidden">
 			{/* Fixed Header */}
 			<div className="flex-shrink-0 border-b bg-muted/50 px-4">
 				<div className="grid grid-cols-7 py-3 text-sm font-medium text-muted-foreground gap-4">
@@ -62,7 +65,7 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 				</div>
 			</div>
 			{/* Scrollable Body */}
-			<div className="flex-1 overflow-y-auto">
+			<div className="flex-1 min-h-0 overflow-y-auto">
 				{data.map((item) => (
 					<div
 						key={item._id}
@@ -97,7 +100,9 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 											: "text-emerald-500"
 								}`}
 							>
-								{item.daysUntilDue.toFixed(0)} days
+								{item.daysUntilDue < 0
+									? `${Math.abs(item.daysUntilDue).toFixed(0)} days overdue`
+									: `${item.daysUntilDue.toFixed(0)} days`}
 							</span>
 						</div>
 						<div className="text-sm">{item.totalVerifications}</div>
@@ -109,6 +114,35 @@ export function ReportTable({ data, isLoading, onViewDetails }: ReportTableProps
 						</div>
 					</div>
 				))}
+			</div>
+
+			{/* Pagination Footer - Always visible */}
+			<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+				<p className="text-sm text-muted-foreground">
+					Page {page} of {totalPages || 1}
+				</p>
+				{totalPages > 1 && (
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange(Math.max(1, page - 1))}
+							disabled={page === 1}
+						>
+							<ChevronLeft className="h-4 w-4 mr-1" />
+							Previous
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+							disabled={page === totalPages}
+						>
+							Next
+							<ChevronRight className="h-4 w-4 ml-1" />
+						</Button>
+					</div>
+				)}
 			</div>
 		</div>
 	);

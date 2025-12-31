@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { Building2, Eye, MoreHorizontal, Pencil, Power, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Company } from "#/entity";
 import { Badge } from "@/ui/badge";
@@ -17,26 +18,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 interface CompanyTableProps {
 	companies: Company[];
 	isLoading: boolean;
-	pagination?: {
-		page: number;
-		limit: number;
-		totalPages: number;
-		totalResults: number;
-	};
-	onPageChange?: (page: number) => void;
 	onEdit?: (company: Company) => void;
 	onToggleStatus?: (company: Company) => void;
 }
 
-export function CompanyTable({
-	companies,
-	isLoading,
-	pagination,
-	onPageChange,
-	onEdit,
-	onToggleStatus,
-}: CompanyTableProps) {
+const ROWS_PER_PAGE = 8;
+
+export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
 	const navigate = useNavigate();
+	const [currentPage, setCurrentPage] = useState(1);
+
+	// Pagination calculations
+	const totalResults = companies.length;
+	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+	const endIndex = startIndex + ROWS_PER_PAGE;
+	const paginatedCompanies = companies.slice(startIndex, endIndex);
 
 	const handleRowClick = (companyId: string) => {
 		navigate(`/admin/companies/${companyId}`);
@@ -44,10 +41,10 @@ export function CompanyTable({
 
 	if (isLoading) {
 		return (
-			<div className="rounded-md border flex flex-col" style={{ height: "calc(100vh - 320px)" }}>
-				<div className="flex-1 overflow-auto">
+			<div className="rounded-md border flex flex-col h-full min-h-0">
+				<div className="overflow-auto flex-1 min-h-0">
 					<Table>
-						<TableHeader>
+						<TableHeader className="sticky top-0 bg-background z-10">
 							<TableRow>
 								<TableHead>Company</TableHead>
 								<TableHead>Contact</TableHead>
@@ -102,10 +99,10 @@ export function CompanyTable({
 	}
 
 	return (
-		<div className="rounded-md border flex flex-col" style={{ height: "calc(100vh - 320px)" }}>
-			<div className="flex-1 overflow-auto">
+		<div className="rounded-md border flex flex-col h-full min-h-0">
+			<div className="overflow-auto flex-1 min-h-0">
 				<Table>
-					<TableHeader>
+					<TableHeader className="sticky top-0 bg-background z-10">
 						<TableRow>
 							<TableHead>Company</TableHead>
 							<TableHead>Contact</TableHead>
@@ -117,7 +114,7 @@ export function CompanyTable({
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{companies.map((company) => (
+						{paginatedCompanies.map((company) => (
 							<TableRow
 								key={company._id}
 								className="cursor-pointer hover:bg-muted/50"
@@ -188,29 +185,28 @@ export function CompanyTable({
 					</TableBody>
 				</Table>
 			</div>
-			{pagination && pagination.totalPages > 1 && (
+			{totalPages > 1 && (
 				<div className="flex items-center justify-between px-4 py-3 border-t">
 					<div className="text-sm text-muted-foreground">
-						Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-						{Math.min(pagination.page * pagination.limit, pagination.totalResults)} of {pagination.totalResults} results
+						Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
 					</div>
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => onPageChange?.(pagination.page - 1)}
-							disabled={pagination.page === 1}
+							onClick={() => setCurrentPage((prev) => prev - 1)}
+							disabled={currentPage === 1}
 						>
 							Previous
 						</Button>
 						<span className="text-sm">
-							Page {pagination.page} of {pagination.totalPages}
+							Page {currentPage} of {totalPages}
 						</span>
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={() => onPageChange?.(pagination.page + 1)}
-							disabled={pagination.page === pagination.totalPages}
+							onClick={() => setCurrentPage((prev) => prev + 1)}
+							disabled={currentPage === totalPages}
 						>
 							Next
 						</Button>

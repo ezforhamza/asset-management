@@ -22,17 +22,20 @@ export default function DashboardPage() {
 	const stats = response?.stats;
 
 	// Transform API response to match RecentActivity component expectations
-	const activityData = Array.isArray(activityResponse) ? activityResponse : ((activityResponse as any)?.results ?? []);
-	const recentActivity = activityData.map((item: any) => ({
-		_id: item.id,
-		assetSerialNumber: item.assetId?.serialNumber || "N/A",
-		assetMake: item.assetId?.make || "N/A",
-		assetModel: item.assetId?.model || "N/A",
-		verifiedBy: item.verifiedBy?.name || "N/A",
-		verifiedAt: item.verifiedAt,
-		status: "on_time", // Default to on_time since these are recent verifications
-		distance: item.distanceFromAsset || 0,
-	}));
+	// Reverse the array to show most recent first (API returns oldest first)
+	const recentActivity = ((activityResponse as any)?.results ?? [])
+		.slice()
+		.reverse()
+		.map((item: any) => ({
+			_id: item.id,
+			assetSerialNumber: item.assetId?.serialNumber || "N/A",
+			assetMake: item.assetId?.make || "N/A",
+			assetModel: item.assetId?.model || "N/A",
+			verifiedBy: item.verifiedBy?.name || "N/A",
+			verifiedAt: item.verifiedAt,
+			status: "on_time", // Default to on_time since these are recent verifications
+			distance: item.distanceFromAsset || 0,
+		}));
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">

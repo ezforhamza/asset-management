@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, Filter, Plus, Search } from "lucide-react";
+import { Building2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { Company } from "#/entity";
@@ -17,27 +17,25 @@ export default function AdminCompaniesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 	const [sortBy, setSortBy] = useState("createdAt:desc");
-	const [page, setPage] = useState(1);
-	const [limit] = useState(20);
+	const [limit] = useState(100);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editCompany, setEditCompany] = useState<Company | null>(null);
 	const [toggleCompany, setToggleCompany] = useState<Company | null>(null);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, page, limit],
+		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, limit],
 		queryFn: () =>
 			adminService.getCompanies({
 				companyName: searchQuery || undefined,
 				isActive: statusFilter,
 				sortBy,
-				page,
 				limit,
 			}),
 	});
 
 	const toggleCompanyMutation = useMutation({
 		mutationFn: (company: Company) => adminService.updateCompany(company._id, { isActive: !company.isActive }),
-		onSuccess: (data, variables) => {
+		onSuccess: (_, variables) => {
 			toast.success(`Company ${variables.isActive ? "deactivated" : "activated"} successfully`);
 			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
 		},
@@ -141,7 +139,6 @@ export default function AdminCompaniesPage() {
 								setSearchQuery("");
 								setStatusFilter(undefined);
 								setSortBy("createdAt:desc");
-								setPage(1);
 							}}
 						>
 							Clear Filters
@@ -155,13 +152,6 @@ export default function AdminCompaniesPage() {
 				<CompanyTable
 					companies={companies}
 					isLoading={isLoading}
-					pagination={{
-						page: data?.page || 1,
-						limit: data?.limit || limit,
-						totalPages: data?.totalPages || 1,
-						totalResults: data?.totalResults || 0,
-					}}
-					onPageChange={setPage}
 					onEdit={setEditCompany}
 					onToggleStatus={setToggleCompany}
 				/>
