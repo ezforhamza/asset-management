@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
 	// Transform API response to match RecentActivity component expectations
 	// Reverse the array to show most recent first (API returns oldest first)
-	const recentActivity = (activityResponse?.results ?? [])
+	const recentActivity = ((activityResponse as any)?.results ?? [])
 		.slice()
 		.reverse()
 		.map((item: any) => ({

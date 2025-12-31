@@ -151,8 +151,8 @@ export default function ReportsPage() {
 				)}
 			</div>
 
-			{/* Table - Scrollable area */}
-			<div className="flex-1 overflow-hidden px-6 py-4">
+			{/* Table - Scrollable area with max height */}
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
 				<ReportTable
 					data={filteredData}
 					isLoading={isLoading}

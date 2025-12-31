@@ -51,7 +51,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 	};
 
 	return (
-		<div className="rounded-xl border bg-card flex flex-col h-full overflow-hidden">
+		<div className="rounded-xl border bg-card flex flex-col h-full max-h-full overflow-hidden">
 			{/* Fixed Header */}
 			<div className="flex-shrink-0 border-b bg-muted/50 px-4">
 				<div className="grid grid-cols-7 py-3 text-sm font-medium text-muted-foreground gap-4">
@@ -65,7 +65,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 				</div>
 			</div>
 			{/* Scrollable Body */}
-			<div className="flex-1 overflow-y-auto">
+			<div className="flex-1 min-h-0 overflow-y-auto">
 				{data.map((item) => (
 					<div
 						key={item._id}
@@ -116,12 +116,12 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 				))}
 			</div>
 
-			{/* Pagination Footer */}
-			{totalPages > 1 && (
-				<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
-					<p className="text-sm text-muted-foreground">
-						Page {page} of {totalPages}
-					</p>
+			{/* Pagination Footer - Always visible */}
+			<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+				<p className="text-sm text-muted-foreground">
+					Page {page} of {totalPages || 1}
+				</p>
+				{totalPages > 1 && (
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
@@ -142,8 +142,8 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							<ChevronRight className="h-4 w-4 ml-1" />
 						</Button>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 }

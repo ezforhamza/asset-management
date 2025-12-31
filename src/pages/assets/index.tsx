@@ -199,103 +199,105 @@ export default function AssetsPage() {
 			</div>
 
 			{/* Table */}
-			<div className="flex-1 overflow-auto px-6 py-4">
-				<div className="rounded-md border">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Serial Number</TableHead>
-								<TableHead>Make / Model</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Verification</TableHead>
-								<TableHead>Frequency</TableHead>
-								<TableHead className="w-[50px]" />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{isLoading ? (
-								Array.from({ length: 10 }).map((_, i) => (
-									<TableRow key={`skeleton-${i}`}>
-										<TableCell>
-											<Skeleton className="h-4 w-24" />
-										</TableCell>
-										<TableCell>
-											<Skeleton className="h-4 w-32" />
-										</TableCell>
-										<TableCell>
-											<Skeleton className="h-5 w-16" />
-										</TableCell>
-										<TableCell>
-											<Skeleton className="h-5 w-20" />
-										</TableCell>
-										<TableCell>
-											<Skeleton className="h-4 w-16" />
-										</TableCell>
-										<TableCell>
-											<Skeleton className="h-8 w-8" />
-										</TableCell>
-									</TableRow>
-								))
-							) : filteredAssets.length === 0 ? (
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
+				<div className="rounded-md border flex flex-col h-full max-h-full overflow-hidden">
+					<div className="flex-1 min-h-0 overflow-auto">
+						<Table>
+							<TableHeader className="sticky top-0 bg-background z-10">
 								<TableRow>
-									<TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-										No assets found
-									</TableCell>
+									<TableHead>Serial Number</TableHead>
+									<TableHead>Make / Model</TableHead>
+									<TableHead>Status</TableHead>
+									<TableHead>Verification</TableHead>
+									<TableHead>Frequency</TableHead>
+									<TableHead className="w-[50px]" />
 								</TableRow>
-							) : (
-								filteredAssets.map((asset) => (
-									<TableRow key={getAssetId(asset)}>
-										<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
-										<TableCell>
-											{asset.make} {asset.model}
-										</TableCell>
-										<TableCell>{getStatusBadge(asset.status)}</TableCell>
-										<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
-										<TableCell className="text-muted-foreground">
-											{asset.verificationFrequency != null ? `${asset.verificationFrequency} days` : "—"}
-										</TableCell>
-										<TableCell>
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button variant="ghost" size="icon" className="h-8 w-8">
-														<MoreHorizontal className="h-4 w-4" />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													<DropdownMenuItem onClick={() => handleEditClick(asset)}>
-														<Pencil className="h-4 w-4 mr-2" />
-														Edit
-													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => handleRetireClick(asset)}
-														disabled={asset.status === "retired"}
-													>
-														<XCircle className="h-4 w-4 mr-2" />
-														Retire
-													</DropdownMenuItem>
-													<DropdownMenuSeparator />
-													<DropdownMenuItem
-														onClick={() => handleDeleteClick(asset)}
-														className="text-destructive focus:text-destructive"
-													>
-														<Trash2 className="h-4 w-4 mr-2" />
-														Delete
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
+							</TableHeader>
+							<TableBody>
+								{isLoading ? (
+									Array.from({ length: 10 }).map((_, i) => (
+										<TableRow key={`skeleton-${i}`}>
+											<TableCell>
+												<Skeleton className="h-4 w-24" />
+											</TableCell>
+											<TableCell>
+												<Skeleton className="h-4 w-32" />
+											</TableCell>
+											<TableCell>
+												<Skeleton className="h-5 w-16" />
+											</TableCell>
+											<TableCell>
+												<Skeleton className="h-5 w-20" />
+											</TableCell>
+											<TableCell>
+												<Skeleton className="h-4 w-16" />
+											</TableCell>
+											<TableCell>
+												<Skeleton className="h-8 w-8" />
+											</TableCell>
+										</TableRow>
+									))
+								) : filteredAssets.length === 0 ? (
+									<TableRow>
+										<TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+											No assets found
 										</TableCell>
 									</TableRow>
-								))
-							)}
-						</TableBody>
-					</Table>
+								) : (
+									filteredAssets.map((asset) => (
+										<TableRow key={getAssetId(asset)}>
+											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
+											<TableCell>
+												{asset.make} {asset.model}
+											</TableCell>
+											<TableCell>{getStatusBadge(asset.status)}</TableCell>
+											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
+											<TableCell className="text-muted-foreground">
+												{asset.verificationFrequency != null ? `${asset.verificationFrequency} days` : "—"}
+											</TableCell>
+											<TableCell>
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button variant="ghost" size="icon" className="h-8 w-8">
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem onClick={() => handleEditClick(asset)}>
+															<Pencil className="h-4 w-4 mr-2" />
+															Edit
+														</DropdownMenuItem>
+														<DropdownMenuItem
+															onClick={() => handleRetireClick(asset)}
+															disabled={asset.status === "retired"}
+														>
+															<XCircle className="h-4 w-4 mr-2" />
+															Retire
+														</DropdownMenuItem>
+														<DropdownMenuSeparator />
+														<DropdownMenuItem
+															onClick={() => handleDeleteClick(asset)}
+															className="text-destructive focus:text-destructive"
+														>
+															<Trash2 className="h-4 w-4 mr-2" />
+															Delete
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											</TableCell>
+										</TableRow>
+									))
+								)}
+							</TableBody>
+						</Table>
+					</div>
 
-					{/* Pagination inside table container */}
-					{totalPages > 0 && (
-						<div className="flex items-center justify-between px-4 py-3 border-t">
-							<p className="text-sm text-muted-foreground">
-								Page {page} of {totalPages}
-							</p>
+					{/* Pagination Footer - Always visible */}
+					<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+						<p className="text-sm text-muted-foreground">
+							Page {page} of {totalPages || 1}
+						</p>
+						{totalPages > 1 && (
 							<div className="flex items-center gap-2">
 								<Button
 									variant="outline"
@@ -316,8 +318,8 @@ export default function AssetsPage() {
 									<ChevronRight className="h-4 w-4 ml-1" />
 								</Button>
 							</div>
-						</div>
-					)}
+						)}
+					</div>
 				</div>
 			</div>
 

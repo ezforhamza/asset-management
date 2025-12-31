@@ -24,7 +24,7 @@ interface UserTableProps {
 	onDeactivate: (user: UserInfo) => void;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const getRoleBadge = (role?: UserRole) => {
 	if (role === UserRole.CUSTOMER_ADMIN) {
@@ -92,85 +92,88 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 	}
 
 	return (
-		<div className="rounded-xl border overflow-hidden flex flex-col h-full">
-			<Table>
-				<TableHeader>
-					<TableRow className="bg-muted/50">
-						<TableHead>User</TableHead>
-						<TableHead>Role</TableHead>
-						<TableHead>Status</TableHead>
-						<TableHead>Last Login</TableHead>
-						<TableHead className="text-right">Actions</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{paginatedUsers.map((user) => (
-						<TableRow key={user.id} className="hover:bg-muted/30">
-							<TableCell>
-								<div className="flex items-center gap-3">
-									<Avatar className="h-10 w-10">
-										<AvatarImage src={user.profilePic || undefined} alt={user.name} />
-										<AvatarFallback className="bg-primary/10 text-primary font-medium">
-											{getInitials(user.name)}
-										</AvatarFallback>
-									</Avatar>
-									<div>
-										<p className="font-medium">{user.name}</p>
-										<p className="text-sm text-muted-foreground">{user.email}</p>
-									</div>
-								</div>
-							</TableCell>
-							<TableCell>{getRoleBadge(user.role)}</TableCell>
-							<TableCell>
-								{user.mustChangePassword ? (
-									<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
-										Pending Setup
-									</Badge>
-								) : (
-									<Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-										Active
-									</Badge>
-								)}
-							</TableCell>
-							<TableCell className="text-muted-foreground">
-								{user.lastLogin ? format(new Date(user.lastLogin), "MMM dd, yyyy") : "Never"}
-							</TableCell>
-							<TableCell className="text-right">
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon" className="h-8 w-8">
-											<MoreHorizontal className="h-4 w-4" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => onEdit(user)}>
-											<Edit className="h-4 w-4 mr-2" />
-											Edit User
-										</DropdownMenuItem>
-										<DropdownMenuItem onClick={() => onResetPassword(user)}>
-											<KeyRound className="h-4 w-4 mr-2" />
-											Reset Password
-										</DropdownMenuItem>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem onClick={() => onDeactivate(user)} className="text-red-500 focus:text-red-500">
-											<UserX className="h-4 w-4 mr-2" />
-											Deactivate
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</TableCell>
+		<div className="rounded-xl border overflow-hidden flex flex-col h-full max-h-full">
+			{/* Scrollable Table Container */}
+			<div className="flex-1 min-h-0 overflow-auto">
+				<Table>
+					<TableHeader className="sticky top-0 bg-muted/50 z-10">
+						<TableRow>
+							<TableHead>User</TableHead>
+							<TableHead>Role</TableHead>
+							<TableHead>Status</TableHead>
+							<TableHead>Last Login</TableHead>
+							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{paginatedUsers.map((user) => (
+							<TableRow key={user.id} className="hover:bg-muted/30">
+								<TableCell>
+									<div className="flex items-center gap-3">
+										<Avatar className="h-10 w-10">
+											<AvatarImage src={user.profilePic || undefined} alt={user.name} />
+											<AvatarFallback className="bg-primary/10 text-primary font-medium">
+												{getInitials(user.name)}
+											</AvatarFallback>
+										</Avatar>
+										<div>
+											<p className="font-medium">{user.name}</p>
+											<p className="text-sm text-muted-foreground">{user.email}</p>
+										</div>
+									</div>
+								</TableCell>
+								<TableCell>{getRoleBadge(user.role)}</TableCell>
+								<TableCell>
+									{user.mustChangePassword ? (
+										<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+											Pending Setup
+										</Badge>
+									) : (
+										<Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+											Active
+										</Badge>
+									)}
+								</TableCell>
+								<TableCell className="text-muted-foreground">
+									{user.lastLogin ? format(new Date(user.lastLogin), "MMM dd, yyyy") : "Never"}
+								</TableCell>
+								<TableCell className="text-right">
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon" className="h-8 w-8">
+												<MoreHorizontal className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onClick={() => onEdit(user)}>
+												<Edit className="h-4 w-4 mr-2" />
+												Edit User
+											</DropdownMenuItem>
+											<DropdownMenuItem onClick={() => onResetPassword(user)}>
+												<KeyRound className="h-4 w-4 mr-2" />
+												Reset Password
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem onClick={() => onDeactivate(user)} className="text-red-500 focus:text-red-500">
+												<UserX className="h-4 w-4 mr-2" />
+												Deactivate
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</div>
 
-			{/* Pagination Footer */}
-			{totalPages > 1 && (
-				<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
-					<p className="text-sm text-muted-foreground">
-						Showing {(page - 1) * ITEMS_PER_PAGE + 1} - {Math.min(page * ITEMS_PER_PAGE, users.length)} of{" "}
-						{users.length} users
-					</p>
+			{/* Pagination Footer - Always visible */}
+			<div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+				<p className="text-sm text-muted-foreground">
+					Showing {(page - 1) * ITEMS_PER_PAGE + 1} - {Math.min(page * ITEMS_PER_PAGE, users.length)} of {users.length}{" "}
+					users
+				</p>
+				{totalPages > 1 && (
 					<div className="flex items-center gap-2">
 						<Button
 							variant="outline"
@@ -194,8 +197,8 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 							<ChevronRight className="h-4 w-4 ml-1" />
 						</Button>
 					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 }
