@@ -46,7 +46,7 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 
 	const mutation = useMutation({
 		mutationFn: adminService.createCompany,
-		onSuccess: (data, variables) => {
+		onSuccess: (_data, variables) => {
 			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
 			// Show credentials screen
 			setCredentials({

@@ -76,15 +76,27 @@ export const API_ENDPOINTS = {
 	REPORTS: {
 		VERIFICATIONS: "/reports/verifications",
 		OVERDUE: "/reports/overdue",
-		MAP: "/reports/map",
 		DASHBOARD: "/reports/dashboard",
 		EXPORT: "/reports/export",
 	},
+
+	// Assets Map
+	ASSETS_MAP: "/assets/map",
 
 	// Uploads
 	UPLOADS: {
 		PHOTO: "/uploads/photo",
 		BULK: "/uploads/bulk",
+	},
+
+	// Allocations
+	ALLOCATIONS: {
+		ALLOCATE: "/allocations/allocate",
+		UNALLOCATE: "/allocations/unallocate",
+		REASSIGN: "/allocations/reassign",
+		SUMMARY: "/allocations/summary",
+		FIELD_WORKER_ASSETS: (fieldWorkerId: string) => `/allocations/field-worker/${fieldWorkerId}/assets`,
+		BULK_ALLOCATE: "/allocations/bulk-allocate",
 	},
 } as const;
 

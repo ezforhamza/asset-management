@@ -30,14 +30,14 @@ export default function AdminUsersPage() {
 	const companies = companiesData?.results || [];
 
 	// Client-side search filter
-	const filteredUsers = users.filter((user: any) => {
+	const filteredUsers = users.filter((user) => {
 		if (!searchQuery) return true;
 		const query = searchQuery.toLowerCase();
 		return user.name?.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query);
 	});
 
 	const totalUsers = data?.totalResults || 0;
-	const adminCount = users.filter((u: any) => u.role === "customer_admin" || u.role === "system_admin").length;
+	const adminCount = users.filter((u) => u.role === "customer_admin" || u.role === "system_admin").length;
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Companies</SelectItem>
-						{companies.map((company: any) => (
+						{companies.map((company) => (
 							<SelectItem key={company._id} value={company._id}>
 								{company.companyName}
 							</SelectItem>

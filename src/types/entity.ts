@@ -136,19 +136,46 @@ export interface Asset {
 				allocatedAt: string;
 				linkedAt: string | null;
 		  };
+	qrCode?: {
+		id: string;
+		code: string;
+		status: string;
+		linkedAt: string | null;
+	} | null;
 	serialNumber: string;
 	make: string;
 	model: string;
+	category?: {
+		id: string;
+		name: string;
+	} | null;
+	condition?: string | null;
+	channel?: string | null;
+	siteName?: string | null;
+	client?: string | null;
 	registeredLocation: { type: string; coordinates: [number, number] } | GeoLocation;
+	location?: {
+		longitude: number;
+		latitude: number;
+		mapLink: string;
+	} | null;
 	locationAccuracy: number;
-	registeredBy: string | { id: string; name: string; email: string; role: string; status: string; companyId: string };
+	locationDescription?: string | null;
+	registeredBy:
+		| string
+		| { id: string; name: string; email: string; role?: string; status?: string; companyId?: string };
 	registeredAt: string;
 	status: AssetStatus;
+	registrationState?: string;
 	verificationFrequency: number | null;
 	geofenceThreshold: number | null;
 	lastVerifiedAt: string | null;
 	nextVerificationDue: string;
+	totalVerifications?: number;
+	daysUntilDue?: number;
 	photos: string[];
+	notes?: string | null;
+	allocatedTo?: string | null;
 	createdAt?: string;
 	updatedAt?: string;
 	// Computed field for UI
@@ -312,4 +339,22 @@ export interface AuditLog {
 	changes: Record<string, { old: unknown; new: unknown }>;
 	timestamp: string;
 	ipAddress?: string;
+}
+
+// ============================================
+// Asset Allocation Entities
+// ============================================
+
+export interface FieldWorkerAllocationSummary {
+	fieldWorkerId: string;
+	name: string;
+	email: string;
+	allocatedAssets: number;
+}
+
+export interface AllocationSummary {
+	totalAssets: number;
+	allocatedAssets: number;
+	unallocatedAssets: number;
+	fieldWorkers: FieldWorkerAllocationSummary[];
 }

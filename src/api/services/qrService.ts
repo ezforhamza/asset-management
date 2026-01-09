@@ -75,18 +75,7 @@ export interface QRCodeCheckRes {
 	} | null;
 }
 
-// Re-export types for consumers
-export type {
-	QRCodesListParams,
-	QRCodesListRes,
-	CreateQRCodeReq,
-	BulkCreateQRCodesReq,
-	AllocateQRCodesReq,
-	UpdateQRCodeReq,
-	BulkImportRes,
-	QRCodeStatsRes,
-	QRCodeCheckRes,
-};
+// Types are already exported via their interface declarations above
 
 // ============================================
 // QR Service Methods

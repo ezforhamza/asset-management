@@ -15,7 +15,7 @@ export default function AdminMonitoringPage() {
 		refetch,
 	} = useQuery({
 		queryKey: ["admin", "monitoring"],
-		queryFn: adminService.getMonitoringStats,
+		queryFn: () => adminService.getMonitoringStats(),
 		refetchInterval: 30000, // Refresh every 30 seconds
 	});
 

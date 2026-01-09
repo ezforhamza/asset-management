@@ -17,25 +17,27 @@ export default function AdminCompaniesPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 	const [sortBy, setSortBy] = useState("createdAt:desc");
+	const [page, setPage] = useState(1);
 	const [limit] = useState(100);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editCompany, setEditCompany] = useState<Company | null>(null);
 	const [toggleCompany, setToggleCompany] = useState<Company | null>(null);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, limit],
+		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, page, limit],
 		queryFn: () =>
 			adminService.getCompanies({
 				companyName: searchQuery || undefined,
 				isActive: statusFilter,
 				sortBy,
+				page,
 				limit,
 			}),
 	});
 
 	const toggleCompanyMutation = useMutation({
 		mutationFn: (company: Company) => adminService.updateCompany(company._id, { isActive: !company.isActive }),
-		onSuccess: (_, variables) => {
+		onSuccess: (_data, variables) => {
 			toast.success(`Company ${variables.isActive ? "deactivated" : "activated"} successfully`);
 			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
 		},
@@ -139,6 +141,7 @@ export default function AdminCompaniesPage() {
 								setSearchQuery("");
 								setStatusFilter(undefined);
 								setSortBy("createdAt:desc");
+								setPage(1);
 							}}
 						>
 							Clear Filters
@@ -148,7 +151,7 @@ export default function AdminCompaniesPage() {
 			</div>
 
 			{/* Table */}
-			<div className="flex-1 overflow-auto px-6 py-4">
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4 flex flex-col">
 				<CompanyTable
 					companies={companies}
 					isLoading={isLoading}

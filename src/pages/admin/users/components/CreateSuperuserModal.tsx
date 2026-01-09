@@ -36,16 +36,16 @@ export function CreateSuperuserModal({ open, onClose }: CreateSuperuserModalProp
 	});
 
 	const mutation = useMutation({
-		mutationFn: (values: FormValues) =>
-			adminService.createUser({
-				name: values.name,
-				email: values.email,
+		mutationFn: (data: FormValues) =>
+			adminService.createSuperuser({
+				name: data.name,
+				email: data.email,
+				companyId: data.companyId,
 				role: "customer_admin",
-				companyId: values.companyId,
 			}),
-		onSuccess: (data: any) => {
-			setTempPassword(data.temporaryPassword || null);
-			toast.success(data.message || "Superuser created");
+		onSuccess: (response) => {
+			setTempPassword(response.temporaryPassword ?? null);
+			toast.success(response.message || "Superuser created");
 			queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
 		},
 		onError: () => {
@@ -129,7 +129,7 @@ export function CreateSuperuserModal({ open, onClose }: CreateSuperuserModalProp
 											</SelectTrigger>
 										</FormControl>
 										<SelectContent>
-											{companies.map((company: any) => (
+											{companies.map((company: { _id: string; companyName: string }) => (
 												<SelectItem key={company._id} value={company._id}>
 													{company.companyName}
 												</SelectItem>

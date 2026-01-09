@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, Edit, KeyRound, Mail, MoreHorizontal, UserX } from "lucide-react";
+import { ChevronLeft, ChevronRight, Edit, KeyRound, Mail, MoreHorizontal, Package, UserX } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { UserInfo } from "#/entity";
 import { UserRole } from "#/enum";
@@ -22,6 +22,8 @@ interface UserTableProps {
 	onEdit: (user: UserInfo) => void;
 	onResetPassword: (user: UserInfo) => void;
 	onDeactivate: (user: UserInfo) => void;
+	onViewAssets?: (user: UserInfo) => void;
+	getFieldWorkerAllocatedCount?: (userId: string) => number;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -51,7 +53,15 @@ const getInitials = (name?: string) => {
 		.slice(0, 2);
 };
 
-export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactivate }: UserTableProps) {
+export function UserTable({
+	users,
+	isLoading,
+	onEdit,
+	onResetPassword,
+	onDeactivate,
+	onViewAssets,
+	getFieldWorkerAllocatedCount,
+}: UserTableProps) {
 	const [page, setPage] = useState(1);
 
 	// Calculate pagination
@@ -137,6 +147,14 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 								<TableCell className="text-muted-foreground">
 									{user.lastLogin ? format(new Date(user.lastLogin), "MMM dd, yyyy") : "Never"}
 								</TableCell>
+								{user.role === UserRole.FIELD_USER && getFieldWorkerAllocatedCount && (
+									<TableCell>
+										<div className="flex items-center gap-2 text-sm">
+											<Package className="h-4 w-4 text-muted-foreground" />
+											<span>{getFieldWorkerAllocatedCount(user.id)} assets</span>
+										</div>
+									</TableCell>
+								)}
 								<TableCell className="text-right">
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
@@ -153,6 +171,15 @@ export function UserTable({ users, isLoading, onEdit, onResetPassword, onDeactiv
 												<KeyRound className="h-4 w-4 mr-2" />
 												Reset Password
 											</DropdownMenuItem>
+											{user.role === UserRole.FIELD_USER && onViewAssets && (
+												<>
+													<DropdownMenuSeparator />
+													<DropdownMenuItem onClick={() => onViewAssets(user)}>
+														<Package className="h-4 w-4 mr-2" />
+														View Allocated Assets
+													</DropdownMenuItem>
+												</>
+											)}
 											<DropdownMenuSeparator />
 											<DropdownMenuItem onClick={() => onDeactivate(user)} className="text-red-500 focus:text-red-500">
 												<UserX className="h-4 w-4 mr-2" />

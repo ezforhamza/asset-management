@@ -18,7 +18,7 @@ export const userHandlers = [
 		}
 
 		if (status) {
-			users = users.filter((u) => (status === "active" ? u.status !== 0 : u.status === 0));
+			users = users.filter((u) => (status === "active" ? u.status !== "inactive" : u.status === "inactive"));
 		}
 
 		return HttpResponse.json(users);

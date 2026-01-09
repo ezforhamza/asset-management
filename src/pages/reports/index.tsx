@@ -42,13 +42,15 @@ export default function ReportsPage() {
 
 	// Client-side filtering (search + date range by nextVerificationDue)
 	const filteredData = useMemo(() => {
-		if (!data?.results) return [];
+		if (!data) return [];
+		const dataResults = data.results;
+		if (!dataResults) return [];
 
-		let results = data.results;
+		let results = [...dataResults];
 
 		// Filter by date range (nextVerificationDue)
 		if (dateRange?.from || dateRange?.to) {
-			results = results.filter((v) => {
+			results = results.filter((v: VerificationReportItem) => {
 				if (!v.nextVerificationDue) return false;
 				const nextDue = new Date(v.nextVerificationDue);
 				// Set time to start/end of day for accurate comparison
@@ -69,7 +71,7 @@ export default function ReportsPage() {
 		// Filter by search query
 		if (searchQuery) {
 			const query = searchQuery.toLowerCase();
-			results = results.filter((v) => {
+			results = results.filter((v: VerificationReportItem) => {
 				return (
 					v.serialNumber?.toLowerCase().includes(query) ||
 					v.make?.toLowerCase().includes(query) ||
@@ -80,7 +82,7 @@ export default function ReportsPage() {
 		}
 
 		return results;
-	}, [data?.results, searchQuery, dateRange]);
+	}, [data, searchQuery, dateRange]);
 
 	const handleViewDetails = (verification: VerificationReportItem) => {
 		setSelectedVerification(verification);

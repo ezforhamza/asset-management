@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+// AlertTriangle removed - not used in this file
 import type { VerificationReportItem } from "#/report";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";

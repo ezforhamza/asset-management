@@ -12,6 +12,10 @@ export interface AssetsListParams {
 	model?: string;
 	status?: string;
 	verificationStatus?: string;
+	categoryId?: string;
+	client?: string;
+	siteName?: string;
+	channel?: string;
 	sortBy?: string;
 	page?: number;
 	limit?: number;
@@ -34,22 +38,24 @@ export interface UpdateAssetReq {
 	geofenceThreshold?: number | null;
 }
 
-export interface BulkImportAssetReq {
-	assets: Array<{
-		serialNumber: string;
-		make: string;
-		model: string;
-		verificationFrequency?: number;
-		location?: string;
-		notes?: string;
-	}>;
+export interface CreateAssetReq {
+	serialNumber: string;
+	make: string;
+	model: string;
+	category: string;
+	condition?: string;
+	verificationFrequency?: number;
+	locationDescription?: string;
+	notes?: string;
 }
 
 export interface BulkImportAssetRes {
 	success: boolean;
 	imported: number;
-	failed: number;
-	errors: Array<{ row: number; error: string }>;
+	duplicates?: number;
+	duplicatesList?: string[];
+	errors: string[];
+	totalProcessed: number;
 }
 
 export interface TransferAssetReq {
@@ -99,8 +105,17 @@ const getAssetById = (assetId: string) => apiClient.get<Asset>({ url: `${AssetAp
 const updateAsset = (assetId: string, data: UpdateAssetReq) =>
 	apiClient.patch<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}`, data });
 
-const bulkImportAssets = (data: BulkImportAssetReq) =>
-	apiClient.post<BulkImportAssetRes>({ url: `${AssetApi.Assets}/bulk-import`, data });
+const createAsset = (data: CreateAssetReq) => apiClient.post<Asset>({ url: `${AssetApi.Assets}/create`, data });
+
+const bulkImportAssets = (file: File) => {
+	const formData = new FormData();
+	formData.append("file", file);
+	return apiClient.post<BulkImportAssetRes>({
+		url: `${AssetApi.Assets}/bulk-import`,
+		data: formData,
+		headers: { "Content-Type": "multipart/form-data" },
+	});
+};
 
 const transferAsset = (data: TransferAssetReq) =>
 	apiClient.post<TransferAssetRes>({ url: `${AssetApi.Assets}/transfer`, data });
@@ -131,6 +146,7 @@ export default {
 	// Assets
 	getAssets,
 	getAssetById,
+	createAsset,
 	updateAsset,
 	deleteAsset,
 	bulkImportAssets,

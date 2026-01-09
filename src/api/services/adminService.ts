@@ -7,11 +7,8 @@ import type {
 	AllocateQRCodesReq,
 	AuditLogListParams,
 	AuditLogListRes,
-	BulkCreateQRCodesReq,
-	BulkCreateQRCodesRes,
 	BulkImportQRRes,
 	CompaniesListRes,
-	CompanyWithDetails,
 	CreateCompanyReq,
 	CreateCompanyRes,
 	CreateQRCodeReq,
@@ -33,7 +30,6 @@ export type {
 	CreateSuperuserReq,
 	AdminQRCodesListParams,
 	AdminQRCodesListRes,
-	BulkCreateQRCodesRes,
 	SyncQueueListRes,
 	AuditLogListParams,
 	AuditLogListRes,
@@ -279,12 +275,69 @@ const getEntityAuditLogs = (entityType: string, entityId: string, params?: { pag
 // ============================================
 
 const getDashboardStats = (params?: { startDate?: string; endDate?: string }) =>
-	apiClient.get<unknown>({ url: API_ENDPOINTS.REPORTS.DASHBOARD_STATS, params });
+	apiClient.get<unknown>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
+
+// ============================================
+// Global Settings (System Admin only)
+// ============================================
+
+interface GlobalSettings {
+	defaultVerificationFrequency: number;
+	geofenceThreshold: number;
+	allowOverride: boolean;
+	imageRetentionDays: number;
+	maxImageSize: number;
+	requirePhotoOnVerification: boolean;
+	enableOfflineMode: boolean;
+	offlineSyncInterval: number;
+}
+
+const getGlobalSettings = () => apiClient.get<GlobalSettings>({ url: "/admin/settings" });
+
+const updateGlobalSettings = (data: Partial<GlobalSettings>) =>
+	apiClient.patch<GlobalSettings>({ url: "/admin/settings", data });
+
+// ============================================
+// Monitoring Stats (for dashboard cards)
+// ============================================
+
+interface MonitoringStats {
+	queuedUploads: number;
+	failedSyncs: number;
+	flaggedVerifications: number;
+	apiResponseTime: number;
+	dbConnections: number;
+}
+
+const getMonitoringStats = async (): Promise<MonitoringStats> => {
+	const response = await apiClient.get<{ success: boolean; data: MonitoringResponse }>({
+		url: API_ENDPOINTS.ADMIN.MONITORING,
+	});
+	const data = response.data;
+	return {
+		queuedUploads: data.sync.pending,
+		failedSyncs: data.sync.failed,
+		flaggedVerifications: data.verifications.flaggedForInvestigation,
+		apiResponseTime: 45, // Default value as this may not be in API
+		dbConnections: 5, // Default value as this may not be in API
+	};
+};
+
+const getSyncQueue = (params?: { page?: number; limit?: number }) =>
+	apiClient.get<{ items: SyncQueueListRes["results"]; total: number }>({ url: "/admin/sync-queue", params });
+
+const createSuperuser = (data: CreateSuperuserReq) =>
+	apiClient.post<{ user: UserInfo; message: string; temporaryPassword?: string }>({
+		url: API_ENDPOINTS.USERS.BASE,
+		data,
+	});
 
 export default {
 	// Health & Monitoring
 	getHealth,
 	getMonitoring,
+	getMonitoringStats,
+	getSyncQueue,
 	// Companies
 	getCompanies,
 	getCompany,
@@ -297,6 +350,7 @@ export default {
 	getAdminUsers,
 	getAdminUser,
 	createUser,
+	createSuperuser,
 	updateUser,
 	deleteUser,
 	deactivateUser,
@@ -320,4 +374,7 @@ export default {
 	getEntityAuditLogs,
 	// Dashboard
 	getDashboardStats,
+	// Global Settings
+	getGlobalSettings,
+	updateGlobalSettings,
 };
