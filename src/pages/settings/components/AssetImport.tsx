@@ -145,7 +145,7 @@ export function AssetImport() {
 			e.stopPropagation();
 			setDragActive(false);
 
-			if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+			if (e.dataTransfer.files?.[0]) {
 				const droppedFile = e.dataTransfer.files[0];
 				if (droppedFile.type === "text/csv" || droppedFile.name.endsWith(".csv")) {
 					handleFileChange(droppedFile);
