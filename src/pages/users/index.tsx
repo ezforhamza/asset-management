@@ -3,12 +3,14 @@ import { Search, Shield, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
+import allocationService from "@/api/services/allocationService";
 import userService from "@/api/services/userService";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { CreateUserModal } from "./components/CreateUserModal";
 import { EditUserModal } from "./components/EditUserModal";
+import { FieldWorkerAssetsModal } from "./components/FieldWorkerAssetsModal";
 import { PasswordResetModal } from "./components/PasswordResetModal";
 import { UserTable } from "./components/UserTable";
 
@@ -26,11 +28,27 @@ export default function UsersPage() {
 		temporaryPassword: string;
 	} | null>(null);
 
+	// Field worker assets modal
+	const [viewAssetsModalOpen, setViewAssetsModalOpen] = useState(false);
+	const [selectedFieldWorker, setSelectedFieldWorker] = useState<{ id: string; name: string } | null>(null);
+
 	// Fetch users - request a high limit to get all users
 	const { data, isLoading } = useQuery({
 		queryKey: ["users"],
 		queryFn: () => userService.getUsers({ limit: 100 }),
 	});
+
+	// Fetch allocation summary
+	const { data: allocationSummary } = useQuery({
+		queryKey: ["allocation-summary"],
+		queryFn: () => allocationService.getAllocationSummary(),
+	});
+
+	const fieldWorkerAllocations = allocationSummary?.fieldWorkers || [];
+
+	const getFieldWorkerAllocatedCount = (fieldWorkerId: string) => {
+		return fieldWorkerAllocations.find((fw) => fw.fieldWorkerId === fieldWorkerId)?.allocatedAssets || 0;
+	};
 
 	const users = data?.results || [];
 	const totalResults = data?.totalResults || users.length;
@@ -136,6 +154,11 @@ export default function UsersPage() {
 					onEdit={setEditUser}
 					onResetPassword={setResetPasswordUser}
 					onDeactivate={setDeactivateUser}
+					onViewAssets={(user) => {
+						setSelectedFieldWorker({ id: user.id, name: user.name });
+						setViewAssetsModalOpen(true);
+					}}
+					getFieldWorkerAllocatedCount={getFieldWorkerAllocatedCount}
 				/>
 			</div>
 
@@ -169,6 +192,16 @@ export default function UsersPage() {
 				userName={passwordResetResult?.userName || ""}
 				temporaryPassword={passwordResetResult?.temporaryPassword || ""}
 			/>
+
+			{/* Field Worker Assets Modal */}
+			{selectedFieldWorker && (
+				<FieldWorkerAssetsModal
+					open={viewAssetsModalOpen}
+					onOpenChange={setViewAssetsModalOpen}
+					fieldWorkerId={selectedFieldWorker.id}
+					fieldWorkerName={selectedFieldWorker.name}
+				/>
+			)}
 		</div>
 	);
 }

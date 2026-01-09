@@ -98,7 +98,7 @@ const getOverdueAssets = (params?: OverdueAssetsParams) =>
 	apiClient.get<OverdueAssetsRes>({ url: API_ENDPOINTS.REPORTS.OVERDUE, params });
 
 const getMapAssets = (params?: MapAssetsParams) =>
-	apiClient.get<MapAssetsRes>({ url: API_ENDPOINTS.REPORTS.MAP, params });
+	apiClient.get<MapAssetsRes>({ url: API_ENDPOINTS.ASSETS_MAP, params });
 
 const getDashboardStats = (params?: DashboardStatsParams) =>
 	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
@@ -106,7 +106,7 @@ const getDashboardStats = (params?: DashboardStatsParams) =>
 const exportReport = (params: ExportReportParams) => {
 	const queryString = new URLSearchParams(params as unknown as Record<string, string>).toString();
 	const { userToken } = useUserStore.getState();
-	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "http://157.245.234.165/api/v1";
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
 	const token = userToken?.accessToken;
 
 	// Create a temporary link with auth token in header (using fetch to download)

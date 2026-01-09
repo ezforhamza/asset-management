@@ -11,8 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 interface ImportResult {
 	success: boolean;
 	imported: number;
-	failed: number;
-	errors: Array<{ row: number; error: string }>;
+	duplicates?: number;
+	duplicatesList?: string[];
+	errors: string[];
+	totalProcessed: number;
 }
 
 interface ParsedAsset {
@@ -36,11 +38,17 @@ export function AssetImport() {
 		onSuccess: (result) => {
 			setImportResult(result);
 			if (result.imported > 0) {
-				toast.success(`Successfully imported ${result.imported} assets`);
+				toast.success(`Successfully imported ${result.imported} of ${result.totalProcessed} assets`);
 				queryClient.invalidateQueries({ queryKey: ["assets"] });
 			}
-			if (result.failed > 0) {
-				toast.error(`Failed to import ${result.failed} assets`);
+			if (result.duplicates && result.duplicates > 0) {
+				toast.warning(`${result.duplicates} duplicate(s) skipped`);
+			}
+			if (result.errors && result.errors.length > 0) {
+				const otherErrors = result.errors.filter((e) => !e.includes("Duplicate"));
+				if (otherErrors.length > 0) {
+					toast.error(`${otherErrors.length} asset(s) failed to import`);
+				}
 			}
 		},
 		onError: () => {
@@ -151,14 +159,7 @@ export function AssetImport() {
 
 	const handleImport = () => {
 		if (!file) return;
-
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			const text = e.target?.result as string;
-			const assets = parseCSV(text);
-			importMutation.mutate({ assets });
-		};
-		reader.readAsText(file);
+		importMutation.mutate(file);
 	};
 
 	const downloadTemplate = () => {
@@ -283,7 +284,7 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 
 					{/* Import Result */}
 					{importResult && (
-						<Alert variant={importResult.failed > 0 ? "destructive" : "default"}>
+						<Alert variant={importResult.errors.length > 0 ? "destructive" : "default"}>
 							<AlertCircle className="h-4 w-4" />
 							<AlertDescription>
 								<div className="flex items-center gap-4">
@@ -291,19 +292,22 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 										<Check className="h-4 w-4 text-green-600" />
 										{importResult.imported} imported
 									</span>
-									{importResult.failed > 0 && (
+									{importResult.duplicates && importResult.duplicates > 0 && (
+										<span className="flex items-center gap-1 text-yellow-600">
+											{importResult.duplicates} duplicate(s)
+										</span>
+									)}
+									{importResult.errors.length > 0 && (
 										<span className="flex items-center gap-1 text-destructive">
 											<X className="h-4 w-4" />
-											{importResult.failed} failed
+											{importResult.errors.length} error(s)
 										</span>
 									)}
 								</div>
 								{importResult.errors.length > 0 && (
 									<ul className="mt-2 text-xs space-y-1">
-										{importResult.errors.slice(0, 3).map((err, idx) => (
-											<li key={idx}>
-												Row {err.row}: {err.error}
-											</li>
+										{importResult.errors.slice(0, 3).map((err) => (
+											<li key={err}>{err}</li>
 										))}
 									</ul>
 								)}
