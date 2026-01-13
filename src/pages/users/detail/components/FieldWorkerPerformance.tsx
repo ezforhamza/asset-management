@@ -26,6 +26,7 @@ import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Progress } from "@/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+import { VerificationsList } from "./VerificationsList";
 
 interface FieldWorkerPerformanceProps {
 	userId: string;
@@ -337,6 +338,9 @@ export function FieldWorkerPerformance({ userId, user }: FieldWorkerPerformanceP
 					</div>
 				</CardContent>
 			</Card>
+
+			{/* Verifications List */}
+			<VerificationsList userId={userId} />
 		</div>
 	);
 }
