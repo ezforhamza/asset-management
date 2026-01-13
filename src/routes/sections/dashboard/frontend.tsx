@@ -11,6 +11,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		// ============================================
 		{ path: "dashboard", element: Component("/pages/dashboard") },
 		{ path: "assets", element: Component("/pages/assets") },
+		{ path: "assets/:assetId/history", element: Component("/pages/assets/history") },
 		{ path: "reports", element: Component("/pages/reports") },
 		{ path: "map", element: Component("/pages/map") },
 
@@ -18,6 +19,10 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		{
 			path: "users",
 			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users")}</RoleGuard>,
+		},
+		{
+			path: "users/:userId",
+			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users/detail")}</RoleGuard>,
 		},
 		{
 			path: "settings",

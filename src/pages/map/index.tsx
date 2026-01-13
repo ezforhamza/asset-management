@@ -37,34 +37,86 @@ const statusColors = {
 	[VerificationStatus.OVERDUE]: { color: "#EF4444", label: "Overdue" },
 };
 
+// Map verification status string to enum
+const mapVerificationStatus = (status: string | undefined): VerificationStatus | null => {
+	switch (status) {
+		case "on_time":
+			return VerificationStatus.ON_TIME;
+		case "due_soon":
+			return VerificationStatus.DUE_SOON;
+		case "overdue":
+			return VerificationStatus.OVERDUE;
+		default:
+			return null;
+	}
+};
+
+// Verification report item shape from /api/v1/reports/verifications
+interface VerificationReportItem {
+	_id: string;
+	serialNumber: string;
+	make: string;
+	model: string;
+	nextVerificationDue: string;
+	registeredLocation?: {
+		type: string;
+		coordinates: [number, number]; // [longitude, latitude]
+	};
+	lastVerifiedAt: string | null;
+	verificationStatus: "on_time" | "due_soon" | "overdue";
+}
+
+// Check if verification item has valid coordinates
+const hasValidCoordinates = (item: VerificationReportItem): boolean => {
+	const coords = item.registeredLocation?.coordinates;
+	return (
+		Array.isArray(coords) &&
+		coords.length === 2 &&
+		typeof coords[0] === "number" &&
+		typeof coords[1] === "number" &&
+		!Number.isNaN(coords[0]) &&
+		!Number.isNaN(coords[1])
+	);
+};
+
 export default function MapPage() {
 	const [selectedStatus, setSelectedStatus] = useState<VerificationStatus | "all">("all");
 	const [tileLayer, setTileLayer] = useState<keyof typeof tileLayers>("light");
 
-	// Fetch map assets
+	// Fetch verification report data - already excludes never_verified
 	const { data, isLoading } = useQuery({
-		queryKey: ["map", "assets"],
-		queryFn: () => reportService.getMapAssets(),
+		queryKey: ["map", "verifications"],
+		queryFn: () => reportService.getVerificationReport(),
 	});
 
-	// Transform API response to match MapAsset interface
-	const assets = (data?.assets || []).map((item: any) => ({
-		assetId: item.assetId || item._id || "",
-		serialNumber: item.serialNumber,
-		make: item.make,
-		model: item.model,
-		location: {
-			latitude: item.location.latitude,
-			longitude: item.location.longitude,
-		},
-		status:
-			item.status === "on_time"
-				? VerificationStatus.ON_TIME
-				: item.status === "due_soon"
-					? VerificationStatus.DUE_SOON
-					: VerificationStatus.OVERDUE,
-		lastVerified: item.lastVerified,
-	}));
+	// Transform verification report items to MapAsset format
+	// API already excludes never_verified, so no filtering needed for that
+	const assets = useMemo(() => {
+		// API returns { results: [...] } - safely extract array
+		const responseData = data as { results?: VerificationReportItem[] } | VerificationReportItem[] | undefined;
+		const items: VerificationReportItem[] = Array.isArray(responseData)
+			? responseData
+			: Array.isArray(responseData?.results)
+				? responseData.results
+				: [];
+
+		return items.filter(hasValidCoordinates).map((item): MapAsset => {
+			const coords = item.registeredLocation!.coordinates;
+			return {
+				assetId: item._id,
+				serialNumber: item.serialNumber,
+				make: item.make,
+				model: item.model,
+				location: {
+					longitude: coords[0],
+					latitude: coords[1],
+				},
+				status: mapVerificationStatus(item.verificationStatus) || VerificationStatus.OVERDUE,
+				lastVerified: item.lastVerifiedAt,
+				nextVerificationDue: item.nextVerificationDue,
+			};
+		});
+	}, [data]);
 
 	// Filter assets by status
 	const filteredAssets = useMemo(() => {

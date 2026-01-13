@@ -4,40 +4,50 @@ import apiClient from "../apiClient";
 // Upload Service
 // ============================================
 
-export interface UploadUserImageRes {
-	success: boolean;
+export interface UploadedImage {
 	url: string;
+	thumbnailUrl: string;
+	metadata: {
+		originalSize: number;
+		compressedSize: number;
+		compressionRatio: string;
+		width: number;
+		height: number;
+		format: string;
+		originalWidth: number;
+		originalHeight: number;
+	};
 }
 
-const uploadUserImage = async (file: File): Promise<UploadUserImageRes> => {
-	const formData = new FormData();
-	formData.append("image", file);
+export interface UploadImagesRes {
+	success: boolean;
+	uploaded: number;
+	images: UploadedImage[];
+}
 
-	return apiClient.post<UploadUserImageRes>({
-		url: "/upload/user-image",
+const uploadUserImage = async (file: File): Promise<UploadImagesRes> => {
+	const formData = new FormData();
+	formData.append("images", file);
+	formData.append("folder", "assets");
+	formData.append("subFolder", "profiles");
+
+	// Don't set Content-Type header - let axios set it automatically with boundary
+	return apiClient.post<UploadImagesRes>({
+		url: "/uploads/images",
 		data: formData,
-		headers: {
-			"Content-Type": "multipart/form-data",
-		},
 	});
 };
 
-export interface UploadCompanyLogoRes {
-	success: boolean;
-	url: string;
-}
-
-const uploadCompanyLogo = async (file: File): Promise<UploadCompanyLogoRes> => {
+const uploadCompanyLogo = async (file: File): Promise<UploadImagesRes> => {
 	const formData = new FormData();
-	formData.append("image", file);
+	formData.append("images", file);
+	formData.append("folder", "assets");
+	formData.append("subFolder", "logos");
 
-	// Using the same profile upload endpoint - the URL structure suggests it handles profile images
-	return apiClient.post<UploadCompanyLogoRes>({
-		url: "/upload/user-image",
+	// Don't set Content-Type header - let axios set it automatically with boundary
+	return apiClient.post<UploadImagesRes>({
+		url: "/uploads/images",
 		data: formData,
-		headers: {
-			"Content-Type": "multipart/form-data",
-		},
 	});
 };
 

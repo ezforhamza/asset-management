@@ -1,7 +1,5 @@
 import { LogOut } from "lucide-react";
-import { useLoginStateContext } from "@/pages/sys/login/providers/login-provider";
-import { useRouter } from "@/routes/hooks";
-import { useUserActions, useUserInfo } from "@/store/userStore";
+import { useSignOut, useUserInfo } from "@/store/userStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
@@ -16,22 +14,13 @@ import {
  * Account Dropdown - Simplified
  */
 export default function AccountDropdown() {
-	const { replace } = useRouter();
 	const userInfo = useUserInfo();
 	const { username, email, avatar } = userInfo;
 	const profilePic = userInfo.profilePic || avatar;
-	const { clearUserInfoAndToken } = useUserActions();
-	const { backToLogin } = useLoginStateContext();
+	const signOut = useSignOut();
 
-	const logout = () => {
-		try {
-			clearUserInfoAndToken();
-			backToLogin();
-		} catch (error) {
-			console.log(error);
-		} finally {
-			replace("/auth/login");
-		}
+	const logout = async () => {
+		await signOut();
 	};
 
 	return (

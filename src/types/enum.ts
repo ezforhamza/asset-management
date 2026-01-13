@@ -17,6 +17,12 @@ export enum UserRole {
 	SYSTEM_ADMIN = "system_admin",
 }
 
+// Asset Guard - Admin Types (for customer_admin role only)
+export enum AdminType {
+	FULL = "full",
+	READ_ONLY = "read_only",
+}
+
 // Asset Guard - Asset Status
 export enum AssetStatus {
 	ACTIVE = "active",

@@ -66,7 +66,7 @@ export function ProfileTab() {
 			// If a new file was selected, upload it first
 			if (selectedFile) {
 				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
-				imageUrl = uploadResponse.url;
+				imageUrl = uploadResponse.images[0]?.url;
 			}
 
 			// Update profile with form data and image URL (only if changed)

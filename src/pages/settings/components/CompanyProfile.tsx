@@ -98,7 +98,7 @@ export function CompanyProfile() {
 			// If a new file was selected, upload it first
 			if (selectedFile) {
 				const uploadResponse = await uploadService.uploadCompanyLogo(selectedFile);
-				logoUrl = uploadResponse.url;
+				logoUrl = uploadResponse.images[0]?.url;
 			}
 
 			await mutation.mutateAsync({

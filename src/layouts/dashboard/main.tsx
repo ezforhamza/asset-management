@@ -38,7 +38,7 @@ const Main = () => {
 			<main
 				data-slot="slash-layout-main"
 				className={cn(
-					"flex-1 w-full flex flex-col overflow-hidden",
+					"flex-1 w-full flex flex-col overflow-auto",
 					"transition-[max-width] duration-300 ease-in-out",
 					"mx-auto",
 					{

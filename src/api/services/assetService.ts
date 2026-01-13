@@ -36,6 +36,9 @@ export interface UpdateAssetReq {
 	status?: string;
 	verificationFrequency?: number;
 	geofenceThreshold?: number | null;
+	client?: string;
+	channel?: string;
+	siteName?: string;
 }
 
 export interface CreateAssetReq {
@@ -80,6 +83,74 @@ export interface VerificationHistoryRes {
 export interface InvestigateReq {
 	investigationStatus: "open" | "investigating" | "resolved";
 	comment?: string;
+}
+
+// ============================================
+// Asset History Types
+// ============================================
+
+export interface HistoryPerformedBy {
+	id: string;
+	name: string;
+	email: string;
+	role: "field_user" | "customer_admin" | "system_admin";
+}
+
+export interface RegistrationHistoryItem {
+	id: string;
+	action: "registered";
+	timestamp: string;
+	performedBy: HistoryPerformedBy;
+	photos: string[];
+	location?: {
+		latitude: number;
+		longitude: number;
+		mapLink?: string;
+	};
+	locationAccuracy?: number;
+	conditionAtRegistration?: string;
+	category?: {
+		id: string;
+		name: string;
+	};
+	qrCode?: {
+		code: string;
+		status: string;
+		linkedAt?: string;
+	};
+	notes?: string;
+}
+
+export interface VerificationHistoryItem {
+	id: string;
+	verifiedBy?: HistoryPerformedBy;
+	verifiedAt: string;
+	photos: string[];
+	gpsCheckPassed: boolean;
+	distance?: number;
+	geofenceThreshold?: number;
+	verificationStatus?: "verified" | "failed" | "pending";
+	verifiedAtLocation?: {
+		latitude: number;
+		longitude: number;
+		mapLink?: string;
+	};
+	locationAccuracy?: number;
+	assetCondition?: "good" | "fair" | "poor" | "damaged";
+	operationalStatus?: "operational" | "non_operational" | "needs_repair";
+	repairNeeded: boolean;
+	checklist?: {
+		conditionExplanation?: string;
+	};
+	nextVerificationDue?: string;
+	daysUntilNextVerification?: number;
+	notes?: string;
+}
+
+export interface AssetHistoryRes {
+	asset: Asset;
+	registrationHistory: RegistrationHistoryItem[];
+	verificationHistory: VerificationHistoryItem[];
 }
 
 // ============================================
@@ -129,6 +200,11 @@ const retireAsset = (assetId: string, reason?: string) =>
 const deleteAsset = (assetId: string) =>
 	apiClient.delete<{ success: boolean; message: string }>({ url: `${AssetApi.Assets}/${assetId}` });
 
+const detachQrCode = (assetId: string) =>
+	apiClient.patch<{ message: string; assetId: string; previousQrCode: string }>({
+		url: `${AssetApi.Assets}/${assetId}/detach-qr`,
+	});
+
 // ============================================
 // Verification Service
 // ============================================
@@ -142,6 +218,13 @@ const updateInvestigation = (verificationId: string, data: InvestigateReq) =>
 		data,
 	});
 
+// ============================================
+// Asset History Service
+// ============================================
+
+const getAssetHistory = (assetId: string) =>
+	apiClient.get<AssetHistoryRes>({ url: `${AssetApi.Assets}/${assetId}/history` });
+
 export default {
 	// Assets
 	getAssets,
@@ -149,10 +232,13 @@ export default {
 	createAsset,
 	updateAsset,
 	deleteAsset,
+	detachQrCode,
 	bulkImportAssets,
 	transferAsset,
 	retireAsset,
 	// Verifications
 	getVerificationHistory,
 	updateInvestigation,
+	// Asset History
+	getAssetHistory,
 };

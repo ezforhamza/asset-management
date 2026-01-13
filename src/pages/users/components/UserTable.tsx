@@ -1,8 +1,20 @@
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, Edit, KeyRound, Mail, MoreHorizontal, Package, UserX } from "lucide-react";
+import {
+	ChevronLeft,
+	ChevronRight,
+	Edit,
+	Eye,
+	KeyRound,
+	LogOut,
+	Mail,
+	MoreHorizontal,
+	UserX,
+	Wifi,
+	WifiOff,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import type { UserInfo } from "#/entity";
-import { UserRole } from "#/enum";
+import { AdminType, UserRole } from "#/enum";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -16,23 +28,38 @@ import {
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 
+interface UserWithSessionData extends UserInfo {
+	hasActiveSession?: boolean;
+	activeSessionCount?: number;
+	lastActivityAt?: string | null;
+}
+
 interface UserTableProps {
-	users: UserInfo[];
+	users: UserWithSessionData[];
 	isLoading: boolean;
 	onEdit: (user: UserInfo) => void;
 	onResetPassword: (user: UserInfo) => void;
 	onDeactivate: (user: UserInfo) => void;
-	onViewAssets?: (user: UserInfo) => void;
-	getFieldWorkerAllocatedCount?: (userId: string) => number;
+	onViewSessions: (user: UserInfo) => void;
+	onForceLogout: (user: UserInfo) => void;
+	onRowClick?: (user: UserInfo) => void;
+	canWrite?: boolean;
 }
 
 const ITEMS_PER_PAGE = 8;
 
-const getRoleBadge = (role?: UserRole) => {
+const getRoleBadge = (role?: UserRole, adminType?: AdminType | null) => {
 	if (role === UserRole.CUSTOMER_ADMIN) {
+		if (adminType === AdminType.READ_ONLY) {
+			return (
+				<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+					Read-Only Admin
+				</Badge>
+			);
+		}
 		return (
 			<Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">
-				Admin
+				Full Admin
 			</Badge>
 		);
 	}
@@ -59,8 +86,10 @@ export function UserTable({
 	onEdit,
 	onResetPassword,
 	onDeactivate,
-	onViewAssets,
-	getFieldWorkerAllocatedCount,
+	onViewSessions,
+	onForceLogout,
+	onRowClick,
+	canWrite = true,
 }: UserTableProps) {
 	const [page, setPage] = useState(1);
 
@@ -110,14 +139,15 @@ export function UserTable({
 						<TableRow>
 							<TableHead>User</TableHead>
 							<TableHead>Role</TableHead>
-							<TableHead>Status</TableHead>
+							<TableHead>Account Status</TableHead>
+							<TableHead>Online Status</TableHead>
 							<TableHead>Last Login</TableHead>
 							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{paginatedUsers.map((user) => (
-							<TableRow key={user.id} className="hover:bg-muted/30">
+							<TableRow key={user.id} className="hover:bg-muted/30 cursor-pointer" onClick={() => onRowClick?.(user)}>
 								<TableCell>
 									<div className="flex items-center gap-3">
 										<Avatar className="h-10 w-10">
@@ -132,7 +162,7 @@ export function UserTable({
 										</div>
 									</div>
 								</TableCell>
-								<TableCell>{getRoleBadge(user.role)}</TableCell>
+								<TableCell>{getRoleBadge(user.role, user.adminType)}</TableCell>
 								<TableCell>
 									{user.mustChangePassword ? (
 										<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
@@ -144,18 +174,23 @@ export function UserTable({
 										</Badge>
 									)}
 								</TableCell>
+								<TableCell>
+									{user.hasActiveSession ? (
+										<Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+											<Wifi className="h-3 w-3 mr-1" />
+											Online
+										</Badge>
+									) : (
+										<Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">
+											<WifiOff className="h-3 w-3 mr-1" />
+											Offline
+										</Badge>
+									)}
+								</TableCell>
 								<TableCell className="text-muted-foreground">
 									{user.lastLogin ? format(new Date(user.lastLogin), "MMM dd, yyyy") : "Never"}
 								</TableCell>
-								{user.role === UserRole.FIELD_USER && getFieldWorkerAllocatedCount && (
-									<TableCell>
-										<div className="flex items-center gap-2 text-sm">
-											<Package className="h-4 w-4 text-muted-foreground" />
-											<span>{getFieldWorkerAllocatedCount(user.id)} assets</span>
-										</div>
-									</TableCell>
-								)}
-								<TableCell className="text-right">
+								<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
 											<Button variant="ghost" size="icon" className="h-8 w-8">
@@ -163,28 +198,41 @@ export function UserTable({
 											</Button>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
-											<DropdownMenuItem onClick={() => onEdit(user)}>
-												<Edit className="h-4 w-4 mr-2" />
-												Edit User
-											</DropdownMenuItem>
-											<DropdownMenuItem onClick={() => onResetPassword(user)}>
-												<KeyRound className="h-4 w-4 mr-2" />
-												Reset Password
-											</DropdownMenuItem>
-											{user.role === UserRole.FIELD_USER && onViewAssets && (
+											{canWrite ? (
 												<>
+													<DropdownMenuItem onClick={() => onEdit(user)}>
+														<Edit className="h-4 w-4 mr-2" />
+														Edit User
+													</DropdownMenuItem>
+													<DropdownMenuItem onClick={() => onResetPassword(user)}>
+														<KeyRound className="h-4 w-4 mr-2" />
+														Reset Password
+													</DropdownMenuItem>
 													<DropdownMenuSeparator />
-													<DropdownMenuItem onClick={() => onViewAssets(user)}>
-														<Package className="h-4 w-4 mr-2" />
-														View Allocated Assets
+													<DropdownMenuItem onClick={() => onViewSessions(user)}>
+														<Eye className="h-4 w-4 mr-2" />
+														View Sessions
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={() => onForceLogout(user)}
+														disabled={!user.hasActiveSession}
+														className={user.hasActiveSession ? "text-orange-500 focus:text-orange-500" : ""}
+													>
+														<LogOut className="h-4 w-4 mr-2" />
+														Force Logout
+													</DropdownMenuItem>
+													<DropdownMenuSeparator />
+													<DropdownMenuItem
+														onClick={() => onDeactivate(user)}
+														className="text-red-500 focus:text-red-500"
+													>
+														<UserX className="h-4 w-4 mr-2" />
+														Deactivate
 													</DropdownMenuItem>
 												</>
+											) : (
+												<DropdownMenuItem disabled>No actions available (Read-only)</DropdownMenuItem>
 											)}
-											<DropdownMenuSeparator />
-											<DropdownMenuItem onClick={() => onDeactivate(user)} className="text-red-500 focus:text-red-500">
-												<UserX className="h-4 w-4 mr-2" />
-												Deactivate
-											</DropdownMenuItem>
 										</DropdownMenuContent>
 									</DropdownMenu>
 								</TableCell>

@@ -74,6 +74,7 @@ export interface CreateUserReq {
 	email: string;
 	password?: string;
 	role: "field_user" | "customer_admin";
+	adminType?: "full" | "read_only" | null;
 	profilePic?: string;
 }
 
@@ -87,6 +88,7 @@ export interface UpdateUserReq {
 	name?: string;
 	email?: string;
 	role?: "field_user" | "customer_admin";
+	adminType?: "full" | "read_only" | null;
 	status?: "active" | "inactive";
 	profilePic?: string;
 }
@@ -115,7 +117,7 @@ enum AuthApi {
 
 enum UserApi {
 	Users = "/users",
-	ChangePassword = "/users/change-password",
+	ChangePassword = "/auth/change-password",
 	CreateFieldWorker = "/users/create-field-worker",
 	MFA = "/users/mfa",
 }

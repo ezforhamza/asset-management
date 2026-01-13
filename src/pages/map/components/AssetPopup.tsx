@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Calendar, ExternalLink, MapPin } from "lucide-react";
+import { Calendar, CalendarClock, ExternalLink, MapPin } from "lucide-react";
 import type { MapAsset } from "#/entity";
 import { StatusBadge } from "@/pages/dashboard/components/StatusBadge";
 import { Button } from "@/ui/button";
@@ -38,6 +38,15 @@ export function AssetPopup({ asset, onViewDetails }: AssetPopupProps) {
 						{asset.lastVerified
 							? `Last verified: ${format(new Date(asset.lastVerified), "MMM dd, yyyy")}`
 							: "Never verified"}
+					</span>
+				</div>
+
+				<div className="flex items-center gap-2 text-muted-foreground">
+					<CalendarClock className="h-4 w-4 flex-shrink-0" />
+					<span>
+						{asset.nextVerificationDue
+							? `Next due: ${format(new Date(asset.nextVerificationDue), "MMM dd, yyyy")}`
+							: "Not scheduled"}
 					</span>
 				</div>
 			</div>

@@ -22,8 +22,10 @@ export default function DashboardPage() {
 	const stats = response?.stats;
 
 	// Transform API response to match RecentActivity component expectations
+	// Filter: Only include verifications where asset exists AND has a valid QR code
 	// Reverse the array to show most recent first (API returns oldest first)
 	const recentActivity = ((activityResponse as any)?.results ?? [])
+		.filter((item: any) => item.assetId != null && item.assetId.qrCodeId != null)
 		.slice()
 		.reverse()
 		.map((item: any) => ({

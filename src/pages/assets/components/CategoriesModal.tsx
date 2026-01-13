@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import assetCategoryService, { type AssetCategory } from "@/api/services/assetCategoryService";
+import { useCanWrite } from "@/store/userStore";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
@@ -37,6 +38,7 @@ const ROWS_PER_PAGE = 5;
 
 export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 	const queryClient = useQueryClient();
+	const canWrite = useCanWrite();
 	const [page, setPage] = useState(1);
 	const [newCategoryName, setNewCategoryName] = useState("");
 
@@ -156,23 +158,29 @@ export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 					</DialogHeader>
 
 					{/* Add New Category Section */}
-					<div className="space-y-3 py-2">
-						<Label>Add New Category</Label>
-						<div className="flex gap-2">
-							<Input
-								placeholder="Enter category name..."
-								value={newCategoryName}
-								onChange={(e) => setNewCategoryName(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") handleCreateCategory();
-								}}
-							/>
-							<Button onClick={handleCreateCategory} disabled={createMutation.isPending}>
-								{createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-								<span className="ml-1">Add</span>
-							</Button>
+					{canWrite && (
+						<div className="space-y-3 py-2">
+							<Label>Add New Category</Label>
+							<div className="flex gap-2">
+								<Input
+									placeholder="Enter category name..."
+									value={newCategoryName}
+									onChange={(e) => setNewCategoryName(e.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter") handleCreateCategory();
+									}}
+								/>
+								<Button onClick={handleCreateCategory} disabled={createMutation.isPending}>
+									{createMutation.isPending ? (
+										<Loader2 className="h-4 w-4 animate-spin" />
+									) : (
+										<Plus className="h-4 w-4" />
+									)}
+									<span className="ml-1">Add</span>
+								</Button>
+							</div>
 						</div>
-					</div>
+					)}
 
 					{/* Categories Table */}
 					<div className="rounded-md border">
@@ -223,31 +231,37 @@ export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent align="end">
-														<DropdownMenuItem onClick={() => handleRenameClick(category)}>
-															<Pencil className="h-4 w-4 mr-2" />
-															Rename
-														</DropdownMenuItem>
-														<DropdownMenuItem onClick={() => handleToggleStatus(category)}>
-															{category.status === "active" ? (
-																<>
-																	<PowerOff className="h-4 w-4 mr-2" />
-																	Deactivate
-																</>
-															) : (
-																<>
-																	<Power className="h-4 w-4 mr-2" />
-																	Activate
-																</>
-															)}
-														</DropdownMenuItem>
-														<DropdownMenuSeparator />
-														<DropdownMenuItem
-															onClick={() => handleDeleteClick(category)}
-															className="text-destructive focus:text-destructive"
-														>
-															<Trash2 className="h-4 w-4 mr-2" />
-															Delete
-														</DropdownMenuItem>
+														{canWrite ? (
+															<>
+																<DropdownMenuItem onClick={() => handleRenameClick(category)}>
+																	<Pencil className="h-4 w-4 mr-2" />
+																	Rename
+																</DropdownMenuItem>
+																<DropdownMenuItem onClick={() => handleToggleStatus(category)}>
+																	{category.status === "active" ? (
+																		<>
+																			<PowerOff className="h-4 w-4 mr-2" />
+																			Deactivate
+																		</>
+																	) : (
+																		<>
+																			<Power className="h-4 w-4 mr-2" />
+																			Activate
+																		</>
+																	)}
+																</DropdownMenuItem>
+																<DropdownMenuSeparator />
+																<DropdownMenuItem
+																	onClick={() => handleDeleteClick(category)}
+																	className="text-destructive focus:text-destructive"
+																>
+																	<Trash2 className="h-4 w-4 mr-2" />
+																	Delete
+																</DropdownMenuItem>
+															</>
+														) : (
+															<DropdownMenuItem disabled>No actions available (Read-only)</DropdownMenuItem>
+														)}
 													</DropdownMenuContent>
 												</DropdownMenu>
 											</TableCell>

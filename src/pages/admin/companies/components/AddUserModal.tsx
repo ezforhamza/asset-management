@@ -20,6 +20,7 @@ interface AddUserForm {
 	email: string;
 	password?: string;
 	role: "customer_admin" | "field_user";
+	adminType: "full" | "read_only";
 }
 
 export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
@@ -31,8 +32,11 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 			email: "",
 			password: "",
 			role: "field_user",
+			adminType: "full",
 		},
 	});
+
+	const selectedRole = form.watch("role");
 
 	const createUserMutation = useMutation({
 		mutationFn: (data: AddUserForm) => adminService.createUser({ ...data, companyId }),
@@ -53,7 +57,11 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 	});
 
 	const handleSubmit = (values: AddUserForm) => {
-		createUserMutation.mutate(values);
+		const submitData = {
+			...values,
+			adminType: values.role === "customer_admin" ? values.adminType : null,
+		};
+		createUserMutation.mutate(submitData as any);
 	};
 
 	const handleClose = () => {
@@ -147,6 +155,31 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 								</FormItem>
 							)}
 						/>
+
+						{selectedRole === "customer_admin" && (
+							<FormField
+								control={form.control}
+								name="adminType"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Admin Type</FormLabel>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue placeholder="Select admin type" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="full">Full Admin</SelectItem>
+												<SelectItem value="read_only">Read-Only Admin</SelectItem>
+											</SelectContent>
+										</Select>
+										<FormDescription>Read-only admins can only view data, not create/edit/delete</FormDescription>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
 
 						<DialogFooter>
 							<Button type="button" variant="outline" onClick={handleClose} disabled={createUserMutation.isPending}>

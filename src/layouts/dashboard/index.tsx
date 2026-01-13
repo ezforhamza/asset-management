@@ -1,7 +1,7 @@
+import { ThemeLayout } from "#/enum";
 import Logo from "@/components/logo";
 import { down, useMediaQuery } from "@/hooks";
 import { useSettings } from "@/store/settingStore";
-import { ThemeLayout } from "#/enum";
 import Header from "./header";
 import Main from "./main";
 import { NavHorizontalLayout, NavMobileLayout, NavVerticalLayout, useFilteredNavData } from "./nav";
@@ -10,7 +10,7 @@ export default function DashboardLayout() {
 	const isMobile = useMediaQuery(down("md"));
 
 	return (
-		<div data-slot="slash-layout-root" className="w-full min-h-screen bg-background">
+		<div data-slot="slash-layout-root" className="w-full h-screen bg-background overflow-hidden">
 			{isMobile ? <MobileLayout /> : <PcLayout />}
 		</div>
 	);
@@ -19,11 +19,11 @@ export default function DashboardLayout() {
 function MobileLayout() {
 	const navData = useFilteredNavData();
 	return (
-		<>
+		<div className="flex flex-col h-full">
 			{/* Sticky Header */}
 			<Header leftSlot={<NavMobileLayout data={navData} />} />
 			<Main />
-		</>
+		</div>
 	);
 }
 
@@ -37,14 +37,14 @@ function PcLayout() {
 function PcHorizontalLayout() {
 	const navData = useFilteredNavData();
 	return (
-		<>
+		<div className="flex flex-col h-full">
 			{/* Sticky Header */}
 			<Header leftSlot={<Logo />} />
 			{/* Sticky Nav */}
 			<NavHorizontalLayout data={navData} />
 
 			<Main />
-		</>
+		</div>
 	);
 }
 
@@ -62,7 +62,7 @@ function PcVerticalLayout() {
 			<NavVerticalLayout data={navData} />
 
 			<div
-				className="relative w-full min-h-screen flex flex-col transition-[padding] duration-300 ease-in-out"
+				className="relative w-full h-full flex flex-col transition-[padding] duration-300 ease-in-out"
 				style={{
 					paddingLeft: mainPaddingLeft,
 				}}

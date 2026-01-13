@@ -23,6 +23,7 @@ interface EditUserForm {
 	name: string;
 	email: string;
 	role: string;
+	adminType: string;
 }
 
 export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalProps) {
@@ -36,8 +37,11 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 			name: "",
 			email: "",
 			role: "field_user",
+			adminType: "full",
 		},
 	});
+
+	const selectedRole = form.watch("role");
 
 	useEffect(() => {
 		if (user) {
@@ -45,6 +49,7 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 				name: user.name || "",
 				email: user.email || "",
 				role: user.role || "field_user",
+				adminType: user.adminType || "full",
 			});
 			setPreviewUrl(null);
 			setSelectedFile(null);
@@ -83,12 +88,13 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 			// If a new file was selected, upload it first
 			if (selectedFile) {
 				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
-				imageUrl = uploadResponse.url;
+				imageUrl = uploadResponse.images[0]?.url;
 			}
 
 			const updateData: any = {
 				name: values.name,
 				role: values.role as "field_user" | "customer_admin",
+				adminType: values.role === "customer_admin" ? (values.adminType as "full" | "read_only") : null,
 			};
 
 			// Only include profilePic if it changed
@@ -194,6 +200,33 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 								</FormItem>
 							)}
 						/>
+
+						{selectedRole === "customer_admin" && (
+							<FormField
+								control={form.control}
+								name="adminType"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Admin Type</FormLabel>
+										<Select onValueChange={field.onChange} value={field.value}>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue placeholder="Select admin type" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="full">Full Admin</SelectItem>
+												<SelectItem value="read_only">Read-Only Admin</SelectItem>
+											</SelectContent>
+										</Select>
+										<p className="text-xs text-muted-foreground mt-1">
+											Read-only admins can only view data, not create/edit/delete
+										</p>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						)}
 
 						<div className="flex gap-3 pt-2">
 							<Button type="button" variant="outline" onClick={onClose} className="flex-1">

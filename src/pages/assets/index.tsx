@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	AlertTriangle,
 	ChevronLeft,
 	ChevronRight,
 	FolderOpen,
+	Link2Off,
 	Loader2,
 	MapPin,
 	MoreHorizontal,
@@ -18,14 +20,11 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
-import allocationService from "@/api/services/allocationService";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams, type UpdateAssetReq } from "@/api/services/assetService";
-import userService from "@/api/services/userService";
-import { useUserInfo } from "@/store/userStore";
+import { useCanWrite } from "@/store/userStore";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
-import { Checkbox } from "@/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import {
 	DropdownMenu,
@@ -39,18 +38,32 @@ import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { AllocateAssetsModal } from "./components/AllocateAssetsModal";
-import { BulkAllocationToolbar } from "./components/BulkAllocationToolbar";
 import { CategoriesModal } from "./components/CategoriesModal";
 import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
-import { UnallocateAssetsModal } from "./components/UnallocateAssetsModal";
+
+/**
+ * Check if an asset has incomplete registration data.
+ * Shows flag if ANY of: unregistered, partially_registered, or missing/empty channel/siteName/client
+ * Empty string ("") is treated as missing.
+ */
+const isAssetIncomplete = (asset: Asset): boolean => {
+	const hasIncompleteRegistration =
+		asset.registrationState === "unregistered" || asset.registrationState === "partially_registered";
+
+	// Check for null, undefined, or empty string
+	const isEmptyOrNull = (value: string | null | undefined): boolean =>
+		value === null || value === undefined || value.trim() === "";
+
+	const hasMissingFields = isEmptyOrNull(asset.channel) || isEmptyOrNull(asset.siteName) || isEmptyOrNull(asset.client);
+
+	return hasIncompleteRegistration || hasMissingFields;
+};
 
 export default function AssetsPage() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const userInfo = useUserInfo();
-	const isAdmin = userInfo.role === "customer_admin" || userInfo.role === "system_admin";
+	const canWrite = useCanWrite();
 
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -61,13 +74,10 @@ export default function AssetsPage() {
 	const [siteNameFilter, setSiteNameFilter] = useState<string>("");
 	const [channelFilter, setChannelFilter] = useState<string>("");
 
-	// Selection state
-	const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
-
 	// Edit modal state
 	const [editModalOpen, setEditModalOpen] = useState(false);
 	const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
-	const [editForm, setEditForm] = useState<UpdateAssetReq & { allocatedTo?: string | null }>({});
+	const [editForm, setEditForm] = useState<UpdateAssetReq>({});
 
 	// Delete modal state
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -86,10 +96,8 @@ export default function AssetsPage() {
 	// Create asset modal state
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 
-	// Allocation modals
-	const [allocateModalOpen, setAllocateModalOpen] = useState(false);
-	const [allocateMode, setAllocateMode] = useState<"allocate" | "reassign">("allocate");
-	const [unallocateModalOpen, setUnallocateModalOpen] = useState(false);
+	// Detach QR confirmation state
+	const [detachQrModalOpen, setDetachQrModalOpen] = useState(false);
 
 	const limit = 8;
 
@@ -129,21 +137,14 @@ export default function AssetsPage() {
 		return { clients, siteNames, channels };
 	}, [allAssetsData]);
 
-	// Fetch field workers for allocation dropdown
-	const { data: fieldWorkersData } = useQuery({
-		queryKey: ["users", 1, 1000],
-		queryFn: () => userService.getUsers({ page: 1, limit: 1000 }),
-		enabled: isAdmin,
-	});
-
-	const fieldWorkers = fieldWorkersData?.results?.filter((u) => u.role === "field_user") || [];
-
 	const updateMutation = useMutation({
 		mutationFn: ({ assetId, data }: { assetId: string; data: UpdateAssetReq }) =>
 			assetService.updateAsset(assetId, data),
 		onSuccess: () => {
 			toast.success("Asset updated successfully");
+			// Invalidate both queries so filter options recompute from fresh data
 			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
 			setEditModalOpen(false);
 			setEditingAsset(null);
 		},
@@ -156,7 +157,9 @@ export default function AssetsPage() {
 		mutationFn: (assetId: string) => assetService.deleteAsset(assetId),
 		onSuccess: () => {
 			toast.success("Asset deleted successfully");
+			// Invalidate both queries so filter options recompute from fresh data
 			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
 			setDeleteModalOpen(false);
 			setDeletingAsset(null);
 		},
@@ -169,7 +172,9 @@ export default function AssetsPage() {
 		mutationFn: (assetId: string) => assetService.retireAsset(assetId),
 		onSuccess: () => {
 			toast.success("Asset retired successfully");
+			// Invalidate both queries so filter options recompute from fresh data
 			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
 			setRetireModalOpen(false);
 			setRetiringAsset(null);
 		},
@@ -178,39 +183,20 @@ export default function AssetsPage() {
 		},
 	});
 
-	const allocationMutation = useMutation({
-		mutationFn: async ({
-			assetId,
-			newFieldWorkerId,
-			oldFieldWorkerId,
-		}: {
-			assetId: string;
-			newFieldWorkerId: string | null;
-			oldFieldWorkerId: string | null;
-		}) => {
-			// Unassigned → Assigned
-			if (!oldFieldWorkerId && newFieldWorkerId) {
-				return allocationService.allocateAssets({
-					assetIds: [assetId],
-					fieldWorkerId: newFieldWorkerId,
-				});
-			}
-			// Assigned → Unassigned
-			if (oldFieldWorkerId && !newFieldWorkerId) {
-				return allocationService.unallocateAssets({ assetIds: [assetId] });
-			}
-			// Worker A → Worker B
-			if (oldFieldWorkerId && newFieldWorkerId && oldFieldWorkerId !== newFieldWorkerId) {
-				return allocationService.reassignAssets({
-					assetIds: [assetId],
-					newFieldWorkerId,
-				});
-			}
-			return Promise.resolve();
-		},
+	const detachQrMutation = useMutation({
+		mutationFn: (assetId: string) => assetService.detachQrCode(assetId),
 		onSuccess: () => {
+			toast.success("QR code detached successfully");
+			// Invalidate queries to refresh asset data
 			queryClient.invalidateQueries({ queryKey: ["assets"] });
-			queryClient.invalidateQueries({ queryKey: ["allocation-summary"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
+			setDetachQrModalOpen(false);
+			setEditModalOpen(false);
+			setEditingAsset(null);
+		},
+		onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+			const message = error.response?.data?.message || "Failed to detach QR code";
+			toast.error(message);
 		},
 	});
 
@@ -234,13 +220,11 @@ export default function AssetsPage() {
 	const handleEditClick = (asset: Asset) => {
 		setEditingAsset(asset);
 		setEditForm({
-			serialNumber: asset.serialNumber,
-			make: asset.make,
-			model: asset.model,
-			status: asset.status,
 			verificationFrequency: asset.verificationFrequency ?? undefined,
 			geofenceThreshold: asset.geofenceThreshold ?? undefined,
-			allocatedTo: asset.allocatedTo || null,
+			channel: asset.channel ?? "",
+			siteName: asset.siteName ?? "",
+			client: asset.client ?? "",
 		});
 		setEditModalOpen(true);
 	};
@@ -257,17 +241,17 @@ export default function AssetsPage() {
 
 	const handleUpdateSubmit = async () => {
 		if (!editingAsset) return;
-		// Build submit data - only include geofenceThreshold if it has a value
-		// Backend must support geofenceThreshold field for this to work
+		// Build submit data per API contract
+		// Only include geofenceThreshold if it's a valid number (omit when empty/undefined)
 		const submitData: UpdateAssetReq = {
-			serialNumber: editForm.serialNumber,
-			make: editForm.make,
-			model: editForm.model,
-			status: editForm.status,
 			verificationFrequency: editForm.verificationFrequency,
+			client: editForm.client || "",
+			channel: editForm.channel || "",
+			siteName: editForm.siteName || "",
 		};
-		// Only include geofenceThreshold if it's explicitly set (not undefined)
-		if (editForm.geofenceThreshold !== undefined) {
+
+		// Only include geofenceThreshold if it's a valid number
+		if (typeof editForm.geofenceThreshold === "number" && !Number.isNaN(editForm.geofenceThreshold)) {
 			submitData.geofenceThreshold = editForm.geofenceThreshold;
 		}
 
@@ -276,15 +260,6 @@ export default function AssetsPage() {
 			assetId: getAssetId(editingAsset),
 			data: submitData,
 		});
-
-		// Handle allocation change if admin
-		if (isAdmin && editForm.allocatedTo !== editingAsset.allocatedTo) {
-			await allocationMutation.mutateAsync({
-				assetId: getAssetId(editingAsset),
-				newFieldWorkerId: editForm.allocatedTo || null,
-				oldFieldWorkerId: editingAsset.allocatedTo || null,
-			});
-		}
 	};
 
 	const getStatusBadge = (status: string) => {
@@ -315,44 +290,6 @@ export default function AssetsPage() {
 		}
 	};
 
-	// Bulk selection handlers
-	const handleSelectAll = (checked: boolean) => {
-		if (checked) {
-			setSelectedAssetIds(filteredAssets.map((a) => getAssetId(a)));
-		} else {
-			setSelectedAssetIds([]);
-		}
-	};
-
-	const handleSelectAsset = (assetId: string, checked: boolean) => {
-		if (checked) {
-			setSelectedAssetIds((prev) => [...prev, assetId]);
-		} else {
-			setSelectedAssetIds((prev) => prev.filter((id) => id !== assetId));
-		}
-	};
-
-	const handleBulkAllocate = () => {
-		setAllocateMode("allocate");
-		setAllocateModalOpen(true);
-	};
-
-	const handleBulkReassign = () => {
-		setAllocateMode("reassign");
-		setAllocateModalOpen(true);
-	};
-
-	const handleBulkUnallocate = () => {
-		setUnallocateModalOpen(true);
-	};
-
-	const handleClearSelection = () => {
-		setSelectedAssetIds([]);
-	};
-
-	const allSelected = filteredAssets.length > 0 && selectedAssetIds.length === filteredAssets.length;
-	const someSelected = selectedAssetIds.length > 0 && !allSelected;
-
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
 			{/* Header */}
@@ -367,14 +304,18 @@ export default function AssetsPage() {
 							<FolderOpen className="h-4 w-4 mr-2" />
 							Categories
 						</Button>
-						<Button variant="outline" onClick={() => setImportModalOpen(true)}>
-							<Upload className="h-4 w-4 mr-2" />
-							Import Assets
-						</Button>
-						<Button onClick={() => setCreateModalOpen(true)}>
-							<Plus className="h-4 w-4 mr-2" />
-							Create Asset
-						</Button>
+						{canWrite && (
+							<>
+								<Button variant="outline" onClick={() => setImportModalOpen(true)}>
+									<Upload className="h-4 w-4 mr-2" />
+									Import Assets
+								</Button>
+								<Button onClick={() => setCreateModalOpen(true)}>
+									<Plus className="h-4 w-4 mr-2" />
+									Create Asset
+								</Button>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
@@ -515,17 +456,6 @@ export default function AssetsPage() {
 				</p>
 			</div>
 
-			{/* Bulk Allocation Toolbar */}
-			{isAdmin && (
-				<BulkAllocationToolbar
-					selectedCount={selectedAssetIds.length}
-					onAllocate={handleBulkAllocate}
-					onReassign={handleBulkReassign}
-					onUnallocate={handleBulkUnallocate}
-					onClearSelection={handleClearSelection}
-				/>
-			)}
-
 			{/* Table */}
 			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
 				<div className="rounded-md border flex flex-col h-full max-h-full overflow-hidden">
@@ -533,11 +463,6 @@ export default function AssetsPage() {
 						<Table>
 							<TableHeader className="sticky top-0 bg-background z-10">
 								<TableRow>
-									{isAdmin && (
-										<TableHead className="w-[50px]">
-											<Checkbox checked={allSelected || someSelected} onCheckedChange={handleSelectAll} />
-										</TableHead>
-									)}
 									<TableHead>Serial Number</TableHead>
 									<TableHead>Make / Model</TableHead>
 									<TableHead>Category</TableHead>
@@ -548,7 +473,7 @@ export default function AssetsPage() {
 									<TableHead>Client</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Verification</TableHead>
-									<TableHead>Assigned To</TableHead>
+									<TableHead>Registration</TableHead>
 									<TableHead className="w-[50px]" />
 								</TableRow>
 							</TableHeader>
@@ -593,21 +518,21 @@ export default function AssetsPage() {
 									))
 								) : filteredAssets.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={isAdmin ? 13 : 12} className="text-center py-12 text-muted-foreground">
+										<TableCell colSpan={12} className="text-center py-12 text-muted-foreground">
 											No assets found
 										</TableCell>
 									</TableRow>
 								) : (
 									filteredAssets.map((asset) => (
-										<TableRow key={getAssetId(asset)}>
-											{isAdmin && (
-												<TableCell>
-													<Checkbox
-														checked={selectedAssetIds.includes(getAssetId(asset))}
-														onCheckedChange={(checked) => handleSelectAsset(getAssetId(asset), !!checked)}
-													/>
-												</TableCell>
-											)}
+										<TableRow
+											key={getAssetId(asset)}
+											className="cursor-pointer hover:bg-muted/50"
+											onClick={(e) => {
+												const target = e.target as HTMLElement;
+												if (target.closest("button") || target.closest('[role="menuitem"]')) return;
+												navigate(`/assets/${getAssetId(asset)}/history`);
+											}}
+										>
 											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
 											<TableCell>
 												{asset.make} {asset.model}
@@ -635,12 +560,13 @@ export default function AssetsPage() {
 											<TableCell>{getStatusBadge(asset.status)}</TableCell>
 											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
 											<TableCell>
-												{asset.allocatedTo ? (
-													<Badge variant="secondary" className="text-xs">
-														Assigned
+												{isAssetIncomplete(asset) ? (
+													<Badge className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 gap-1">
+														<AlertTriangle className="h-3 w-3" />
+														Incomplete
 													</Badge>
 												) : (
-													<span className="text-muted-foreground text-sm">Unassigned</span>
+													<Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">Complete</Badge>
 												)}
 											</TableCell>
 											<TableCell>
@@ -651,25 +577,31 @@ export default function AssetsPage() {
 														</Button>
 													</DropdownMenuTrigger>
 													<DropdownMenuContent align="end">
-														<DropdownMenuItem onClick={() => handleEditClick(asset)}>
-															<Pencil className="h-4 w-4 mr-2" />
-															Edit
-														</DropdownMenuItem>
-														<DropdownMenuItem
-															onClick={() => handleRetireClick(asset)}
-															disabled={asset.status === "retired"}
-														>
-															<XCircle className="h-4 w-4 mr-2" />
-															Retire
-														</DropdownMenuItem>
-														<DropdownMenuSeparator />
-														<DropdownMenuItem
-															onClick={() => handleDeleteClick(asset)}
-															className="text-destructive focus:text-destructive"
-														>
-															<Trash2 className="h-4 w-4 mr-2" />
-															Delete
-														</DropdownMenuItem>
+														{canWrite ? (
+															<>
+																<DropdownMenuItem onClick={() => handleEditClick(asset)}>
+																	<Pencil className="h-4 w-4 mr-2" />
+																	Edit
+																</DropdownMenuItem>
+																<DropdownMenuItem
+																	onClick={() => handleRetireClick(asset)}
+																	disabled={asset.status === "retired"}
+																>
+																	<XCircle className="h-4 w-4 mr-2" />
+																	Retire
+																</DropdownMenuItem>
+																<DropdownMenuSeparator />
+																<DropdownMenuItem
+																	onClick={() => handleDeleteClick(asset)}
+																	className="text-destructive focus:text-destructive"
+																>
+																	<Trash2 className="h-4 w-4 mr-2" />
+																	Delete
+																</DropdownMenuItem>
+															</>
+														) : (
+															<DropdownMenuItem disabled>No actions available (Read-only)</DropdownMenuItem>
+														)}
 													</DropdownMenuContent>
 												</DropdownMenu>
 											</TableCell>
@@ -717,28 +649,17 @@ export default function AssetsPage() {
 						<DialogDescription>Update the details for asset {editingAsset?.serialNumber}</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 py-4">
-						<div className="space-y-2">
-							<Label>Serial Number</Label>
-							<Input
-								value={editForm.serialNumber || ""}
-								onChange={(e) => setEditForm({ ...editForm, serialNumber: e.target.value })}
-							/>
-						</div>
-						<div className="grid grid-cols-2 gap-4">
-							<div className="space-y-2">
-								<Label>Make</Label>
-								<Input
-									value={editForm.make || ""}
-									onChange={(e) => setEditForm({ ...editForm, make: e.target.value })}
-								/>
-							</div>
-							<div className="space-y-2">
-								<Label>Model</Label>
-								<Input
-									value={editForm.model || ""}
-									onChange={(e) => setEditForm({ ...editForm, model: e.target.value })}
-								/>
-							</div>
+						{/* Read-only asset info */}
+						<div className="p-3 bg-muted/50 rounded-md space-y-1">
+							<p className="text-sm text-muted-foreground">
+								Serial Number: <span className="font-medium text-foreground">{editingAsset?.serialNumber}</span>
+							</p>
+							<p className="text-sm text-muted-foreground">
+								Make / Model:{" "}
+								<span className="font-medium text-foreground">
+									{editingAsset?.make} {editingAsset?.model}
+								</span>
+							</p>
 						</div>
 						<div className="grid grid-cols-2 gap-4">
 							<div className="space-y-2">
@@ -771,30 +692,47 @@ export default function AssetsPage() {
 								/>
 							</div>
 						</div>
-						{isAdmin && (
-							<div className="space-y-2">
-								<Label>Assigned Field Worker</Label>
-								<Select
-									value={editForm.allocatedTo || "unassigned"}
-									onValueChange={(val) =>
-										setEditForm({
-											...editForm,
-											allocatedTo: val === "unassigned" ? null : val,
-										})
-									}
-								>
-									<SelectTrigger>
-										<SelectValue placeholder="Select field worker" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="unassigned">Unassigned</SelectItem>
-										{fieldWorkers.map((worker) => (
-											<SelectItem key={worker.id} value={worker.id}>
-												{worker.name} ({worker.email})
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
+						<div className="space-y-2">
+							<Label>Channel</Label>
+							<Input
+								placeholder="Enter channel"
+								value={editForm.channel || ""}
+								onChange={(e) => setEditForm({ ...editForm, channel: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Site Name</Label>
+							<Input
+								placeholder="Enter site name"
+								value={editForm.siteName || ""}
+								onChange={(e) => setEditForm({ ...editForm, siteName: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Client</Label>
+							<Input
+								placeholder="Enter client"
+								value={editForm.client || ""}
+								onChange={(e) => setEditForm({ ...editForm, client: e.target.value })}
+							/>
+						</div>
+
+						{/* Detach QR Code Section - Only visible if asset has QR code */}
+						{editingAsset?.qrCode && (
+							<div className="pt-4 border-t">
+								<div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg">
+									<div className="flex items-center gap-2">
+										<AlertTriangle className="h-4 w-4 text-orange-600" />
+										<div>
+											<p className="text-sm font-medium">QR Code Linked</p>
+											<p className="text-xs text-muted-foreground font-mono">{editingAsset.qrCode.code}</p>
+										</div>
+									</div>
+									<Button variant="destructive" size="sm" onClick={() => setDetachQrModalOpen(true)}>
+										<Link2Off className="h-4 w-4 mr-2" />
+										Detach QR Code
+									</Button>
+								</div>
 							</div>
 						)}
 					</div>
@@ -802,10 +740,8 @@ export default function AssetsPage() {
 						<Button variant="outline" onClick={() => setEditModalOpen(false)}>
 							Cancel
 						</Button>
-						<Button onClick={handleUpdateSubmit} disabled={updateMutation.isPending || allocationMutation.isPending}>
-							{(updateMutation.isPending || allocationMutation.isPending) && (
-								<Loader2 className="h-4 w-4 mr-2 animate-spin" />
-							)}
+						<Button onClick={handleUpdateSubmit} disabled={updateMutation.isPending}>
+							{updateMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 							Save Changes
 						</Button>
 					</DialogFooter>
@@ -872,28 +808,43 @@ export default function AssetsPage() {
 			{/* Create Asset Modal */}
 			<CreateAssetModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
 
-			{/* Allocation Modals */}
-			{isAdmin && (
-				<>
-					<AllocateAssetsModal
-						open={allocateModalOpen}
-						onOpenChange={(open) => {
-							setAllocateModalOpen(open);
-							if (!open) setSelectedAssetIds([]);
-						}}
-						assetIds={selectedAssetIds}
-						mode={allocateMode}
-					/>
-					<UnallocateAssetsModal
-						open={unallocateModalOpen}
-						onOpenChange={(open) => {
-							setUnallocateModalOpen(open);
-							if (!open) setSelectedAssetIds([]);
-						}}
-						assetIds={selectedAssetIds}
-					/>
-				</>
-			)}
+			{/* Detach QR Code Confirmation Modal */}
+			<Dialog open={detachQrModalOpen} onOpenChange={setDetachQrModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<AlertTriangle className="h-5 w-5 text-destructive" />
+							Detach QR Code?
+						</DialogTitle>
+						<DialogDescription className="space-y-3 pt-2">
+							<p>
+								You are about to detach the QR code from asset <strong>{editingAsset?.serialNumber}</strong>.
+							</p>
+							<div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
+								<p className="font-medium">Warning: This action cannot be undone.</p>
+								<ul className="list-disc list-inside mt-2 space-y-1">
+									<li>The asset's registration will be removed</li>
+									<li>All verification history will be cleared</li>
+									<li>You will need to re-register the asset with a new QR code</li>
+								</ul>
+							</div>
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setDetachQrModalOpen(false)} disabled={detachQrMutation.isPending}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => editingAsset && detachQrMutation.mutate(getAssetId(editingAsset))}
+							disabled={detachQrMutation.isPending}
+						>
+							{detachQrMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Detach QR Code
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

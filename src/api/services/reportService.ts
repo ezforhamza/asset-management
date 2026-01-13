@@ -89,6 +89,36 @@ export type {
 };
 
 // ============================================
+// Field Worker Performance Types
+// ============================================
+
+export interface FieldWorkerPerformance {
+	userId: string;
+	name: string;
+	email: string;
+	role: string;
+	totalVerifications: number;
+	gpsPassedCount: number;
+	gpsFailedCount: number;
+	gpsOverrideCount: number;
+	gpsPassRate: number;
+	repairsFlaggedCount: number;
+	avgPhotosPerVerification: number;
+	firstVerification: string | null;
+	lastVerification: string | null;
+}
+
+export interface FieldWorkerPerformanceRes {
+	success: boolean;
+	fieldWorker: FieldWorkerPerformance;
+}
+
+export interface FieldWorkerPerformanceParams {
+	startDate?: string;
+	endDate?: string;
+}
+
+// ============================================
 // Report Service
 // ============================================
 
@@ -103,6 +133,9 @@ const getMapAssets = (params?: MapAssetsParams) =>
 
 const getDashboardStats = (params?: DashboardStatsParams) =>
 	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
+
+const getFieldWorkerPerformance = (userId: string, params?: FieldWorkerPerformanceParams) =>
+	apiClient.get<FieldWorkerPerformanceRes>({ url: API_ENDPOINTS.REPORTS.FIELD_WORKER_PERFORMANCE(userId), params });
 
 const exportReport = (params: ExportReportParams) => {
 	const queryString = new URLSearchParams(params as unknown as Record<string, string>).toString();
@@ -179,6 +212,7 @@ export default {
 	getOverdueAssets,
 	getMapAssets,
 	getDashboardStats,
+	getFieldWorkerPerformance,
 	exportReport,
 	// Scheduled Reports
 	getSchedules,

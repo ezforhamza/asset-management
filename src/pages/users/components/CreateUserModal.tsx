@@ -22,6 +22,7 @@ interface CreateUserForm {
 	name: string;
 	email: string;
 	role: string;
+	adminType: string;
 }
 
 export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalProps) {
@@ -37,8 +38,11 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 			name: "",
 			email: "",
 			role: "field_user",
+			adminType: "full",
 		},
 	});
+
+	const selectedRole = form.watch("role");
 
 	const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
@@ -70,13 +74,14 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 			// If a file was selected, upload it first
 			if (selectedFile) {
 				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
-				profilePicUrl = uploadResponse.url;
+				profilePicUrl = uploadResponse.images[0]?.url;
 			}
 
 			const result = await userService.createFieldWorker({
 				name: values.name,
 				email: values.email,
 				role: values.role as "field_user" | "customer_admin",
+				adminType: values.role === "customer_admin" ? (values.adminType as "full" | "read_only") : null,
 				profilePic: profilePicUrl,
 			});
 
@@ -236,6 +241,33 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 									</FormItem>
 								)}
 							/>
+
+							{selectedRole === "customer_admin" && (
+								<FormField
+									control={form.control}
+									name="adminType"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Admin Type</FormLabel>
+											<Select onValueChange={field.onChange} defaultValue={field.value}>
+												<FormControl>
+													<SelectTrigger>
+														<SelectValue placeholder="Select admin type" />
+													</SelectTrigger>
+												</FormControl>
+												<SelectContent>
+													<SelectItem value="full">Full Admin</SelectItem>
+													<SelectItem value="read_only">Read-Only Admin</SelectItem>
+												</SelectContent>
+											</Select>
+											<p className="text-xs text-muted-foreground mt-1">
+												Read-only admins can only view data, not create/edit/delete
+											</p>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							)}
 
 							<div className="flex gap-3 pt-2">
 								<Button type="button" variant="outline" onClick={handleClose} className="flex-1">

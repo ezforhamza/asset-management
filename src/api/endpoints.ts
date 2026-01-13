@@ -11,13 +11,13 @@ export const API_ENDPOINTS = {
 		FORGOT_PASSWORD: "/auth/forgot-password",
 		RESET_PASSWORD: "/auth/reset-password",
 		VERIFY_EMAIL: "/auth/verify-email",
+		CHANGE_PASSWORD: "/auth/change-password",
 	},
 
 	// Users
 	USERS: {
 		BASE: "/users",
 		BY_ID: (id: string) => `/users/${id}`,
-		CHANGE_PASSWORD: "/users/change-password",
 		DEACTIVATE: (id: string) => `/users/${id}/deactivate`,
 		RESET_PASSWORD: (id: string) => `/users/${id}/reset-password`,
 	},
@@ -78,6 +78,7 @@ export const API_ENDPOINTS = {
 		OVERDUE: "/reports/overdue",
 		DASHBOARD: "/reports/dashboard",
 		EXPORT: "/reports/export",
+		FIELD_WORKER_PERFORMANCE: (userId: string) => `/reports/field-workers/${userId}/performance`,
 	},
 
 	// Assets Map
@@ -89,14 +90,14 @@ export const API_ENDPOINTS = {
 		BULK: "/uploads/bulk",
 	},
 
-	// Allocations
-	ALLOCATIONS: {
-		ALLOCATE: "/allocations/allocate",
-		UNALLOCATE: "/allocations/unallocate",
-		REASSIGN: "/allocations/reassign",
-		SUMMARY: "/allocations/summary",
-		FIELD_WORKER_ASSETS: (fieldWorkerId: string) => `/allocations/field-worker/${fieldWorkerId}/assets`,
-		BULK_ALLOCATE: "/allocations/bulk-allocate",
+	// Sessions
+	SESSIONS: {
+		ME: "/sessions/me",
+		LOGOUT: "/sessions/logout",
+		USERS: "/sessions/users",
+		USER_SESSIONS: (userId: string) => `/sessions/user/${userId}`,
+		TERMINATE: (sessionId: string) => `/sessions/${sessionId}`,
+		TERMINATE_ALL: (userId: string) => `/sessions/user/${userId}/all`,
 	},
 } as const;
 

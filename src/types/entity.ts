@@ -1,5 +1,6 @@
 import type { NavItemDataProps } from "@/components/nav/types";
 import type {
+	AdminType,
 	AssetStatus,
 	BasicStatus,
 	ConditionStatus,
@@ -24,6 +25,7 @@ export interface UserInfo {
 	avatar?: string;
 	profilePic?: string | null;
 	role: UserRole;
+	adminType?: AdminType | null;
 	companyId?: string;
 	status?: "active" | "inactive";
 	isEmailVerified?: boolean;
@@ -239,6 +241,7 @@ export interface MapAsset {
 	location: GeoLocation;
 	status: VerificationStatus;
 	lastVerified: string | null;
+	nextVerificationDue?: string;
 }
 
 // ============================================

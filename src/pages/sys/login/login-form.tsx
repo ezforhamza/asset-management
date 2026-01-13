@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { UserRole } from "#/enum";
 import type { SignInReq } from "@/api/services/userService";
 import { GLOBAL_CONFIG } from "@/global-config";
-import { useSignIn } from "@/store/userStore";
+import { useSignIn, useUserActions } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
@@ -21,6 +21,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
 	const { loginState, setLoginState } = useLoginStateContext();
 	const signIn = useSignIn();
+	const { clearUserInfoAndToken } = useUserActions();
 
 	const form = useForm<SignInReq>({
 		defaultValues: {
@@ -38,6 +39,16 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
 			if (!result) {
 				// Login failed - error already shown by signIn
+				return;
+			}
+
+			// Block field_user from accessing web dashboard
+			if (result.role === UserRole.FIELD_USER) {
+				clearUserInfoAndToken();
+				toast.error("Field users can only access the mobile app. Please use the mobile application.", {
+					position: "top-center",
+					duration: 5000,
+				});
 				return;
 			}
 

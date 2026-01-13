@@ -1,4 +1,4 @@
-import { http, HttpResponse, delay } from "msw";
+import { delay, HttpResponse, http } from "msw";
 import { MOCK_ASSETS } from "../data/assets";
 import { MOCK_VERIFICATIONS } from "../data/verifications";
 
@@ -121,6 +121,109 @@ export const assetHandlers = [
 		return HttpResponse.json({
 			success: true,
 			message: `Asset ${assetId} has been retired`,
+		});
+	}),
+
+	// Get asset history (registration + verification history)
+	http.get("/api/assets/:assetId/history", async ({ params }) => {
+		await delay(150);
+
+		const { assetId } = params;
+		const asset = MOCK_ASSETS.find((a) => a._id === assetId || a.id === assetId);
+
+		if (!asset) {
+			return HttpResponse.json({ success: false, error: "Asset not found" }, { status: 404 });
+		}
+
+		const verifications = MOCK_VERIFICATIONS.filter((v) => v.assetId === assetId);
+
+		return HttpResponse.json({
+			asset: {
+				...asset,
+				id: asset._id || asset.id,
+			},
+			registrationHistory: [
+				{
+					action: "registered",
+					performedBy: {
+						id: "user-field-1",
+						name: "John Field Worker",
+						email: "john.field@example.com",
+						role: "field_user",
+					},
+					performedAt: asset.registeredAt || new Date().toISOString(),
+					details: {
+						location: asset.registeredLocation
+							? {
+									latitude:
+										"coordinates" in asset.registeredLocation
+											? asset.registeredLocation.coordinates[1]
+											: asset.registeredLocation.latitude,
+									longitude:
+										"coordinates" in asset.registeredLocation
+											? asset.registeredLocation.coordinates[0]
+											: asset.registeredLocation.longitude,
+								}
+							: undefined,
+						photos: asset.photos || [],
+						notes: asset.notes || undefined,
+					},
+				},
+			],
+			verificationHistory: verifications.map((v, index) => ({
+				id: v._id,
+				verifiedBy: {
+					id: v.verifiedBy,
+					name: v.verifiedByName || "Field Worker",
+					email: "fieldworker@example.com",
+					role: "field_user",
+				},
+				verifiedAt: v.verifiedAt,
+				gpsCheckPassed: v.gpsCheckPassed,
+				distanceFromAsset: v.distanceFromAsset,
+				scanLocation: v.scanLocation,
+				checklist: v.checklist,
+				repairNeeded: v.repairNeeded,
+				photos: v.photos || [],
+				notes: index === 0 ? "Routine verification completed. Asset in good condition." : undefined,
+			})),
+		});
+	}),
+
+	// Get asset photos
+	http.get("/api/assets/:assetId/photos", async ({ params }) => {
+		await delay(100);
+
+		const { assetId } = params;
+		const asset = MOCK_ASSETS.find((a) => a._id === assetId || a.id === assetId);
+
+		if (!asset) {
+			return HttpResponse.json({ success: false, error: "Asset not found" }, { status: 404 });
+		}
+
+		const verifications = MOCK_VERIFICATIONS.filter((v) => v.assetId === assetId);
+
+		const photos = [
+			...(asset.photos || []).map((url, i) => ({
+				id: `reg-photo-${i}`,
+				url,
+				type: "registration" as const,
+				uploadedAt: asset.registeredAt || new Date().toISOString(),
+			})),
+			...verifications.flatMap((v) =>
+				(v.photos || []).map((url, i) => ({
+					id: `ver-${v._id}-photo-${i}`,
+					url,
+					type: "verification" as const,
+					verificationId: v._id,
+					uploadedAt: v.verifiedAt,
+				})),
+			),
+		];
+
+		return HttpResponse.json({
+			assetId,
+			photos,
 		});
 	}),
 ];

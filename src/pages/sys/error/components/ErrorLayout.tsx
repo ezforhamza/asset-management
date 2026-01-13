@@ -1,12 +1,12 @@
+import { m } from "motion/react";
+import { type ReactNode, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { NavLink } from "react-router";
 import MotionContainer from "@/components/animate/motion-container";
 import { varBounce } from "@/components/animate/variants/bounce";
 import { GLOBAL_CONFIG } from "@/global-config";
 import { Button } from "@/ui/button";
 import { Text, Title } from "@/ui/typography";
-import { m } from "motion/react";
-import type { ReactNode } from "react";
-import { Helmet } from "react-helmet-async";
-import { NavLink } from "react-router";
 
 interface ErrorLayoutProps {
 	title: string;
@@ -29,6 +29,13 @@ export default function ErrorLayout({
 	buttonText = "Go to Home",
 	slots = {},
 }: ErrorLayoutProps) {
+	// Reset document title on unmount to prevent stale 404 title
+	useEffect(() => {
+		return () => {
+			document.title = GLOBAL_CONFIG.appName;
+		};
+	}, []);
+
 	return (
 		<>
 			{helmetTitle && (
