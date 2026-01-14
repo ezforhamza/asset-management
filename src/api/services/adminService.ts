@@ -147,7 +147,7 @@ const getCompany = (companyId: string) =>
 
 const getCompanySummary = () =>
 	apiClient.get<{ success: boolean; companies: CompanySummary[] }>({
-		url: "/companies/summary",
+		url: "/admin/companies/summary",
 	});
 
 const createCompany = (data: CreateCompanyReq) =>

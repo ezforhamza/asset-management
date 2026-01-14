@@ -138,7 +138,7 @@ export default function AdminAuditLogsPage() {
 						<SelectItem value="user">User</SelectItem>
 						<SelectItem value="company">Company</SelectItem>
 						<SelectItem value="verification">Verification</SelectItem>
-						<SelectItem value="qrCode">QR Code</SelectItem>
+						<SelectItem value="qr_code">QR Code</SelectItem>
 					</SelectContent>
 				</Select>
 				<Select

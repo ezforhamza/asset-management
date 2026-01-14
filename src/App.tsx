@@ -1,8 +1,7 @@
-import Logo from "@/assets/icons/ic-logo-badge.svg";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import Logo from "@/assets/icons/ic-logo-badge.svg";
 import { MotionLazy } from "./components/animate/motion-lazy";
 import { RouteLoadingProgress } from "./components/loading";
 import Toast from "./components/toast";
@@ -21,10 +20,23 @@ if (import.meta.env.DEV) {
 	});
 }
 
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			retry: 1,
+			refetchOnWindowFocus: false,
+			staleTime: 5 * 60 * 1000,
+		},
+		mutations: {
+			retry: false,
+		},
+	},
+});
+
 function App({ children }: { children: React.ReactNode }) {
 	return (
 		<HelmetProvider>
-			<QueryClientProvider client={new QueryClient()}>
+			<QueryClientProvider client={queryClient}>
 				<ThemeProvider adapters={[AntdAdapter]}>
 					<VercelAnalytics debug={import.meta.env.PROD} />
 					<Helmet>
