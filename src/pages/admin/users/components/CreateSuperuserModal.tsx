@@ -49,7 +49,7 @@ export function CreateSuperuserModal({ open, onClose }: CreateSuperuserModalProp
 			queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
 		},
 		onError: () => {
-			toast.error("Failed to create superuser");
+			// Error toast is handled by apiClient
 		},
 	});
 

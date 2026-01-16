@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Company } from "#/entity";
 import adminService from "@/api/services/adminService";
@@ -23,6 +23,9 @@ export default function AdminCompaniesPage() {
 	const [editCompany, setEditCompany] = useState<Company | null>(null);
 	const [toggleCompany, setToggleCompany] = useState<Company | null>(null);
 
+	// Track pending query invalidation - will be executed after modal exit animation
+	const pendingInvalidation = useRef<boolean>(false);
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, page, limit],
 		queryFn: () =>
@@ -38,17 +41,34 @@ export default function AdminCompaniesPage() {
 	const toggleCompanyMutation = useMutation({
 		mutationFn: (company: Company) => adminService.updateCompany(company._id, { isActive: !company.isActive }),
 		onSuccess: (_data, variables) => {
+			// Mark that we need to invalidate queries after modal closes
+			pendingInvalidation.current = true;
 			toast.success(`Company ${variables.isActive ? "deactivated" : "activated"} successfully`);
-			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
+			// Close modal - query invalidation will happen in onExitComplete
+			setToggleCompany(null);
 		},
 		onError: (error) => {
 			console.error("Toggle company error:", error);
-			toast.error("Failed to update company status");
-		},
-		onSettled: () => {
+			// Error toast is handled by apiClient;
 			setToggleCompany(null);
 		},
 	});
+
+	// Called after modal exit animation completes - safe to do heavy operations now
+	const handleModalExitComplete = useCallback(() => {
+		if (pendingInvalidation.current) {
+			pendingInvalidation.current = false;
+			queryClient.invalidateQueries({ queryKey: ["admin", "companies"] });
+		}
+	}, [queryClient]);
+
+	// Reset mutation state when modal closes to prevent stale isPending state
+	const resetMutation = toggleCompanyMutation.reset;
+	useEffect(() => {
+		if (!toggleCompany) {
+			resetMutation();
+		}
+	}, [toggleCompany, resetMutation]);
 
 	const companies = data?.results || [];
 	const totalCompanies = data?.totalResults || 0;
@@ -169,6 +189,7 @@ export default function AdminCompaniesPage() {
 				open={!!toggleCompany}
 				onClose={() => setToggleCompany(null)}
 				onConfirm={() => toggleCompany && toggleCompanyMutation.mutate(toggleCompany)}
+				onExitComplete={handleModalExitComplete}
 				title={toggleCompany?.isActive ? "Deactivate Company" : "Activate Company"}
 				description={`Are you sure you want to ${toggleCompany?.isActive ? "deactivate" : "activate"} ${toggleCompany?.companyName}?`}
 				confirmText={toggleCompany?.isActive ? "Deactivate" : "Activate"}

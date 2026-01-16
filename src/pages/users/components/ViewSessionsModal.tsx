@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { Loader2, Monitor, Smartphone, Trash2, Wifi, WifiOff, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -84,7 +84,7 @@ export function ViewSessionsModal({ user, open, onClose }: ViewSessionsModalProp
 			queryClient.invalidateQueries({ queryKey: ["user-sessions", user?.id] });
 			queryClient.invalidateQueries({ queryKey: ["session-users"] });
 		} catch {
-			toast.error("Failed to terminate session");
+			// Error toast is handled by apiClient;
 		} finally {
 			setTerminatingSessionId(null);
 		}
@@ -139,8 +139,6 @@ export function ViewSessionsModal({ user, open, onClose }: ViewSessionsModalProp
 							<TableHeader>
 								<TableRow>
 									<TableHead>Device</TableHead>
-									<TableHead>IP Address</TableHead>
-									<TableHead>Created</TableHead>
 									<TableHead>Last Activity</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead className="text-right">Actions</TableHead>
@@ -157,12 +155,6 @@ export function ViewSessionsModal({ user, open, onClose }: ViewSessionsModalProp
 													<p className="text-xs text-muted-foreground">{parseBrowser(session.userAgent)}</p>
 												</div>
 											</div>
-										</TableCell>
-										<TableCell className="font-mono text-sm">{session.ipAddress}</TableCell>
-										<TableCell className="text-sm text-muted-foreground">
-											{session.createdAt && !Number.isNaN(new Date(session.createdAt).getTime())
-												? format(new Date(session.createdAt), "MMM d, yyyy HH:mm")
-												: "—"}
 										</TableCell>
 										<TableCell className="text-sm text-muted-foreground">
 											{session.lastActivityAt && !Number.isNaN(new Date(session.lastActivityAt).getTime())

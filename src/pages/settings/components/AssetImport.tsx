@@ -52,7 +52,7 @@ export function AssetImport() {
 			}
 		},
 		onError: () => {
-			toast.error("Failed to import assets");
+			// Error toast is handled by apiClient;
 		},
 	});
 

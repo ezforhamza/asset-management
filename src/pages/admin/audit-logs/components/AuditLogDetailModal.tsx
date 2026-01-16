@@ -5,36 +5,13 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { ScrollArea } from "@/ui/scroll-area";
+import { getAuditActionBadge, StyledBadge } from "@/utils/badge-styles";
 
 interface AuditLogDetailModalProps {
 	log: AuditLog | null;
 	open: boolean;
 	onClose: () => void;
 }
-
-const getActionBadge = (action: string) => {
-	const actionMap: Record<string, { label: string; className: string }> = {
-		created: { label: "Created", className: "bg-green-600" },
-		registered: { label: "Registered", className: "bg-green-600" },
-		updated: { label: "Updated", className: "text-blue-600 border-blue-600" },
-		deleted: { label: "Deleted", className: "bg-destructive" },
-		verified: { label: "Verified", className: "bg-purple-600" },
-		status_changed: { label: "Status Changed", className: "text-orange-600 border-orange-600" },
-	};
-
-	const config = actionMap[action];
-	if (config) {
-		return (
-			<Badge
-				variant={action === "updated" || action === "status_changed" ? "outline" : "default"}
-				className={config.className}
-			>
-				{config.label}
-			</Badge>
-		);
-	}
-	return <Badge variant="secondary">{action}</Badge>;
-};
 
 // Field label mappings for different entity types
 const fieldLabelMaps: Record<string, Record<string, string>> = {
@@ -239,7 +216,7 @@ export function AuditLogDetailModal({ log, open, onClose }: AuditLogDetailModalP
 					<div className="flex items-center justify-between">
 						<DialogTitle className="flex items-center gap-3">
 							<span>Audit Log Details</span>
-							{getActionBadge(log.action)}
+							{getAuditActionBadge(log.action)}
 						</DialogTitle>
 						<Button variant="ghost" size="icon" onClick={onClose}>
 							<X className="h-4 w-4" />
@@ -283,9 +260,9 @@ export function AuditLogDetailModal({ log, open, onClose }: AuditLogDetailModalP
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">Role</p>
-									<Badge variant="secondary" className="capitalize">
+									<StyledBadge color="gray">
 										{log.performedBy.role.replace("_", " ")}
-									</Badge>
+									</StyledBadge>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">User ID</p>

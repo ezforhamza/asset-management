@@ -67,7 +67,7 @@ export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 			setNewCategoryName("");
 		},
 		onError: () => {
-			toast.error("Failed to create category");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -87,7 +87,7 @@ export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 			setRenamingCategory(null);
 		},
 		onError: () => {
-			toast.error("Failed to update category");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -101,7 +101,7 @@ export function CategoriesModal({ open, onOpenChange }: CategoriesModalProps) {
 			setDeletingCategory(null);
 		},
 		onError: () => {
-			toast.error("Failed to delete category. It may be in use.");
+			// Error toast is handled by apiClient;
 		},
 	});
 

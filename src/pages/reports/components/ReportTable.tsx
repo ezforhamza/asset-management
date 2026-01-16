@@ -2,9 +2,9 @@ import { format } from "date-fns";
 import { CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 // AlertTriangle removed - not used in this file
 import type { VerificationReportItem } from "#/report";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface ReportTableProps {
 	data: VerificationReportItem[];
@@ -41,13 +41,13 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 	const getStatusBadge = (status: string) => {
 		switch (status) {
 			case "on_time":
-				return <Badge className="bg-emerald-500">On Time</Badge>;
+				return <StyledBadge color="emerald">On Time</StyledBadge>;
 			case "due_soon":
-				return <Badge className="bg-orange-500">Due Soon</Badge>;
+				return <StyledBadge color="orange">Due Soon</StyledBadge>;
 			case "overdue":
-				return <Badge variant="destructive">Overdue</Badge>;
+				return <StyledBadge color="red">Overdue</StyledBadge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 

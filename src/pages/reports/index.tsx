@@ -3,25 +3,23 @@ import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import { useNavigate } from "react-router";
 import type { VerificationReportItem } from "#/report";
 import reportService from "@/api/services/reportService";
 import { Button } from "@/ui/button";
 import { ExportButtons } from "./components/ExportButtons";
 import { ReportFilters } from "./components/ReportFilters";
 import { ReportTable } from "./components/ReportTable";
-import { VerificationDetail } from "./components/VerificationDetail";
 
 export default function ReportsPage() {
+	const navigate = useNavigate();
+
 	// Filter state
 	const [dateRange, setDateRange] = useState<DateRange | undefined>();
 	const [status, setStatus] = useState("all");
 	const [searchQuery, setSearchQuery] = useState("");
 	const [page, setPage] = useState(1);
 	const limit = 20;
-
-	// Detail modal state
-	const [selectedVerification, setSelectedVerification] = useState<VerificationReportItem | null>(null);
-	const [detailOpen, setDetailOpen] = useState(false);
 
 	// Build query params - date range filtering is done client-side for nextVerificationDue
 	const queryParams = useMemo(() => {
@@ -85,8 +83,10 @@ export default function ReportsPage() {
 	}, [data, searchQuery, dateRange]);
 
 	const handleViewDetails = (verification: VerificationReportItem) => {
-		setSelectedVerification(verification);
-		setDetailOpen(true);
+		// Navigate to Asset History page - highlight latest verification
+		navigate(`/assets/${verification.assetId}/history`, {
+			state: { fromReports: true, highlightLatest: true },
+		});
 	};
 
 	const handleClearFilters = () => {
@@ -164,9 +164,6 @@ export default function ReportsPage() {
 					onPageChange={setPage}
 				/>
 			</div>
-
-			{/* Detail Modal */}
-			<VerificationDetail verification={selectedVerification} open={detailOpen} onClose={() => setDetailOpen(false)} />
 		</div>
 	);
 }

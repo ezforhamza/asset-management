@@ -34,7 +34,7 @@ export function ForceLogoutModal({ user, open, onClose, onSuccess }: ForceLogout
 			onSuccess();
 			onClose();
 		} catch {
-			toast.error("Failed to force logout user");
+			// Error toast is handled by apiClient;
 		} finally {
 			setIsLoading(false);
 		}

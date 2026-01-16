@@ -51,20 +51,18 @@ export function BulkCreateModal({ open, onClose, companies }: BulkCreateModalPro
 				queryClient.invalidateQueries({ queryKey: ["qr"] });
 
 				if (responseData.created === 0 && responseData.duplicates > 0) {
-					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes created`);
+					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes created`, { position: "top-center" });
 				} else if (responseData.created > 0 && responseData.duplicates > 0) {
-					toast.success(`Created ${responseData.created} QR codes, ${responseData.duplicates} duplicates skipped`);
-				} else {
-					toast.error(responseData.message || "Failed to create QR codes");
+					toast.success(`Created ${responseData.created} QR codes, ${responseData.duplicates} duplicates skipped`, { position: "top-center" });
 				}
+				// Fallback error is handled by apiClient
 
 				// Still close modal and clear form on duplicate scenario
 				setQrCodes("");
 				setCompanyId("none");
 				onClose();
-			} else {
-				toast.error(error.response?.data?.message || "Failed to create QR codes");
 			}
+			// Fallback error is handled by apiClient
 		},
 	});
 

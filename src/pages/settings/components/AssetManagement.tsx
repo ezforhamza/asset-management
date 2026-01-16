@@ -46,7 +46,7 @@ export function AssetManagement() {
 			setTargetCompany("");
 		},
 		onError: () => {
-			toast.error("Failed to transfer asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -60,7 +60,7 @@ export function AssetManagement() {
 			setRetireReason("");
 		},
 		onError: () => {
-			toast.error("Failed to retire asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 

@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Shield, User, UserX } from "lucide-react";
 import type { Company, UserInfo } from "#/entity";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
 	DropdownMenu,
@@ -13,6 +12,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { getUserRoleBadge, getUserStatusBadge } from "@/utils/badge-styles";
 
 interface AdminUserTableProps {
 	users: UserInfo[];
@@ -21,17 +21,6 @@ interface AdminUserTableProps {
 	onEdit?: (user: UserInfo) => void;
 	onDeactivate?: (user: UserInfo) => void;
 }
-
-const getRoleBadge = (role: string) => {
-	switch (role) {
-		case "system_admin":
-			return <Badge variant="destructive">System Admin</Badge>;
-		case "customer_admin":
-			return <Badge variant="default">Admin</Badge>;
-		default:
-			return <Badge variant="secondary">Field User</Badge>;
-	}
-};
 
 export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactivate }: AdminUserTableProps) {
 	const getCompanyName = (companyId: string) => {
@@ -125,14 +114,12 @@ export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactiva
 							<TableCell>
 								<span className="text-sm">{user.companyId ? getCompanyName(user.companyId) : "—"}</span>
 							</TableCell>
-							<TableCell>{getRoleBadge(user.role)}</TableCell>
+							<TableCell>{getUserRoleBadge(user.role)}</TableCell>
 							<TableCell className="text-sm text-muted-foreground">
 								{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy HH:mm") : "Never"}
 							</TableCell>
 							<TableCell>
-								<Badge variant={user.status !== "inactive" ? "default" : "secondary"}>
-									{user.status !== "inactive" ? "Active" : "Inactive"}
-								</Badge>
+								{getUserStatusBadge(user.status !== "inactive" ? "active" : "inactive")}
 							</TableCell>
 							<TableCell>
 								<DropdownMenu>

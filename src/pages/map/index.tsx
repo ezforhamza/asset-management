@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import L from "leaflet";
 import { Layers, Loader2, MapPin } from "lucide-react";
-import { useMemo, useState } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { useNavigate, useSearchParams } from "react-router";
 import "leaflet/dist/leaflet.css";
 
 import type { MapAsset } from "#/entity";
@@ -10,13 +12,65 @@ import reportService from "@/api/services/reportService";
 import { Button } from "@/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { AssetMarker } from "./components/AssetMarker";
+import { ClusterMarker } from "./components/ClusterMarker";
 
-// Map tile providers
+// Group assets by location (for clustering nearby markers)
+interface MarkerGroup {
+	key: string;
+	position: [number, number];
+	assets: MapAsset[];
+}
+
+const CLUSTER_THRESHOLD = 0.0001; // ~11 meters - group markers within this distance
+
+const groupAssetsByLocation = (assets: MapAsset[]): MarkerGroup[] => {
+	const groups: MarkerGroup[] = [];
+	const processed = new Set<string>();
+
+	for (const asset of assets) {
+		if (processed.has(asset.assetId)) continue;
+
+		const nearbyAssets = assets.filter((other) => {
+			if (processed.has(other.assetId)) return false;
+			const latDiff = Math.abs(asset.location.latitude - other.location.latitude);
+			const lngDiff = Math.abs(asset.location.longitude - other.location.longitude);
+			return latDiff < CLUSTER_THRESHOLD && lngDiff < CLUSTER_THRESHOLD;
+		});
+
+		for (const nearby of nearbyAssets) {
+			processed.add(nearby.assetId);
+		}
+
+		const avgLat = nearbyAssets.reduce((sum, a) => sum + a.location.latitude, 0) / nearbyAssets.length;
+		const avgLng = nearbyAssets.reduce((sum, a) => sum + a.location.longitude, 0) / nearbyAssets.length;
+
+		groups.push({
+			key: `${avgLat.toFixed(6)}-${avgLng.toFixed(6)}`,
+			position: [avgLat, avgLng],
+			assets: nearbyAssets,
+		});
+	}
+
+	return groups;
+};
+
+// Map tile providers - Premium looking options
 const tileLayers = {
+	default: {
+		url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+		attribution:
+			'&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
+		name: "Default",
+	},
 	light: {
 		url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
 		attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
 		name: "Light",
+	},
+	dark: {
+		url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+		attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+		name: "Dark",
 	},
 	streets: {
 		url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -27,6 +81,11 @@ const tileLayers = {
 		url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
 		attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
 		name: "Satellite",
+	},
+	terrain: {
+		url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+		attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+		name: "Terrain",
 	},
 };
 
@@ -79,9 +138,60 @@ const hasValidCoordinates = (item: VerificationReportItem): boolean => {
 	);
 };
 
+// Component to fit bounds to all markers
+function FitBoundsToMarkers({
+	assets,
+	highlightedLocation,
+}: {
+	assets: MapAsset[];
+	highlightedLocation?: { lat: number; lng: number };
+}) {
+	const map = useMap();
+	const hasInitialized = useRef(false);
+
+	useEffect(() => {
+		if (hasInitialized.current) return;
+
+		// If there's a highlighted location, center on it with appropriate zoom
+		if (highlightedLocation) {
+			map.setView([highlightedLocation.lat, highlightedLocation.lng], 16);
+			hasInitialized.current = true;
+			return;
+		}
+
+		// Otherwise fit bounds to show all markers
+		if (assets.length > 0) {
+			const bounds = L.latLngBounds(assets.map((a) => [a.location.latitude, a.location.longitude]));
+			// Use larger padding and lower maxZoom to ensure all markers are visible without showing map edges
+			map.fitBounds(bounds, {
+				padding: [80, 80],
+				maxZoom: 12,
+				animate: false,
+			});
+			hasInitialized.current = true;
+		}
+	}, [map, assets, highlightedLocation]);
+
+	return null;
+}
+
 export default function MapPage() {
+	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
 	const [selectedStatus, setSelectedStatus] = useState<VerificationStatus | "all">("all");
-	const [tileLayer, setTileLayer] = useState<keyof typeof tileLayers>("light");
+	const [tileLayer, setTileLayer] = useState<keyof typeof tileLayers>("default");
+
+	// Get highlight params from URL (when coming from VerificationCard)
+	const highlightLat = searchParams.get("lat");
+	const highlightLng = searchParams.get("lng");
+	const highlightId = searchParams.get("highlight");
+
+	const highlightedLocation = useMemo(() => {
+		if (highlightLat && highlightLng) {
+			return { lat: parseFloat(highlightLat), lng: parseFloat(highlightLng) };
+		}
+		return undefined;
+	}, [highlightLat, highlightLng]);
 
 	// Fetch verification report data - already excludes never_verified
 	const { data, isLoading } = useQuery({
@@ -125,6 +235,11 @@ export default function MapPage() {
 		return assets.filter((a) => a.status === selectedStatus);
 	}, [assets, selectedStatus]);
 
+	// Group markers by location for clustering
+	const markerGroups = useMemo(() => {
+		return groupAssetsByLocation(filteredAssets);
+	}, [filteredAssets]);
+
 	// Calculate counts
 	const counts = useMemo(() => {
 		if (!assets || assets.length === 0) return { total: 0, onTime: 0, dueSoon: 0, overdue: 0 };
@@ -136,18 +251,24 @@ export default function MapPage() {
 		};
 	}, [assets]);
 
-	// Calculate map center
+	// Calculate map center - use highlighted location or default
 	const mapCenter = useMemo(() => {
+		if (highlightedLocation) {
+			return [highlightedLocation.lat, highlightedLocation.lng] as [number, number];
+		}
 		if (!filteredAssets || filteredAssets.length === 0) {
 			return [24.8607, 67.0011] as [number, number];
 		}
 		const lat = filteredAssets.reduce((sum, a) => sum + a.location.latitude, 0) / filteredAssets.length;
 		const lng = filteredAssets.reduce((sum, a) => sum + a.location.longitude, 0) / filteredAssets.length;
 		return [lat, lng] as [number, number];
-	}, [filteredAssets]);
+	}, [filteredAssets, highlightedLocation]);
 
+	// Navigate to AssetHistoryPage instead of ReportsPage
 	const handleViewDetails = (assetId: string) => {
-		window.location.href = `/reports?asset=${assetId}`;
+		navigate(`/assets/${assetId}/history`, {
+			state: { fromMap: true },
+		});
 	};
 
 	const currentTile = tileLayers[tileLayer];
@@ -251,19 +372,37 @@ export default function MapPage() {
 					<>
 						<MapContainer
 							center={mapCenter}
-							zoom={14}
-							className="h-full w-full"
-							style={{ background: "#f1f5f9", zIndex: 1 }}
-							zoomControl={false}
+							zoom={3}
+							className="h-full w-full map-container-styled"
+							style={{ background: "#aad3df", zIndex: 1 }}
+							zoomControl={true}
+							minZoom={2}
+							maxZoom={18}
+							maxBounds={[
+								[-85, -180],
+								[85, 180],
+							]}
+							maxBoundsViscosity={1.0}
 						>
 							<TileLayer attribution={currentTile.attribution} url={currentTile.url} />
-							{filteredAssets.map((asset) => (
-								<AssetMarker
-									key={asset.assetId}
-									asset={asset as unknown as MapAsset}
-									onViewDetails={handleViewDetails}
-								/>
-							))}
+							<FitBoundsToMarkers assets={filteredAssets} highlightedLocation={highlightedLocation} />
+							{markerGroups.map((group) =>
+								group.assets.length === 1 ? (
+									<AssetMarker
+										key={group.assets[0].assetId}
+										asset={group.assets[0]}
+										onViewDetails={handleViewDetails}
+										isHighlighted={group.assets[0].assetId === highlightId}
+									/>
+								) : (
+									<ClusterMarker
+										key={group.key}
+										assets={group.assets}
+										position={group.position}
+										onViewDetails={handleViewDetails}
+									/>
+								),
+							)}
 						</MapContainer>
 
 						{/* Floating Legend */}
@@ -279,9 +418,9 @@ export default function MapPage() {
 							</div>
 						</div>
 
-						{/* Asset Count Badge */}
-						<div className="absolute top-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border px-3 py-2 z-[500]">
-							<p className="text-sm font-medium">{filteredAssets.length} assets</p>
+						{/* Asset Count Badge - Centered at top */}
+						<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm rounded-full shadow-lg border px-4 py-2 z-[500]">
+							<p className="text-sm font-medium">{filteredAssets.length} assets on map</p>
 						</div>
 					</>
 				)}

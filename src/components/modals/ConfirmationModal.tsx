@@ -1,4 +1,5 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -33,8 +34,44 @@ export function ConfirmationModal({
 	variant = "default",
 	isLoading = false,
 }: ConfirmationModalProps) {
+	const previousOpenRef = useRef(open);
+
+	// Ensure body scroll is restored when modal closes
+	useEffect(() => {
+		if (previousOpenRef.current && !open) {
+			// Modal just closed - ensure body is interactive
+			document.body.style.pointerEvents = "";
+			document.body.style.overflow = "";
+		}
+		previousOpenRef.current = open;
+	}, [open]);
+
+	// Cleanup on unmount
+	useEffect(() => {
+		return () => {
+			document.body.style.pointerEvents = "";
+			document.body.style.overflow = "";
+		};
+	}, []);
+
 	const handleOpenChange = (newOpen: boolean) => {
 		if (!newOpen && !isLoading) {
+			onClose();
+		}
+	};
+
+	const handleConfirm = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		if (!isLoading) {
+			onConfirm();
+		}
+	};
+
+	const handleCancel = (e: React.MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+		if (!isLoading) {
 			onClose();
 		}
 	};
@@ -54,20 +91,22 @@ export function ConfirmationModal({
 					<AlertDialogDescription>{description}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel disabled={isLoading} onClick={onClose}>
+					<AlertDialogCancel disabled={isLoading} onClick={handleCancel}>
 						{cancelText}
 					</AlertDialogCancel>
 					<AlertDialogAction
-						onClick={(e) => {
-							e.preventDefault();
-							if (!isLoading) {
-								onConfirm();
-							}
-						}}
+						onClick={handleConfirm}
 						className={variant === "destructive" ? "bg-destructive hover:bg-destructive/90" : ""}
 						disabled={isLoading}
 					>
-						{isLoading ? "Processing..." : confirmText}
+						{isLoading ? (
+							<>
+								<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+								Processing...
+							</>
+						) : (
+							confirmText
+						)}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

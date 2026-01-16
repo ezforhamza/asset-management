@@ -58,7 +58,7 @@ export function AppSettingsTab() {
 			queryClient.invalidateQueries({ queryKey: ["admin", "global-settings"] });
 		},
 		onError: () => {
-			toast.error("Failed to save settings");
+			// Error toast is handled by apiClient;
 		},
 	});
 

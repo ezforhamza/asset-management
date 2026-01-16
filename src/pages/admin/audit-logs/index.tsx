@@ -1,67 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ClipboardList, Eye, Search } from "lucide-react";
+import { CalendarIcon, ClipboardList, Eye, Search, X } from "lucide-react";
 import { useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { useNavigate } from "react-router";
 import auditLogService, { type AuditLog } from "@/api/services/auditLogService";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
+import { Calendar } from "@/ui/calendar";
 import { Input } from "@/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-
-const getActionBadge = (action: string) => {
-	const actionMap: Record<string, { label: string; className: string }> = {
-		created: { label: "Created", className: "bg-green-600" },
-		registered: { label: "Registered", className: "bg-green-600" },
-		updated: { label: "Updated", className: "text-blue-600 border-blue-600" },
-		deleted: { label: "Deleted", className: "bg-destructive" },
-		verified: { label: "Verified", className: "bg-purple-600" },
-		status_changed: { label: "Status Changed", className: "text-orange-600 border-orange-600" },
-	};
-
-	const config = actionMap[action];
-	if (config) {
-		return (
-			<Badge
-				variant={action === "updated" || action === "status_changed" ? "outline" : "default"}
-				className={config.className}
-			>
-				{config.label}
-			</Badge>
-		);
-	}
-	return <Badge variant="secondary">{action}</Badge>;
-};
-
-const getEntityBadge = (entityType: string) => {
-	const typeMap: Record<string, string> = {
-		asset: "Asset",
-		user: "User",
-		company: "Company",
-		verification: "Verification",
-		qr_code: "QR Code",
-		qrCode: "QR Code",
-	};
-	return <Badge variant="secondary">{typeMap[entityType] || entityType}</Badge>;
-};
+import { cn } from "@/utils";
+import { getAuditActionBadge, getAuditEntityBadge } from "@/utils/badge-styles";
 
 export default function AdminAuditLogsPage() {
 	const navigate = useNavigate();
 	const [entityTypeFilter, setEntityTypeFilter] = useState<string | undefined>(undefined);
 	const [actionFilter, setActionFilter] = useState<string | undefined>(undefined);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 	const [page, setPage] = useState(1);
 	const [limit] = useState(20);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["audit-logs", entityTypeFilter, actionFilter, searchQuery, page, limit],
+		queryKey: ["audit-logs", entityTypeFilter, actionFilter, searchQuery, dateRange, page, limit],
 		queryFn: () =>
 			auditLogService.getAuditLogs({
 				entityType: entityTypeFilter,
 				action: actionFilter,
 				performedBy: searchQuery || undefined,
+				startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
+				endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
 				sortBy: "timestamp:desc",
 				page,
 				limit,
@@ -74,6 +45,7 @@ export default function AdminAuditLogsPage() {
 		setEntityTypeFilter(undefined);
 		setActionFilter(undefined);
 		setSearchQuery("");
+		setDateRange(undefined);
 		setPage(1);
 	};
 
@@ -81,22 +53,71 @@ export default function AdminAuditLogsPage() {
 		navigate(`/admin/audit-logs/${log.id}`, { state: { log } });
 	};
 
+	// Generate meaningful summary based on entity type and action
 	const getSummary = (log: AuditLog) => {
-		const changes = log.changes;
-		if (!changes) return "—";
-		if (!changes.before && changes.after) {
-			const after = changes.after;
-			if (after.serialNumber) return `Asset ${after.serialNumber} registered`;
-			if (after.name) return `${after.name} created`;
-			return "New record created";
+		const { entityType, action, changes, metadata } = log;
+		const entity = entityType.replace("_", " ");
+		const entityCapitalized = entity.charAt(0).toUpperCase() + entity.slice(1);
+
+		// Get identifier from changes or metadata
+		const getIdentifier = () => {
+			const data = changes?.after || changes?.before || metadata;
+			if (!data) return null;
+			return data.serialNumber || data.qrCode || data.name || data.companyName || data.email || null;
+		};
+
+		const identifier = getIdentifier();
+		const identifierText = identifier ? ` "${identifier}"` : "";
+
+		// Action-specific summaries
+		switch (action) {
+			case "registered":
+				if (entityType === "asset") {
+					return `Asset${identifierText} registered with QR code`;
+				}
+				return `${entityCapitalized}${identifierText} registered`;
+
+			case "deleted":
+				return `${entityCapitalized}${identifierText} was deleted`;
+
+			case "verified":
+				if (entityType === "asset" || entityType === "verification") {
+					const status = changes?.after?.status || metadata?.status;
+					if (status) {
+						return `Asset${identifierText} verified as ${status}`;
+					}
+					return `Asset${identifierText} verification completed`;
+				}
+				return `${entityCapitalized} verified`;
+
+			case "created":
+				return `${entityCapitalized}${identifierText} was created`;
+
+			case "updated":
+				if (changes?.before && changes?.after) {
+					const changedFields = Object.keys(changes.after).filter(
+						(key) => !key.startsWith("_") && JSON.stringify(changes.before[key]) !== JSON.stringify(changes.after[key]),
+					);
+					if (changedFields.length > 0) {
+						const fieldNames = changedFields.slice(0, 2).join(", ");
+						const moreText = changedFields.length > 2 ? ` +${changedFields.length - 2} more` : "";
+						return `${entityCapitalized} updated: ${fieldNames}${moreText}`;
+					}
+				}
+				return `${entityCapitalized}${identifierText} was updated`;
+
+			case "allocated":
+				if (entityType === "qr_code" || entityType === "qrCode") {
+					return `QR code${identifierText} allocated to company`;
+				}
+				return `${entityCapitalized} allocated`;
+
+			case "retired":
+				return `${entityCapitalized}${identifierText} was retired`;
+
+			default:
+				return `${entityCapitalized} ${action}`;
 		}
-		if (changes.before && changes.after) {
-			const changedFields = Object.keys(changes.after).filter(
-				(key) => JSON.stringify(changes.before[key]) !== JSON.stringify(changes.after[key]),
-			);
-			return `${changedFields.length} field(s) updated`;
-		}
-		return "—";
 	};
 
 	return (
@@ -157,7 +178,42 @@ export default function AdminAuditLogsPage() {
 						<SelectItem value="verified">Verified</SelectItem>
 					</SelectContent>
 				</Select>
-				{(entityTypeFilter || actionFilter || searchQuery) && (
+				<Popover>
+					<PopoverTrigger asChild>
+						<Button
+							variant="outline"
+							className={cn("w-[260px] justify-start text-left font-normal", !dateRange && "text-muted-foreground")}
+						>
+							<CalendarIcon className="mr-2 h-4 w-4" />
+							{dateRange?.from ? (
+								dateRange.to ? (
+									<>
+										{format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+									</>
+								) : (
+									format(dateRange.from, "LLL dd, y")
+								)
+							) : (
+								<span>Pick a date range</span>
+							)}
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent className="w-auto p-0" align="start">
+						<Calendar
+							mode="range"
+							defaultMonth={dateRange?.from}
+							selected={dateRange}
+							onSelect={setDateRange}
+							numberOfMonths={2}
+						/>
+					</PopoverContent>
+				</Popover>
+				{dateRange && (
+					<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDateRange(undefined)}>
+						<X className="h-4 w-4" />
+					</Button>
+				)}
+				{(entityTypeFilter || actionFilter || searchQuery || dateRange) && (
 					<Button variant="outline" size="sm" onClick={handleClearFilters}>
 						Clear Filters
 					</Button>
@@ -242,11 +298,11 @@ export default function AdminAuditLogsPage() {
 											</TableCell>
 											<TableCell>
 												<div className="space-y-1">
-													{getEntityBadge(log.entityType)}
+													{getAuditEntityBadge(log.entityType)}
 													<p className="text-xs text-muted-foreground font-mono">{log.entityId.slice(0, 12)}...</p>
 												</div>
 											</TableCell>
-											<TableCell>{getActionBadge(log.action)}</TableCell>
+											<TableCell>{getAuditActionBadge(log.action)}</TableCell>
 											<TableCell className="text-sm">
 												<div>
 													<p className="font-medium truncate">{log.performedBy.name}</p>

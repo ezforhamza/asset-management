@@ -3,10 +3,10 @@ import { format } from "date-fns";
 import { QrCode } from "lucide-react";
 import { useState } from "react";
 import adminService from "@/api/services/adminService";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface CompanyQRCodesTabProps {
 	companyId: string;
@@ -14,14 +14,16 @@ interface CompanyQRCodesTabProps {
 
 const getStatusBadge = (status: string) => {
 	switch (status) {
-		case "active":
-			return <Badge className="bg-green-600">Active</Badge>;
-		case "linked":
-			return <Badge className="bg-blue-600">Linked</Badge>;
+		case "available":
+			return <StyledBadge color="blue">Available</StyledBadge>;
+		case "allocated":
+			return <StyledBadge color="orange">Allocated</StyledBadge>;
+		case "used":
+			return <StyledBadge color="emerald">Used</StyledBadge>;
 		case "retired":
-			return <Badge variant="secondary">Retired</Badge>;
+			return <StyledBadge color="gray">Retired</StyledBadge>;
 		default:
-			return <Badge variant="outline">{status}</Badge>;
+			return <StyledBadge color="gray">{status}</StyledBadge>;
 	}
 };
 
@@ -108,9 +110,13 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 								<TableCell>{getStatusBadge(qr.status)}</TableCell>
 								<TableCell className="text-sm">
 									{qr.assetId ? (
-										<span className="text-primary">
-											{typeof qr.assetId === "object" ? qr.assetId.serialNumber : qr.assetId}
-										</span>
+										typeof qr.assetId === "object" && qr.assetId.serialNumber ? (
+											<span className="text-primary">{qr.assetId.serialNumber}</span>
+										) : typeof qr.assetId === "object" ? (
+											<span className="text-muted-foreground italic text-xs">Asset details not added</span>
+										) : (
+											<span className="text-primary">{qr.assetId}</span>
+										)
 									) : (
 										<span className="text-muted-foreground">Not linked</span>
 									)}

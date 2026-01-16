@@ -57,7 +57,7 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 			toast.success("Company created successfully");
 		},
 		onError: () => {
-			toast.error("Failed to create company");
+			// Error toast is handled by apiClient;
 		},
 	});
 

@@ -2,9 +2,9 @@ import { format } from "date-fns";
 import { ChevronDown, ChevronUp, ClipboardCheck, ExternalLink, MapPin, QrCode, Tag, User } from "lucide-react";
 import { useState } from "react";
 import type { RegistrationHistoryItem } from "@/api/services/assetService";
-import { Badge } from "@/ui/badge";
 import { Card, CardContent } from "@/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible";
+import { StyledBadge } from "@/utils/badge-styles";
 import { PhotoGallery } from "./PhotoGallery";
 
 interface RegistrationEventProps {
@@ -61,7 +61,7 @@ export function RegistrationEvent({ registration }: RegistrationEventProps) {
 								<div className="flex-1 min-w-0">
 									<div className="flex items-center gap-2 flex-wrap">
 										<h4 className="font-medium">Asset Registered</h4>
-										<Badge variant="success">Registration</Badge>
+										<StyledBadge color="emerald">Registration</StyledBadge>
 									</div>
 									<p className="text-sm text-muted-foreground mt-1">{formatDate(registration.timestamp)}</p>
 
@@ -69,29 +69,29 @@ export function RegistrationEvent({ registration }: RegistrationEventProps) {
 									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
 										<User className="h-3.5 w-3.5" />
 										<span>{registration.performedBy.name}</span>
-										<Badge variant="outline" className="text-xs ml-1">
+										<StyledBadge color="blue">
 											{getRoleLabel(registration.performedBy.role)}
-										</Badge>
+										</StyledBadge>
 									</div>
 
 									{/* Quick indicators */}
 									<div className="flex items-center gap-2 mt-2 flex-wrap">
 										{hasPhotos && (
-											<Badge variant="outline" className="text-xs">
+											<StyledBadge color="gray">
 												{registration.photos.length} photo{registration.photos.length !== 1 ? "s" : ""}
-											</Badge>
+											</StyledBadge>
 										)}
 										{hasLocation && (
-											<Badge variant="outline" className="text-xs gap-1">
-												<MapPin className="h-3 w-3" />
+											<StyledBadge color="gray">
+												<MapPin className="h-3 w-3 mr-1" />
 												GPS
-											</Badge>
+											</StyledBadge>
 										)}
 										{registration.category && (
-											<Badge variant="outline" className="text-xs gap-1">
-												<Tag className="h-3 w-3" />
+											<StyledBadge color="gray">
+												<Tag className="h-3 w-3 mr-1" />
 												{registration.category.name}
-											</Badge>
+											</StyledBadge>
 										)}
 									</div>
 								</div>

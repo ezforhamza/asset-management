@@ -25,7 +25,7 @@ export function SecuritySettings() {
 			setSetupModalOpen(true);
 		},
 		onError: () => {
-			toast.error("Failed to initialize MFA setup");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -49,7 +49,7 @@ export function SecuritySettings() {
 			setMfaEnabled(false);
 		},
 		onError: () => {
-			toast.error("Failed to disable MFA");
+			// Error toast is handled by apiClient;
 		},
 	});
 

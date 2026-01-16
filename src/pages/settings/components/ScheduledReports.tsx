@@ -51,7 +51,7 @@ export function ScheduledReports() {
 			resetForm();
 		},
 		onError: () => {
-			toast.error("Failed to create scheduled report");
+			// Error toast is handled by apiClient;
 		},
 	});
 

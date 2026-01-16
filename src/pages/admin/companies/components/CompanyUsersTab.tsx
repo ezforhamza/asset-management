@@ -4,7 +4,7 @@ import { Plus, UserCircle } from "lucide-react";
 import { useState } from "react";
 import adminService from "@/api/services/adminService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { Badge } from "@/ui/badge";
+import { StyledBadge } from "@/utils/badge-styles";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
@@ -17,11 +17,11 @@ interface CompanyUsersTabProps {
 const getRoleBadge = (role: string) => {
 	switch (role) {
 		case "customer_admin":
-			return <Badge className="bg-purple-600">Admin</Badge>;
+			return <StyledBadge color="purple">Admin</StyledBadge>;
 		case "field_user":
-			return <Badge variant="secondary">Field User</Badge>;
+			return <StyledBadge color="blue">Field User</StyledBadge>;
 		default:
-			return <Badge variant="outline">{role}</Badge>;
+			return <StyledBadge color="gray">{role}</StyledBadge>;
 	}
 };
 

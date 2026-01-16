@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, Building2, Calendar, CheckCircle2, Mail, Package, QrCode, Settings, Users } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, CheckCircle2, Mail, Package, QrCode, Users } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import adminService from "@/api/services/adminService";
 import assetService from "@/api/services/assetService";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
 import { Skeleton } from "@/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
+import { getCompanyStatusBadge } from "@/utils/badge-styles";
 import { CompanyAssetsTab } from "./components/CompanyAssetsTab";
 import { CompanyQRCodesTab } from "./components/CompanyQRCodesTab";
 import { CompanyUsersTab } from "./components/CompanyUsersTab";
@@ -136,12 +136,7 @@ export default function CompanyDetailPage() {
 							<div>
 								<div className="flex items-center gap-3">
 									<h1 className="text-2xl font-bold">{company.companyName}</h1>
-									<Badge
-										variant={company.isActive ? "default" : "secondary"}
-										className={company.isActive ? "bg-green-600 hover:bg-green-700" : ""}
-									>
-										{company.isActive ? "Active" : "Inactive"}
-									</Badge>
+									{getCompanyStatusBadge(company.isActive ? "active" : "inactive")}
 								</div>
 								<div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
 									<span className="flex items-center gap-1.5">
@@ -158,10 +153,6 @@ export default function CompanyDetailPage() {
 							</div>
 						</div>
 					</div>
-					<Button variant="outline" size="sm" className="gap-2">
-						<Settings className="h-4 w-4" />
-						Company Settings
-					</Button>
 				</div>
 			</div>
 

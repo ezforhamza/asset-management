@@ -16,7 +16,6 @@ import { useMemo, useState } from "react";
 import type { UserInfo } from "#/entity";
 import { AdminType, UserRole } from "#/enum";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
 	DropdownMenu,
@@ -27,6 +26,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { StyledBadge, getUserStatusBadge } from "@/utils/badge-styles";
 
 interface UserWithSessionData extends UserInfo {
 	hasActiveSession?: boolean;
@@ -51,23 +51,11 @@ const ITEMS_PER_PAGE = 8;
 const getRoleBadge = (role?: UserRole, adminType?: AdminType | null) => {
 	if (role === UserRole.CUSTOMER_ADMIN) {
 		if (adminType === AdminType.READ_ONLY) {
-			return (
-				<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
-					Read-Only Admin
-				</Badge>
-			);
+			return <StyledBadge color="orange">Read-Only Admin</StyledBadge>;
 		}
-		return (
-			<Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20">
-				Full Admin
-			</Badge>
-		);
+		return <StyledBadge color="purple">Full Admin</StyledBadge>;
 	}
-	return (
-		<Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
-			Field User
-		</Badge>
-	);
+	return <StyledBadge color="blue">Field User</StyledBadge>;
 };
 
 const getInitials = (name?: string) => {
@@ -165,26 +153,22 @@ export function UserTable({
 								<TableCell>{getRoleBadge(user.role, user.adminType)}</TableCell>
 								<TableCell>
 									{user.mustChangePassword ? (
-										<Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
-											Pending Setup
-										</Badge>
+										<StyledBadge color="orange">Pending Setup</StyledBadge>
 									) : (
-										<Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-											Active
-										</Badge>
+										<StyledBadge color="emerald">Active</StyledBadge>
 									)}
 								</TableCell>
 								<TableCell>
 									{user.hasActiveSession ? (
-										<Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+										<StyledBadge color="emerald">
 											<Wifi className="h-3 w-3 mr-1" />
 											Online
-										</Badge>
+										</StyledBadge>
 									) : (
-										<Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20">
+										<StyledBadge color="gray">
 											<WifiOff className="h-3 w-3 mr-1" />
 											Offline
-										</Badge>
+										</StyledBadge>
 									)}
 								</TableCell>
 								<TableCell className="text-muted-foreground">

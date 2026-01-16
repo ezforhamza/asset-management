@@ -32,7 +32,7 @@ export function VerificationSettings() {
 			toast.success("Verification settings saved");
 		},
 		onError: () => {
-			toast.error("Failed to save settings");
+			// Error toast is handled by apiClient;
 		},
 	});
 

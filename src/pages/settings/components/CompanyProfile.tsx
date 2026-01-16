@@ -64,7 +64,7 @@ export function CompanyProfile() {
 			queryClient.invalidateQueries({ queryKey: ["company-profile"] });
 		},
 		onError: () => {
-			toast.error("Failed to update profile");
+			// Error toast is handled by apiClient;
 		},
 	});
 

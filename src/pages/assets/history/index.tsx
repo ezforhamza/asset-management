@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Clock, History, Info, Loader2, ShieldCheck } from "lucide-react";
-import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router";
+import { ArrowLeft, Clock, FileText, History, Info, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
 import assetService, { type RegistrationHistoryItem, type VerificationHistoryItem } from "@/api/services/assetService";
 import { Button } from "@/ui/button";
 import { AssetSummary, RegistrationEvent, VerificationCard } from "./components";
@@ -9,6 +9,18 @@ import { AssetSummary, RegistrationEvent, VerificationCard } from "./components"
 export default function AssetHistoryPage() {
 	const { assetId } = useParams<{ assetId: string }>();
 	const navigate = useNavigate();
+	const location = useLocation();
+
+	// Check if user came from reports page or map page
+	const fromReports = location.state?.fromReports === true;
+	const fromMap = location.state?.fromMap === true;
+	const highlightLatest = location.state?.highlightLatest === true;
+
+	// Track which verification should be highlighted
+	const [highlightedVerificationId, setHighlightedVerificationId] = useState<string | null>(null);
+
+	// Ref for scrolling to the highlighted card
+	const highlightedCardRef = useRef<HTMLDivElement>(null);
 
 	const {
 		data: historyData,
@@ -19,6 +31,42 @@ export default function AssetHistoryPage() {
 		queryFn: () => assetService.getAssetHistory(assetId!),
 		enabled: !!assetId,
 	});
+
+	// Set highlighted verification ID when data loads (highlight latest if coming from reports)
+	useEffect(() => {
+		if (historyData?.verificationHistory && historyData.verificationHistory.length > 0) {
+			if (highlightLatest) {
+				// Highlight the first (latest) verification
+				setHighlightedVerificationId(historyData.verificationHistory[0].id);
+			} else if (location.hash.startsWith("#verification-")) {
+				// Highlight specific verification from URL hash
+				setHighlightedVerificationId(location.hash.replace("#verification-", ""));
+			}
+		}
+	}, [historyData, highlightLatest, location.hash]);
+
+	// Scroll to highlighted verification card after it's set
+	useEffect(() => {
+		if (highlightedVerificationId && highlightedCardRef.current) {
+			const timeout = setTimeout(() => {
+				highlightedCardRef.current?.scrollIntoView({
+					behavior: "smooth",
+					block: "center",
+				});
+			}, 150);
+			return () => clearTimeout(timeout);
+		}
+	}, [highlightedVerificationId]);
+
+	// Clear highlight after 5 seconds (longer to be more visible)
+	useEffect(() => {
+		if (highlightedVerificationId) {
+			const timeout = setTimeout(() => {
+				setHighlightedVerificationId(null);
+			}, 5000);
+			return () => clearTimeout(timeout);
+		}
+	}, [highlightedVerificationId]);
 
 	// Get the current registration that matches the asset's current QR code and is the latest
 	const currentRegistration = useMemo<RegistrationHistoryItem | null>(() => {
@@ -98,19 +146,33 @@ export default function AssetHistoryPage() {
 		<div className="min-h-full flex flex-col">
 			{/* Header - solid background so content scrolls under */}
 			<div className="flex-shrink-0 px-6 py-4 border-b bg-background sticky top-0 z-10">
-				<div className="flex items-center gap-4">
-					<Button variant="ghost" size="icon" onClick={() => navigate("/assets")}>
-						<ArrowLeft className="h-5 w-5" />
-					</Button>
-					<div>
-						<h1 className="text-xl font-semibold flex items-center gap-2">
-							<History className="h-5 w-5" />
-							Asset Verification History
-						</h1>
-						<p className="text-sm text-muted-foreground">
-							{asset.serialNumber} • {asset.make} {asset.model}
-						</p>
+				<div className="flex items-center justify-between w-full">
+					<div className="flex items-center gap-4">
+						<Button variant="ghost" size="icon" onClick={() => navigate("/assets")}>
+							<ArrowLeft className="h-5 w-5" />
+						</Button>
+						<div>
+							<h1 className="text-xl font-semibold flex items-center gap-2">
+								<History className="h-5 w-5" />
+								Asset Verification History
+							</h1>
+							<p className="text-sm text-muted-foreground">
+								{asset.serialNumber} • {asset.make} {asset.model}
+							</p>
+						</div>
 					</div>
+					{fromReports && (
+						<Button variant="outline" size="sm" onClick={() => navigate("/reports")} className="flex-shrink-0">
+							<FileText className="h-4 w-4 mr-2" />
+							Back to Reports
+						</Button>
+					)}
+					{fromMap && (
+						<Button variant="outline" size="sm" onClick={() => navigate("/map")} className="flex-shrink-0">
+							<MapPin className="h-4 w-4 mr-2" />
+							Back to Map
+						</Button>
+					)}
 				</div>
 			</div>
 
@@ -163,13 +225,18 @@ export default function AssetHistoryPage() {
 								</div>
 							) : (
 								<div className="space-y-4">
-									{filteredVerifications.map((verification, index) => (
-										<VerificationCard
-											key={verification.id}
-											verification={verification}
-											index={filteredVerifications.length - index - 1}
-										/>
-									))}
+									{filteredVerifications.map((verification, index) => {
+										const isHighlighted = verification.id === highlightedVerificationId;
+										return (
+											<div key={verification.id} ref={isHighlighted ? highlightedCardRef : undefined}>
+												<VerificationCard
+													verification={verification}
+													index={filteredVerifications.length - index - 1}
+													isHighlighted={isHighlighted}
+												/>
+											</div>
+										);
+									})}
 								</div>
 							)}
 						</section>

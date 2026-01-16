@@ -32,7 +32,7 @@ export function AssetTemplates() {
 			form.reset();
 		},
 		onError: () => {
-			toast.error("Failed to create template");
+			// Error toast is handled by apiClient;
 		},
 	});
 

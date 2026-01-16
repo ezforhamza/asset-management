@@ -1,12 +1,12 @@
+import { Loader2, Lock } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
-
+import { UserRole } from "#/enum";
 import userService, { type ChangePasswordReq } from "@/api/services/userService";
 import { GLOBAL_CONFIG } from "@/global-config";
-import { useUserActions } from "@/store/userStore";
+import { useUserActions, useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
@@ -20,6 +20,7 @@ export default function ChangePasswordPage() {
 	const [loading, setLoading] = useState(false);
 	const navigate = useNavigate();
 	const { setUserInfo } = useUserActions();
+	const userInfo = useUserInfo();
 
 	const form = useForm<ChangePasswordForm>({
 		defaultValues: {
@@ -42,11 +43,15 @@ export default function ChangePasswordPage() {
 				newPassword: values.newPassword,
 			});
 
-			setUserInfo({ mustChangePassword: false } as any);
+			// Merge with existing user info to preserve role and other data
+			setUserInfo({ ...userInfo, mustChangePassword: false } as any);
 			toast.success("Password changed successfully");
-			navigate(GLOBAL_CONFIG.defaultRoute, { replace: true });
+
+			// Redirect based on user role
+			const redirectPath = userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/dashboard" : GLOBAL_CONFIG.defaultRoute;
+			navigate(redirectPath, { replace: true });
 		} catch {
-			toast.error("Failed to change password");
+			// Error toast is handled by apiClient;
 		} finally {
 			setLoading(false);
 		}

@@ -55,15 +55,13 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 				queryClient.invalidateQueries({ queryKey: ["qr"] });
 
 				if (responseData.imported === 0 && responseData.duplicates > 0) {
-					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes imported`);
+					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes imported`, { position: "top-center" });
 				} else if (responseData.imported > 0 && responseData.duplicates > 0) {
-					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`);
-				} else {
-					toast.error(responseData.message || "Failed to import QR codes");
+					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`, { position: "top-center" });
 				}
-			} else {
-				toast.error(error.response?.data?.message || "Failed to import QR codes");
+				// Fallback error is handled by apiClient
 			}
+			// Fallback error is handled by apiClient
 		},
 	});
 

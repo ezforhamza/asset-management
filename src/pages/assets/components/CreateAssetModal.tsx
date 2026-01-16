@@ -46,7 +46,7 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 			handleClose();
 		},
 		onError: () => {
-			toast.error("Failed to create asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 

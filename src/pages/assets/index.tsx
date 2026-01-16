@@ -23,7 +23,7 @@ import type { Asset } from "#/entity";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams, type UpdateAssetReq } from "@/api/services/assetService";
 import { useCanWrite } from "@/store/userStore";
-import { Badge } from "@/ui/badge";
+import { StyledBadge } from "@/utils/badge-styles";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import {
@@ -149,7 +149,7 @@ export default function AssetsPage() {
 			setEditingAsset(null);
 		},
 		onError: () => {
-			toast.error("Failed to update asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -164,7 +164,7 @@ export default function AssetsPage() {
 			setDeletingAsset(null);
 		},
 		onError: () => {
-			toast.error("Failed to delete asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -179,7 +179,7 @@ export default function AssetsPage() {
 			setRetiringAsset(null);
 		},
 		onError: () => {
-			toast.error("Failed to retire asset");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -194,9 +194,8 @@ export default function AssetsPage() {
 			setEditModalOpen(false);
 			setEditingAsset(null);
 		},
-		onError: (error: Error & { response?: { data?: { message?: string } } }) => {
-			const message = error.response?.data?.message || "Failed to detach QR code";
-			toast.error(message);
+		onError: () => {
+			// Error toast is handled by apiClient
 		},
 	});
 
@@ -265,28 +264,28 @@ export default function AssetsPage() {
 	const getStatusBadge = (status: string) => {
 		switch (status) {
 			case "active":
-				return <Badge variant="default">Active</Badge>;
+				return <StyledBadge color="emerald">Active</StyledBadge>;
 			case "retired":
-				return <Badge variant="secondary">Retired</Badge>;
+				return <StyledBadge color="gray">Retired</StyledBadge>;
 			case "transferred":
-				return <Badge variant="outline">Transferred</Badge>;
+				return <StyledBadge color="blue">Transferred</StyledBadge>;
 			default:
-				return <Badge variant="secondary">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
 	const getVerificationBadge = (status: string) => {
 		switch (status) {
 			case "verified":
-				return <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">Verified</Badge>;
+				return <StyledBadge color="emerald">Verified</StyledBadge>;
 			case "due_soon":
-				return <Badge className="bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20">Due Soon</Badge>;
+				return <StyledBadge color="yellow">Due Soon</StyledBadge>;
 			case "overdue":
-				return <Badge className="bg-red-500/10 text-red-600 hover:bg-red-500/20">Overdue</Badge>;
+				return <StyledBadge color="red">Overdue</StyledBadge>;
 			case "never_verified":
-				return <Badge variant="outline">Never Verified</Badge>;
+				return <StyledBadge color="gray">Never Verified</StyledBadge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
@@ -561,12 +560,12 @@ export default function AssetsPage() {
 											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
 											<TableCell>
 												{isAssetIncomplete(asset) ? (
-													<Badge className="bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 gap-1">
-														<AlertTriangle className="h-3 w-3" />
+													<StyledBadge color="orange">
+														<AlertTriangle className="h-3 w-3 mr-1" />
 														Incomplete
-													</Badge>
+													</StyledBadge>
 												) : (
-													<Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">Complete</Badge>
+													<StyledBadge color="emerald">Complete</StyledBadge>
 												)}
 											</TableCell>
 											<TableCell>

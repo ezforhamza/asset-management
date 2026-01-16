@@ -122,7 +122,7 @@ export default function UsersPage() {
 			setResetPasswordUser(null);
 			handleRefresh();
 		} catch {
-			toast.error("Failed to reset password");
+			// Error toast is handled by apiClient;
 		}
 	};
 
@@ -134,7 +134,7 @@ export default function UsersPage() {
 			setDeactivateUser(null);
 			handleRefresh();
 		} catch {
-			toast.error("Failed to deactivate user");
+			// Error toast is handled by apiClient;
 		}
 	};
 

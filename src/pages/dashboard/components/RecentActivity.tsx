@@ -53,15 +53,12 @@ export function RecentActivity({ data, isLoading }: RecentActivityProps) {
 	}
 
 	return (
-		<Card className="flex flex-col h-[400px]">
-			<CardHeader className="flex-shrink-0">
-				<CardTitle>Recent Verifications</CardTitle>
-			</CardHeader>
+		<Card className="flex flex-col h-[420px] border shadow-sm">
 			<CardContent className="flex-1 overflow-hidden p-0">
 				<div className="h-full flex flex-col">
 					{/* Fixed Header */}
-					<div className="flex-shrink-0 border-b bg-muted/50 px-6">
-						<div className="grid grid-cols-5 py-3 text-sm font-medium text-muted-foreground">
+					<div className="flex-shrink-0 border-b bg-muted/30 px-6">
+						<div className="grid grid-cols-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
 							<div>Asset</div>
 							<div>Verified By</div>
 							<div>Distance</div>
@@ -70,20 +67,22 @@ export function RecentActivity({ data, isLoading }: RecentActivityProps) {
 						</div>
 					</div>
 					{/* Scrollable Body */}
-					<div className="flex-1 overflow-y-auto px-6">
-						{data.map((item) => (
+					<div className="flex-1 overflow-y-auto">
+						{data.map((item, index) => (
 							<div
 								key={item._id}
-								className="grid grid-cols-5 py-3 border-b last:border-0 items-center hover:bg-muted/30 transition-colors"
+								className={`grid grid-cols-5 py-3.5 px-6 items-center hover:bg-primary/5 transition-colors cursor-pointer ${
+									index !== data.length - 1 ? "border-b border-border/50" : ""
+								}`}
 							>
 								<div>
-									<p className="font-medium">{item.assetSerialNumber}</p>
-									<p className="text-sm text-muted-foreground">
+									<p className="font-medium text-sm">{item.assetSerialNumber}</p>
+									<p className="text-xs text-muted-foreground">
 										{item.assetMake} {item.assetModel}
 									</p>
 								</div>
 								<div className="text-sm">{item.verifiedBy}</div>
-								<div className="text-sm">{item.distance.toFixed(1)}m</div>
+								<div className="text-sm font-mono">{item.distance.toFixed(1)}m</div>
 								<div>
 									<StatusBadge status={item.status} />
 								</div>

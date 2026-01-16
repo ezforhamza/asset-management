@@ -16,6 +16,7 @@ import { BulkImportModal } from "./components/BulkImportModal";
 import { CreateQRModal } from "./components/CreateQRModal";
 import { ExportPDFModal } from "./components/ExportPDFModal";
 import { QRTable } from "./components/QRTable";
+import { ViewQRModal } from "./components/ViewQRModal";
 
 export default function AdminQRInventoryPage() {
 	const queryClient = useQueryClient();
@@ -29,9 +30,14 @@ export default function AdminQRInventoryPage() {
 	const [allocateModalOpen, setAllocateModalOpen] = useState(false);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [bulkCreateModalOpen, setBulkCreateModalOpen] = useState(false);
+	const [qrToDelete, setQrToDelete] = useState<QRCodeType | null>(null);
+	const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 	const [qrToRetire, setQrToRetire] = useState<QRCodeType | null>(null);
 	const [confirmRetireOpen, setConfirmRetireOpen] = useState(false);
 	const [exportModalOpen, setExportModalOpen] = useState(false);
+	const [selectedQRIds, setSelectedQRIds] = useState<Set<string>>(new Set());
+	const [viewModalOpen, setViewModalOpen] = useState(false);
+	const [selectedQR, setSelectedQR] = useState<QRCodeType | null>(null);
 
 	// Debounce search input
 	useEffect(() => {
@@ -61,7 +67,23 @@ export default function AdminQRInventoryPage() {
 				companyId: companyFilter,
 				page,
 				limit,
+				sortBy: "createdAt:desc",
 			}),
+	});
+
+	const deleteMutation = useMutation({
+		mutationFn: (qrCode: QRCodeType) => qrService.deleteQRCode(qrCode.id || qrCode._id || ""),
+		onSettled: () => {
+			queryClient.invalidateQueries({ queryKey: ["qr"] });
+			setConfirmDeleteOpen(false);
+			setQrToDelete(null);
+		},
+		onSuccess: () => {
+			toast.success("QR code deleted successfully");
+		},
+		onError: () => {
+			// Error toast is handled by apiClient;
+		},
 	});
 
 	const retireMutation = useMutation({
@@ -74,10 +96,21 @@ export default function AdminQRInventoryPage() {
 		onSuccess: () => {
 			toast.success("QR code retired successfully");
 		},
-		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to retire QR code");
+		onError: () => {
+			// Error toast is handled by apiClient;
 		},
 	});
+
+	const handleDelete = (qrCode: QRCodeType) => {
+		setQrToDelete(qrCode);
+		setConfirmDeleteOpen(true);
+	};
+
+	const handleConfirmDelete = () => {
+		if (qrToDelete) {
+			deleteMutation.mutate(qrToDelete);
+		}
+	};
 
 	const handleRetire = (qrCode: QRCodeType) => {
 		setQrToRetire(qrCode);
@@ -86,13 +119,26 @@ export default function AdminQRInventoryPage() {
 
 	const handleConfirmRetire = () => {
 		if (qrToRetire) {
-			if (qrToRetire.companyId) {
-				retireMutation.mutate(qrToRetire);
-			}
+			retireMutation.mutate(qrToRetire);
 		}
 	};
 
-	const qrCodes = data?.results || [];
+	const handleView = (qrCode: QRCodeType) => {
+		setSelectedQR(qrCode);
+		setViewModalOpen(true);
+	};
+
+	// Sort QR codes: primary by createdAt DESC, secondary by qrCode ASC for deterministic ordering
+	const qrCodes = [...(data?.results || [])].sort((a, b) => {
+		// Primary sort: createdAt DESC (newest first)
+		const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+		const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+		if (dateB !== dateA) {
+			return dateB - dateA;
+		}
+		// Secondary sort: qrCode ASC (alphabetical) for stable ordering when timestamps are the same
+		return (a.qrCode || "").localeCompare(b.qrCode || "");
+	});
 	const companies = companiesData?.results || [];
 	const stats = statsData?.stats || { available: 0, allocated: 0, used: 0, retired: 0, total: 0 };
 
@@ -114,19 +160,40 @@ export default function AdminQRInventoryPage() {
 						<Button variant="outline" onClick={() => setExportModalOpen(true)}>
 							<Download className="h-4 w-4 mr-2" />
 							Export PDF
-						</Button>
-						<Button variant="outline" onClick={() => setImportModalOpen(true)}>
-							<Upload className="h-4 w-4 mr-2" />
-							CSV Import
-						</Button>
-						<Button variant="outline" onClick={() => setBulkCreateModalOpen(true)}>
-							<Plus className="h-4 w-4 mr-2" />
-							Bulk Create
+							{selectedQRIds.size > 0 && (
+								<span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+									{selectedQRIds.size}
+								</span>
+							)}
 						</Button>
 						<Button variant="outline" onClick={() => setAllocateModalOpen(true)}>
 							Allocate to Company
+							{selectedQRIds.size > 0 && (
+								<span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+									{selectedQRIds.size}
+								</span>
+							)}
 						</Button>
-						<Button onClick={() => setCreateModalOpen(true)}>
+						<Button 
+							variant="outline" 
+							onClick={() => setImportModalOpen(true)}
+							disabled={selectedQRIds.size > 0}
+						>
+							<Upload className="h-4 w-4 mr-2" />
+							CSV Import
+						</Button>
+						<Button 
+							variant="outline" 
+							onClick={() => setBulkCreateModalOpen(true)}
+							disabled={selectedQRIds.size > 0}
+						>
+							<Plus className="h-4 w-4 mr-2" />
+							Bulk Create
+						</Button>
+						<Button 
+							onClick={() => setCreateModalOpen(true)}
+							disabled={selectedQRIds.size > 0}
+						>
 							<Plus className="h-4 w-4 mr-2" />
 							Create QR Code
 						</Button>
@@ -213,6 +280,20 @@ export default function AdminQRInventoryPage() {
 
 			{/* Table */}
 			<div className="flex-1 overflow-auto px-6 py-4">
+				{selectedQRIds.size > 0 && (
+					<div className="flex items-center gap-2 mb-3 px-3 py-2 bg-muted/50 rounded-lg">
+						<span className="text-sm text-muted-foreground">
+							<strong>{selectedQRIds.size}</strong> QR code{selectedQRIds.size !== 1 ? "s" : ""} selected
+						</span>
+						<button
+							type="button"
+							onClick={() => setSelectedQRIds(new Set())}
+							className="text-xs text-primary hover:underline"
+						>
+							Clear selection
+						</button>
+					</div>
+				)}
 				<QRTable
 					qrCodes={qrCodes}
 					companies={companies}
@@ -224,7 +305,12 @@ export default function AdminQRInventoryPage() {
 						totalResults: data?.totalResults || 0,
 					}}
 					onPageChange={setPage}
+					onDelete={handleDelete}
+					onView={handleView}
 					onRetire={handleRetire}
+					enableSelection={true}
+					selectedIds={selectedQRIds}
+					onSelectionChange={setSelectedQRIds}
 				/>
 			</div>
 
@@ -232,10 +318,55 @@ export default function AdminQRInventoryPage() {
 			<CreateQRModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} companies={companies} />
 			<BulkCreateModal open={bulkCreateModalOpen} onClose={() => setBulkCreateModalOpen(false)} companies={companies} />
 			<BulkImportModal open={importModalOpen} onClose={() => setImportModalOpen(false)} companies={companies} />
-			<AllocateModal open={allocateModalOpen} onClose={() => setAllocateModalOpen(false)} companies={companies} />
-			<ExportPDFModal open={exportModalOpen} onClose={() => setExportModalOpen(false)} companies={companies} />
+			<AllocateModal
+				open={allocateModalOpen}
+				onClose={() => setAllocateModalOpen(false)}
+				companies={companies}
+				selectedQRIds={selectedQRIds}
+				qrCodes={qrCodes}
+				onClearSelection={() => setSelectedQRIds(new Set())}
+			/>
+			<ExportPDFModal
+				open={exportModalOpen}
+				onClose={() => setExportModalOpen(false)}
+				companies={companies}
+				selectedQRIds={selectedQRIds}
+				qrCodes={qrCodes}
+				currentFilters={{
+					status: statusFilter,
+					companyId: companyFilter,
+					searchQuery: searchQuery,
+				}}
+			/>
 
-			{/* Confirmation Modal */}
+			{/* View QR Modal */}
+			<ViewQRModal
+				open={viewModalOpen}
+				onClose={() => {
+					setViewModalOpen(false);
+					setSelectedQR(null);
+				}}
+				qrCode={selectedQR}
+				companies={companies}
+			/>
+
+			{/* Delete Confirmation Modal */}
+			<ConfirmationModal
+				open={confirmDeleteOpen}
+				onClose={() => {
+					setConfirmDeleteOpen(false);
+					setQrToDelete(null);
+				}}
+				onConfirm={handleConfirmDelete}
+				title="Delete QR Code"
+				description={`Are you sure you want to delete QR code "${qrToDelete?.qrCode}"? This action cannot be undone.`}
+				confirmText="Delete"
+				cancelText="Cancel"
+				variant="destructive"
+				isLoading={deleteMutation.isPending}
+			/>
+
+			{/* Retire Confirmation Modal */}
 			<ConfirmationModal
 				open={confirmRetireOpen}
 				onClose={() => {
@@ -244,7 +375,7 @@ export default function AdminQRInventoryPage() {
 				}}
 				onConfirm={handleConfirmRetire}
 				title="Retire QR Code"
-				description={`Are you sure you want to retire QR code "${qrToRetire?.qrCode}"? This action will mark it as retired and it will no longer be available for allocation.`}
+				description={`Retiring QR code "${qrToRetire?.qrCode}" will make it permanently unusable. This action cannot be undone. Do you want to continue?`}
 				confirmText="Retire"
 				cancelText="Cancel"
 				variant="destructive"

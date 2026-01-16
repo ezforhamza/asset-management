@@ -30,7 +30,7 @@ export function PasswordTab() {
 			form.reset();
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to change password");
+			// Error toast is handled by apiClient;
 		},
 	});
 

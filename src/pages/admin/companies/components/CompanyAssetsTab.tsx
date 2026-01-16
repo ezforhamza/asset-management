@@ -3,10 +3,10 @@ import { format } from "date-fns";
 import { Package } from "lucide-react";
 import { useState } from "react";
 import assetService from "@/api/services/assetService";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface CompanyAssetsTabProps {
 	companyId: string;
@@ -15,13 +15,13 @@ interface CompanyAssetsTabProps {
 const getStatusBadge = (status: string) => {
 	switch (status) {
 		case "active":
-			return <Badge className="bg-green-600">Active</Badge>;
+			return <StyledBadge color="emerald">Active</StyledBadge>;
 		case "retired":
-			return <Badge variant="secondary">Retired</Badge>;
+			return <StyledBadge color="gray">Retired</StyledBadge>;
 		case "transferred":
-			return <Badge className="bg-blue-500">Transferred</Badge>;
+			return <StyledBadge color="blue">Transferred</StyledBadge>;
 		default:
-			return <Badge variant="outline">{status}</Badge>;
+			return <StyledBadge color="gray">{status}</StyledBadge>;
 	}
 };
 
@@ -104,9 +104,17 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 					<TableBody>
 						{paginatedAssets.map((asset) => (
 							<TableRow key={asset.id}>
-								<TableCell className="font-mono">{asset.serialNumber}</TableCell>
+								<TableCell className="font-mono">
+									{asset.serialNumber || <span className="text-muted-foreground italic text-xs">Not added yet</span>}
+								</TableCell>
 								<TableCell>
-									{asset.make} {asset.model}
+									{asset.make || asset.model ? (
+										<>
+											{asset.make} {asset.model}
+										</>
+									) : (
+										<span className="text-muted-foreground italic text-xs">Not added yet</span>
+									)}
 								</TableCell>
 								<TableCell>{getStatusBadge(asset.status)}</TableCell>
 								<TableCell className="text-sm text-muted-foreground">

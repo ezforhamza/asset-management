@@ -88,7 +88,7 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 			setTempPassword(result.temporaryPassword || null);
 			toast.success("User created successfully");
 		} catch {
-			toast.error("Failed to create user");
+			// Error toast is handled by apiClient
 		} finally {
 			setLoading(false);
 		}

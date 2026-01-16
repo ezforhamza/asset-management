@@ -1,9 +1,8 @@
 import { format } from "date-fns";
 import { Building2, Eye, MoreHorizontal, Pencil, Power, Users } from "lucide-react";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import type { Company } from "#/entity";
-import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
 	DropdownMenu,
@@ -14,6 +13,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { getCompanyStatusBadge } from "@/utils/badge-styles";
 
 interface CompanyTableProps {
 	companies: Company[];
@@ -22,9 +22,80 @@ interface CompanyTableProps {
 	onToggleStatus?: (company: Company) => void;
 }
 
-const ROWS_PER_PAGE = 8;
+const ROWS_PER_PAGE = 9;
 
-export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
+// Memoized table row component to prevent unnecessary re-renders
+interface CompanyRowProps {
+	company: Company;
+	onRowClick: (companyId: string) => void;
+	onEdit?: (company: Company) => void;
+	onToggleStatus?: (company: Company) => void;
+}
+
+const CompanyRow = memo(function CompanyRow({ company, onRowClick, onEdit, onToggleStatus }: CompanyRowProps) {
+	return (
+		<TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onRowClick(company._id)}>
+			<TableCell>
+				<div className="flex items-center gap-3">
+					<div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+						<Building2 className="h-4 w-4 text-primary" />
+					</div>
+					<div>
+						<p className="font-medium">{company.companyName}</p>
+						{company.address && (
+							<p className="text-xs text-muted-foreground truncate max-w-[200px]">{company.address}</p>
+						)}
+					</div>
+				</div>
+			</TableCell>
+			<TableCell>
+				<div>
+					<p className="text-sm">{company.contactEmail}</p>
+					{company.phone && <p className="text-xs text-muted-foreground">{company.phone}</p>}
+				</div>
+			</TableCell>
+			<TableCell className="text-center">
+				<span className="font-medium">{company.totalAssets ?? 0}</span>
+			</TableCell>
+			<TableCell className="text-center">
+				<div className="flex items-center justify-center gap-1">
+					<Users className="h-3.5 w-3.5 text-muted-foreground" />
+					<span className="font-medium">{company.totalUsers ?? 0}</span>
+				</div>
+			</TableCell>
+			<TableCell>{getCompanyStatusBadge(company.isActive ? "active" : "inactive")}</TableCell>
+			<TableCell className="text-sm text-muted-foreground">
+				{company.createdAt ? format(new Date(company.createdAt), "MMM d, yyyy") : "N/A"}
+			</TableCell>
+			<TableCell onClick={(e) => e.stopPropagation()}>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="ghost" size="icon" className="h-8 w-8">
+							<MoreHorizontal className="h-4 w-4" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						<DropdownMenuItem onClick={() => onRowClick(company._id)}>
+							<Eye className="h-4 w-4 mr-2" />
+							View Details
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => onEdit?.(company)}>
+							<Pencil className="h-4 w-4 mr-2" />
+							Edit
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem onClick={() => onToggleStatus?.(company)}>
+							<Power className="h-4 w-4 mr-2" />
+							{company.isActive ? "Deactivate" : "Activate"}
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</TableCell>
+		</TableRow>
+	);
+});
+
+function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
 	const navigate = useNavigate();
 	const [currentPage, setCurrentPage] = useState(1);
 
@@ -35,9 +106,13 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 	const endIndex = startIndex + ROWS_PER_PAGE;
 	const paginatedCompanies = companies.slice(startIndex, endIndex);
 
-	const handleRowClick = (companyId: string) => {
-		navigate(`/admin/companies/${companyId}`);
-	};
+	// Memoize callback to prevent re-renders of memoized rows
+	const handleRowClick = useCallback(
+		(companyId: string) => {
+			navigate(`/admin/companies/${companyId}`);
+		},
+		[navigate],
+	);
 
 	if (isLoading) {
 		return (
@@ -115,72 +190,13 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 					</TableHeader>
 					<TableBody>
 						{paginatedCompanies.map((company) => (
-							<TableRow
+							<CompanyRow
 								key={company._id}
-								className="cursor-pointer hover:bg-muted/50"
-								onClick={() => handleRowClick(company._id)}
-							>
-								<TableCell>
-									<div className="flex items-center gap-3">
-										<div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-											<Building2 className="h-4 w-4 text-primary" />
-										</div>
-										<div>
-											<p className="font-medium">{company.companyName}</p>
-											{company.address && (
-												<p className="text-xs text-muted-foreground truncate max-w-[200px]">{company.address}</p>
-											)}
-										</div>
-									</div>
-								</TableCell>
-								<TableCell>
-									<div>
-										<p className="text-sm">{company.contactEmail}</p>
-										{company.phone && <p className="text-xs text-muted-foreground">{company.phone}</p>}
-									</div>
-								</TableCell>
-								<TableCell className="text-center">
-									<span className="font-medium">{company.totalAssets ?? 0}</span>
-								</TableCell>
-								<TableCell className="text-center">
-									<div className="flex items-center justify-center gap-1">
-										<Users className="h-3.5 w-3.5 text-muted-foreground" />
-										<span className="font-medium">{company.totalUsers ?? 0}</span>
-									</div>
-								</TableCell>
-								<TableCell>
-									<Badge variant={company.isActive ? "default" : "secondary"}>
-										{company.isActive ? "Active" : "Inactive"}
-									</Badge>
-								</TableCell>
-								<TableCell className="text-sm text-muted-foreground">
-									{company.createdAt ? format(new Date(company.createdAt), "MMM d, yyyy") : "N/A"}
-								</TableCell>
-								<TableCell onClick={(e) => e.stopPropagation()}>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon" className="h-8 w-8">
-												<MoreHorizontal className="h-4 w-4" />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											<DropdownMenuItem onClick={() => handleRowClick(company._id)}>
-												<Eye className="h-4 w-4 mr-2" />
-												View Details
-											</DropdownMenuItem>
-											<DropdownMenuItem onClick={() => onEdit?.(company)}>
-												<Pencil className="h-4 w-4 mr-2" />
-												Edit
-											</DropdownMenuItem>
-											<DropdownMenuSeparator />
-											<DropdownMenuItem onClick={() => onToggleStatus?.(company)}>
-												<Power className="h-4 w-4 mr-2" />
-												{company.isActive ? "Deactivate" : "Activate"}
-											</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</TableCell>
-							</TableRow>
+								company={company}
+								onRowClick={handleRowClick}
+								onEdit={onEdit}
+								onToggleStatus={onToggleStatus}
+							/>
 						))}
 					</TableBody>
 				</Table>
@@ -216,3 +232,6 @@ export function CompanyTable({ companies, isLoading, onEdit, onToggleStatus }: C
 		</div>
 	);
 }
+
+// Export memoized component to prevent re-renders when parent state changes
+export const CompanyTable = memo(CompanyTableComponent);

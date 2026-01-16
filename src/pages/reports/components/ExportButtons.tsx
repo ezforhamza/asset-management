@@ -30,7 +30,7 @@ export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps
 			toast.success(`Report exported as ${format.toUpperCase()}`);
 		} catch (error) {
 			console.error("Export error:", error);
-			toast.error("Failed to export report");
+			// Error toast is handled by apiClient;
 		} finally {
 			setTimeout(() => setExporting(false), 1000);
 		}

@@ -55,7 +55,7 @@ export function ProfileTab() {
 			queryClient.invalidateQueries({ queryKey: ["user"] });
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to update profile");
+			// Error toast is handled by apiClient;
 		},
 	});
 
@@ -77,7 +77,7 @@ export function ProfileTab() {
 
 			updateProfileMutation.mutate(updateData);
 		} catch (error: any) {
-			toast.error(error.response?.data?.message || "Failed to upload image");
+			// Error toast is handled by apiClient;
 		}
 	};
 

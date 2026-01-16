@@ -41,7 +41,7 @@ export function NotificationSettings() {
 			toast.success("Notification settings saved");
 		},
 		onError: () => {
-			toast.error("Failed to save settings");
+			// Error toast is handled by apiClient;
 		},
 	});
 

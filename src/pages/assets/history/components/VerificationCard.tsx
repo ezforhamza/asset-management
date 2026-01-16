@@ -5,7 +5,6 @@ import {
 	CheckCircle2,
 	ChevronDown,
 	ChevronUp,
-	ExternalLink,
 	MapPin,
 	Ruler,
 	Shield,
@@ -14,19 +13,21 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import type { VerificationHistoryItem } from "@/api/services/assetService";
-import { Badge } from "@/ui/badge";
 import { Card, CardContent } from "@/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible";
+import { StyledBadge } from "@/utils/badge-styles";
 import { PhotoGallery } from "./PhotoGallery";
 
 interface VerificationCardProps {
 	verification: VerificationHistoryItem;
 	index: number;
+	isHighlighted?: boolean;
 }
 
-export function VerificationCard({ verification, index }: VerificationCardProps) {
-	const [isOpen, setIsOpen] = useState(false);
+export function VerificationCard({ verification, index, isHighlighted = false }: VerificationCardProps) {
+	const [isOpen, setIsOpen] = useState(isHighlighted); // Auto-expand if highlighted
 
 	const formatDate = (dateStr: string) => {
 		try {
@@ -39,28 +40,28 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 	const getConditionBadge = (status: string) => {
 		switch (status) {
 			case "good":
-				return <Badge variant="success">Good</Badge>;
+				return <StyledBadge color="emerald">Good</StyledBadge>;
 			case "fair":
-				return <Badge variant="warning">Fair</Badge>;
+				return <StyledBadge color="yellow">Fair</StyledBadge>;
 			case "poor":
-				return <Badge variant="error">Poor</Badge>;
+				return <StyledBadge color="orange">Poor</StyledBadge>;
 			case "damaged":
-				return <Badge variant="destructive">Damaged</Badge>;
+				return <StyledBadge color="red">Damaged</StyledBadge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
 	const getOperationalBadge = (status: string) => {
 		switch (status) {
 			case "operational":
-				return <Badge variant="success">Operational</Badge>;
+				return <StyledBadge color="emerald">Operational</StyledBadge>;
 			case "non_operational":
-				return <Badge variant="error">Non-Operational</Badge>;
+				return <StyledBadge color="red">Non-Operational</StyledBadge>;
 			case "needs_repair":
-				return <Badge variant="warning">Needs Repair</Badge>;
+				return <StyledBadge color="orange">Needs Repair</StyledBadge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
@@ -79,7 +80,19 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 			</div>
 
 			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
-				<Card>
+				<Card
+					className={`transition-all duration-300 ${isHighlighted ? "relative" : ""}`}
+					style={
+						isHighlighted
+							? {
+									border: "3px solid #f97316",
+									boxShadow: "0 0 0 4px rgba(249, 115, 22, 0.3), 0 0 20px rgba(249, 115, 22, 0.4)",
+									background: "linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0.02) 100%)",
+									animation: "pulse-highlight-strong 1.5s ease-in-out 3",
+								}
+							: undefined
+					}
+				>
 					{/* Collapsed Summary - Always visible */}
 					<CollapsibleTrigger asChild>
 						<button
@@ -97,31 +110,31 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 									<div className="flex items-center gap-2 mt-2 flex-wrap">
 										{/* GPS Status */}
 										{verification.gpsCheckPassed ? (
-											<Badge variant="success" className="gap-1">
-												<CheckCircle2 className="h-3 w-3" />
+											<StyledBadge color="emerald">
+												<CheckCircle2 className="h-3 w-3 mr-1" />
 												GPS Passed
-											</Badge>
+											</StyledBadge>
 										) : (
-											<Badge variant="error" className="gap-1">
-												<XCircle className="h-3 w-3" />
+											<StyledBadge color="red">
+												<XCircle className="h-3 w-3 mr-1" />
 												GPS Failed
-											</Badge>
+											</StyledBadge>
 										)}
 
 										{/* Verification Status */}
 										{verification.verificationStatus && (
-											<Badge
-												variant={
+											<StyledBadge
+												color={
 													verification.verificationStatus === "verified"
-														? "success"
+														? "emerald"
 														: verification.verificationStatus === "failed"
-															? "error"
-															: "outline"
+															? "red"
+															: "gray"
 												}
-												className="capitalize"
 											>
-												{verification.verificationStatus}
-											</Badge>
+												{verification.verificationStatus.charAt(0).toUpperCase() +
+													verification.verificationStatus.slice(1)}
+											</StyledBadge>
 										)}
 
 										{/* Condition */}
@@ -132,10 +145,10 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 
 										{/* Repair Needed */}
 										{verification.repairNeeded && (
-											<Badge variant="warning" className="gap-1">
-												<Wrench className="h-3 w-3" />
+											<StyledBadge color="orange">
+												<Wrench className="h-3 w-3 mr-1" />
 												Repair Needed
-											</Badge>
+											</StyledBadge>
 										)}
 									</div>
 
@@ -143,9 +156,7 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
 										<User className="h-3.5 w-3.5" />
 										<span>{verification.verifiedBy?.name || "Unknown"}</span>
-										<Badge variant="outline" className="text-xs ml-1">
-											Field Worker
-										</Badge>
+										<StyledBadge color="blue">Field Worker</StyledBadge>
 									</div>
 								</div>
 
@@ -174,17 +185,14 @@ export function VerificationCard({ verification, index }: VerificationCardProps)
 													{verification.verifiedAtLocation.latitude.toFixed(6)},{" "}
 													{verification.verifiedAtLocation.longitude.toFixed(6)}
 												</p>
-												{verification.verifiedAtLocation.mapLink && (
-													<a
-														href={verification.verifiedAtLocation.mapLink}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
-													>
-														<ExternalLink className="h-3 w-3" />
-														Map
-													</a>
-												)}
+												<Link
+													to={`/map?lat=${verification.verifiedAtLocation.latitude}&lng=${verification.verifiedAtLocation.longitude}&highlight=${verification.id}`}
+													state={{ fromVerification: true, assetId: verification.id }}
+													className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
+												>
+													<MapPin className="h-3 w-3" />
+													View on Map
+												</Link>
 											</div>
 										) : (
 											<p className="text-sm text-muted-foreground">Location not available</p>

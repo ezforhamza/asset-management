@@ -48,7 +48,7 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 			onClose();
 		},
 		onError: () => {
-			toast.error("Failed to update company");
+			// Error toast is handled by apiClient;
 		},
 	});
 

@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { Calendar, Hash, QrCode, Tag } from "lucide-react";
 import type { Asset } from "#/entity";
-import { Badge } from "@/ui/badge";
 import { Card, CardContent } from "@/ui/card";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface AssetSummaryProps {
 	asset: Asset;
@@ -12,26 +12,27 @@ export function AssetSummary({ asset }: AssetSummaryProps) {
 	const getStatusBadge = (status: string) => {
 		switch (status) {
 			case "active":
-				return <Badge variant="success">Active</Badge>;
+				return <StyledBadge color="emerald">Active</StyledBadge>;
 			case "retired":
-				return <Badge variant="secondary">Retired</Badge>;
+				return <StyledBadge color="gray">Retired</StyledBadge>;
 			case "transferred":
-				return <Badge variant="outline">Transferred</Badge>;
+				return <StyledBadge color="blue">Transferred</StyledBadge>;
 			default:
-				return <Badge variant="secondary">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
 	const getRegistrationBadge = (state?: string) => {
 		switch (state) {
 			case "registered":
-				return <Badge variant="success">Registered</Badge>;
+			case "fully_registered":
+				return <StyledBadge color="emerald">Registered</StyledBadge>;
 			case "partially_registered":
-				return <Badge variant="warning">Partial</Badge>;
+				return <StyledBadge color="orange">Partial</StyledBadge>;
 			case "unregistered":
-				return <Badge variant="outline">Unregistered</Badge>;
+				return <StyledBadge color="gray">Unregistered</StyledBadge>;
 			default:
-				return <Badge variant="outline">{state || "Unknown"}</Badge>;
+				return <StyledBadge color="gray">{state || "Unknown"}</StyledBadge>;
 		}
 	};
 
@@ -45,7 +46,7 @@ export function AssetSummary({ asset }: AssetSummaryProps) {
 	};
 
 	return (
-		<Card className="sticky top-0 z-10 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+		<Card className="bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 border shadow-sm">
 			<CardContent className="pt-6">
 				<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
 					{/* Serial Number */}

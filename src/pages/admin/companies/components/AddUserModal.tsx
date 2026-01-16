@@ -51,8 +51,8 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 			form.reset();
 			onClose();
 		},
-		onError: (error: any) => {
-			toast.error(error.response?.data?.message || "Failed to create user");
+		onError: () => {
+			// Error toast is handled by apiClient
 		},
 	});
 

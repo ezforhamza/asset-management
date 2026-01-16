@@ -108,7 +108,7 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 			onSuccess();
 			onClose();
 		} catch {
-			toast.error("Failed to update user");
+			// Error toast is handled by apiClient
 		} finally {
 			setLoading(false);
 		}

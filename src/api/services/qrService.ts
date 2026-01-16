@@ -75,6 +75,17 @@ export interface QRCodeCheckRes {
 	} | null;
 }
 
+export interface ExportPDFConfig {
+	pageSize: "A4";
+	orientation: "portrait" | "landscape";
+	qrSize: number; // in mm
+	columns: number;
+	rows?: number; // undefined = auto
+	showLabels: boolean;
+	showGridLines: boolean;
+	selectedIds?: string[];
+}
+
 // Types are already exported via their interface declarations above
 
 // ============================================
@@ -123,11 +134,38 @@ const updateQRCode = (id: string, data: UpdateQRCodeReq) =>
 // Delete QR code
 const deleteQRCode = (id: string) => apiClient.delete<void>({ url: API_ENDPOINTS.QR_CODES.BY_ID(id) });
 
-// Export QR codes to PDF
+// Export QR codes to PDF (legacy)
 const exportQRCodesPDF = async (companyId: string, status?: string): Promise<Blob> => {
 	const url = status
 		? `${API_ENDPOINTS.QR_CODES.BASE}/export/${companyId}/pdf?status=${status}`
 		: `${API_ENDPOINTS.QR_CODES.BASE}/export/${companyId}/pdf`;
+	const response = await apiClient.get<Blob>({ url, responseType: "blob" });
+	return response;
+};
+
+// Export QR codes to PDF with advanced configuration
+const exportQRCodesPDFAdvanced = async (
+	companyId?: string,
+	status?: string,
+	config?: ExportPDFConfig,
+): Promise<Blob> => {
+	const params = new URLSearchParams();
+	if (companyId) params.append("companyId", companyId);
+	if (status) params.append("status", status);
+	if (config) {
+		params.append("pageSize", config.pageSize);
+		params.append("orientation", config.orientation);
+		params.append("qrSize", config.qrSize.toString());
+		params.append("columns", config.columns.toString());
+		if (config.rows) params.append("rows", config.rows.toString());
+		params.append("showLabels", config.showLabels.toString());
+		params.append("showGridLines", config.showGridLines.toString());
+		if (config.selectedIds?.length) {
+			params.append("selectedIds", config.selectedIds.join(","));
+		}
+	}
+	const queryString = params.toString();
+	const url = `${API_ENDPOINTS.QR_CODES.BASE}/export/pdf${queryString ? `?${queryString}` : ""}`;
 	const response = await apiClient.get<Blob>({ url, responseType: "blob" });
 	return response;
 };
@@ -144,4 +182,5 @@ export default {
 	updateQRCode,
 	deleteQRCode,
 	exportQRCodesPDF,
+	exportQRCodesPDFAdvanced,
 };

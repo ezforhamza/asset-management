@@ -40,47 +40,64 @@ export default function DashboardPage() {
 		}));
 
 	return (
-		<div className="h-full flex flex-col overflow-hidden">
+		<div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
 			{/* Header */}
-			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/50">
-				<h1 className="text-xl font-semibold">Dashboard</h1>
-				<p className="text-sm text-muted-foreground">Welcome back, {userInfo.name || userInfo.email || "User"}</p>
+			<div className="flex-shrink-0 px-6 py-5 border-b bg-card/80 backdrop-blur-sm">
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+						<p className="text-sm text-muted-foreground mt-0.5">
+							Welcome back,{" "}
+							<span className="font-medium text-foreground">{userInfo.name || userInfo.email || "User"}</span>
+						</p>
+					</div>
+					<div className="text-right text-xs text-muted-foreground">
+						<p>Last updated</p>
+						<p className="font-medium">{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+					</div>
+				</div>
 			</div>
 
 			{/* Content - Scrollable */}
-			<div className="flex-1 overflow-y-auto p-6 space-y-6">
+			<div className="flex-1 overflow-y-auto p-6 space-y-8">
 				{/* Stats Grid */}
-				<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-					<StatsCard
-						title="Total Assets"
-						value={statsLoading ? "-" : (stats?.assets.total ?? 0)}
-						icon={Package}
-						variant="default"
-					/>
-					<StatsCard
-						title="Verified This Month"
-						value={statsLoading ? "-" : (stats?.verificationStatus.onTime ?? 0)}
-						icon={CheckCircle}
-						variant="success"
-					/>
-					<StatsCard
-						title="Due Soon"
-						value={statsLoading ? "-" : (stats?.verificationStatus.dueSoon ?? 0)}
-						subtitle="Within 7 days"
-						icon={Clock}
-						variant="warning"
-					/>
-					<StatsCard
-						title="Overdue"
-						value={statsLoading ? "-" : (stats?.verificationStatus.overdue ?? 0)}
-						subtitle="Requires attention"
-						icon={AlertTriangle}
-						variant="danger"
-					/>
-				</div>
+				<section>
+					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Overview</h2>
+					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+						<StatsCard
+							title="Total Assets"
+							value={statsLoading ? "-" : (stats?.assets.total ?? 0)}
+							icon={Package}
+							variant="default"
+						/>
+						<StatsCard
+							title="Verified This Month"
+							value={statsLoading ? "-" : (stats?.verificationStatus.onTime ?? 0)}
+							icon={CheckCircle}
+							variant="success"
+						/>
+						<StatsCard
+							title="Due Soon"
+							value={statsLoading ? "-" : (stats?.verificationStatus.dueSoon ?? 0)}
+							subtitle="Within 7 days"
+							icon={Clock}
+							variant="warning"
+						/>
+						<StatsCard
+							title="Overdue"
+							value={statsLoading ? "-" : (stats?.verificationStatus.overdue ?? 0)}
+							subtitle="Requires attention"
+							icon={AlertTriangle}
+							variant="danger"
+						/>
+					</div>
+				</section>
 
 				{/* Recent Activity */}
-				<RecentActivity data={recentActivity} isLoading={activityLoading} />
+				<section>
+					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Recent Activity</h2>
+					<RecentActivity data={recentActivity} isLoading={activityLoading} />
+				</section>
 			</div>
 		</div>
 	);

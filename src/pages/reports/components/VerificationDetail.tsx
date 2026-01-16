@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { Calendar, FileText, MapPin, Wrench } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
-import { Badge } from "@/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface VerificationDetailProps {
 	verification: VerificationReportItem | null;
@@ -16,13 +16,13 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 	const getStatusBadge = (status: string) => {
 		switch (status) {
 			case "on_time":
-				return <Badge className="bg-emerald-500">On Time</Badge>;
+				return <StyledBadge color="emerald">On Time</StyledBadge>;
 			case "due_soon":
-				return <Badge className="bg-orange-500">Due Soon</Badge>;
+				return <StyledBadge color="orange">Due Soon</StyledBadge>;
 			case "overdue":
-				return <Badge variant="destructive">Overdue</Badge>;
+				return <StyledBadge color="red">Overdue</StyledBadge>;
 			default:
-				return <Badge variant="outline">{status}</Badge>;
+				return <StyledBadge color="gray">{status}</StyledBadge>;
 		}
 	};
 
@@ -103,16 +103,9 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 							{verification.lastGpsCheckPassed !== undefined && (
 								<div>
 									<p className="text-muted-foreground">Last GPS Check</p>
-									<Badge
-										variant="outline"
-										className={
-											verification.lastGpsCheckPassed
-												? "bg-emerald-500/10 text-emerald-500"
-												: "bg-orange-500/10 text-orange-500"
-										}
-									>
+									<StyledBadge color={verification.lastGpsCheckPassed ? "emerald" : "orange"}>
 										{verification.lastGpsCheckPassed ? "Passed" : "Override"}
-									</Badge>
+									</StyledBadge>
 								</div>
 							)}
 						</div>
@@ -126,37 +119,35 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 								{verification.lastCondition && (
 									<div>
 										<p className="text-muted-foreground">Condition</p>
-										<Badge
-											variant="outline"
-											className={
+										<StyledBadge
+											color={
 												verification.lastCondition === "excellent"
-													? "bg-emerald-500/10 text-emerald-500"
+													? "emerald"
 													: verification.lastCondition === "good"
-														? "bg-blue-500/10 text-blue-500"
+														? "blue"
 														: verification.lastCondition === "fair"
-															? "bg-orange-500/10 text-orange-500"
-															: "bg-red-500/10 text-red-500"
+															? "orange"
+															: "red"
 											}
 										>
 											{verification.lastCondition}
-										</Badge>
+										</StyledBadge>
 									</div>
 								)}
 								{verification.lastOperational && (
 									<div>
 										<p className="text-muted-foreground">Operational Status</p>
-										<Badge
-											variant="outline"
-											className={
+										<StyledBadge
+											color={
 												verification.lastOperational === "operational"
-													? "bg-emerald-500/10 text-emerald-500"
+													? "emerald"
 													: verification.lastOperational === "needs_repair"
-														? "bg-orange-500/10 text-orange-500"
-														: "bg-red-500/10 text-red-500"
+														? "orange"
+														: "red"
 											}
 										>
 											{verification.lastOperational.replace("_", " ")}
-										</Badge>
+										</StyledBadge>
 									</div>
 								)}
 							</div>
