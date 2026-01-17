@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, ClipboardCheck, ExternalLink, MapPin, QrCode, Tag, User } from "lucide-react";
+import { ChevronDown, ChevronUp, ClipboardCheck, MapPin, QrCode, Tag, User } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import type { RegistrationHistoryItem } from "@/api/services/assetService";
 import { Card, CardContent } from "@/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible";
@@ -9,10 +10,12 @@ import { PhotoGallery } from "./PhotoGallery";
 
 interface RegistrationEventProps {
 	registration: RegistrationHistoryItem;
+	assetId?: string;
+	isHighlighted?: boolean;
 }
 
-export function RegistrationEvent({ registration }: RegistrationEventProps) {
-	const [isOpen, setIsOpen] = useState(false);
+export function RegistrationEvent({ registration, assetId, isHighlighted = false }: RegistrationEventProps) {
+	const [isOpen, setIsOpen] = useState(isHighlighted); // Auto-expand if highlighted
 
 	const formatDate = (dateStr: string) => {
 		try {
@@ -50,7 +53,19 @@ export function RegistrationEvent({ registration }: RegistrationEventProps) {
 			</div>
 
 			<Collapsible open={isOpen} onOpenChange={setIsOpen}>
-				<Card className="border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20">
+				<Card
+					className={`transition-all duration-300 border-green-200 bg-green-50/50 dark:border-green-900 dark:bg-green-950/20 ${isHighlighted ? "relative" : ""}`}
+					style={
+						isHighlighted
+							? {
+									border: "3px solid #f97316",
+									boxShadow: "0 0 0 4px rgba(249, 115, 22, 0.3), 0 0 20px rgba(249, 115, 22, 0.4)",
+									background: "linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(249, 115, 22, 0.02) 100%)",
+									animation: "pulse-highlight-strong 1.5s ease-in-out 3",
+								}
+							: undefined
+					}
+				>
 					{/* Collapsed Summary - Always visible */}
 					<CollapsibleTrigger asChild>
 						<button
@@ -70,7 +85,7 @@ export function RegistrationEvent({ registration }: RegistrationEventProps) {
 										<User className="h-3.5 w-3.5" />
 										<span>{registration.performedBy.name}</span>
 										<StyledBadge color="blue">
-											{getRoleLabel(registration.performedBy.role)}
+											{getRoleLabel(registration.performedBy.role) || "Field Worker"}
 										</StyledBadge>
 									</div>
 
@@ -120,16 +135,15 @@ export function RegistrationEvent({ registration }: RegistrationEventProps) {
 												<p className="text-sm font-mono">
 													{registration.location?.latitude.toFixed(6)}, {registration.location?.longitude.toFixed(6)}
 												</p>
-												{registration.location?.mapLink && (
-													<a
-														href={registration.location.mapLink}
-														target="_blank"
-														rel="noopener noreferrer"
+												{registration.location && (
+													<Link
+														to={`/map?lat=${registration.location.latitude}&lng=${registration.location.longitude}&assetId=${assetId}`}
+														state={{ fromRegistration: true, assetId }}
 														className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
 													>
-														<ExternalLink className="h-3 w-3" />
-														Map
-													</a>
+														<MapPin className="h-3 w-3" />
+														View on Map
+													</Link>
 												)}
 											</div>
 										) : (

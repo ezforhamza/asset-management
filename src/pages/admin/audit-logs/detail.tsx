@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import {
+	AlertTriangle,
 	ArrowLeft,
 	CheckCircle2,
 	Clock,
@@ -12,9 +13,11 @@ import {
 	Monitor,
 	Package,
 	QrCode,
+	ShieldAlert,
 	Smartphone,
 	Trash2,
 	User,
+	Wrench,
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
@@ -244,6 +247,11 @@ const excludedFields = [
 	"userId",
 	"verifiedBy",
 	"qrCodeId", // Hide raw IDs
+	"registeredBy", // Hide raw user IDs for registration
+	"categoryId", // Hide raw category IDs, show category name instead
+	"flags",
+	"verificationFlags",
+	"statusFlags", // Flags are rendered separately as badges
 ];
 
 // Fields that are complex objects we should format specially or hide
@@ -257,6 +265,49 @@ const isEmptyValue = (value: any): boolean => {
 	if (Array.isArray(value) && value.length === 0) return true;
 	if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) return true;
 	return false;
+};
+
+// Get flag badge configuration
+const getFlagBadgeConfig = (
+	flag: string,
+): {
+	color: "red" | "orange" | "yellow" | "blue" | "emerald" | "gray" | "purple";
+	label: string;
+	icon?: React.ReactNode;
+} => {
+	const flagLower = flag.toLowerCase();
+
+	if (flagLower.includes("failed_geofence") || flagLower.includes("gps_failed")) {
+		return { color: "red", label: "GPS Failed", icon: <XCircle className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("condition_fair") || flagLower === "fair") {
+		return { color: "yellow", label: "Fair Condition", icon: <AlertTriangle className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("condition_poor") || flagLower === "poor") {
+		return { color: "orange", label: "Poor Condition", icon: <AlertTriangle className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("condition_good") || flagLower === "good") {
+		return { color: "emerald", label: "Good Condition", icon: <CheckCircle2 className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("needs_repair") || flagLower.includes("repair")) {
+		return { color: "orange", label: "Needs Repair", icon: <Wrench className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("incomplete_metadata") || flagLower.includes("incomplete")) {
+		return { color: "yellow", label: "Incomplete Data", icon: <AlertTriangle className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("pending_admin_review") || flagLower.includes("pending")) {
+		return { color: "purple", label: "Pending Review", icon: <ShieldAlert className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("non_operational")) {
+		return { color: "red", label: "Non-Operational", icon: <XCircle className="h-3 w-3" /> };
+	}
+	if (flagLower.includes("flagged")) {
+		return { color: "orange", label: "Flagged", icon: <AlertTriangle className="h-3 w-3" /> };
+	}
+
+	// Default: format the flag name nicely
+	const formattedLabel = flag.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+	return { color: "gray", label: formattedLabel };
 };
 
 // Check if string looks like an ISO date
@@ -490,8 +541,23 @@ const renderFormattedDetails = (log: AuditLog) => {
 	const metaImages = log.metadata ? extractImages(log.metadata) : [];
 	const allImages = [...new Set([...images, ...metaImages])];
 
+	// Extract verification flags from data
+	const extractFlags = (obj: any): string[] => {
+		if (!obj) return [];
+		const flags: string[] = [];
+		const flagKeys = ["flags", "verificationFlags", "statusFlags"];
+		for (const key of flagKeys) {
+			if (Array.isArray(obj[key])) {
+				flags.push(...obj[key].filter((f: any) => typeof f === "string"));
+			}
+		}
+		return flags;
+	};
+
+	const verificationFlags = [...new Set([...extractFlags(data), ...extractFlags(log.metadata)])];
+
 	// Check if we have any meaningful content to show
-	const hasContent = formattedData.length > 0 || allImages.length > 0;
+	const hasContent = formattedData.length > 0 || allImages.length > 0 || verificationFlags.length > 0;
 
 	if (!hasContent) {
 		const noDetailsMsg = getNoDetailsMessage(log);
@@ -548,6 +614,27 @@ const renderFormattedDetails = (log: AuditLog) => {
 					</div>
 				</div>
 			</div>
+
+			{/* Verification Flags Section */}
+			{verificationFlags.length > 0 && (
+				<div className="space-y-3">
+					<div className="flex items-center gap-2">
+						<AlertTriangle className="h-4 w-4 text-muted-foreground" />
+						<p className="text-sm font-medium">Verification Flags</p>
+					</div>
+					<div className="flex flex-wrap gap-2">
+						{verificationFlags.map((flag) => {
+							const config = getFlagBadgeConfig(flag);
+							return (
+								<StyledBadge key={flag} color={config.color}>
+									{config.icon && <span className="mr-1">{config.icon}</span>}
+									{config.label}
+								</StyledBadge>
+							);
+						})}
+					</div>
+				</div>
+			)}
 
 			{/* Formatted Fields Grid */}
 			{formattedData.length > 0 && (

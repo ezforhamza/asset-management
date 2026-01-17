@@ -150,14 +150,25 @@ export const useSignOut = () => {
 
 	const signOut = async () => {
 		try {
-			// Call session logout API
+			// Call session logout API to invalidate tokens on server
 			await sessionService.logout();
 		} catch (error) {
 			// Continue with logout even if API call fails
 			console.error("Logout API error:", error);
 		} finally {
-			// Always clear local state and redirect
+			// Clear all user-related data from Zustand store
 			clearUserInfoAndToken();
+
+			// Clear any additional localStorage items that might have user data
+			localStorage.removeItem("userStore");
+			localStorage.removeItem(StorageEnum.UserInfo);
+			localStorage.removeItem(StorageEnum.UserToken);
+			localStorage.removeItem(StorageEnum.Settings);
+
+			// Clear sessionStorage
+			sessionStorage.clear();
+
+			// Redirect to login page
 			window.location.href = "/auth/login";
 		}
 	};

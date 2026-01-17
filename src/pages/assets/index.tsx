@@ -23,7 +23,6 @@ import type { Asset } from "#/entity";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams, type UpdateAssetReq } from "@/api/services/assetService";
 import { useCanWrite } from "@/store/userStore";
-import { StyledBadge } from "@/utils/badge-styles";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import {
@@ -38,6 +37,7 @@ import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { StyledBadge } from "@/utils/badge-styles";
 import { CategoriesModal } from "./components/CategoriesModal";
 import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
@@ -99,7 +99,7 @@ export default function AssetsPage() {
 	// Detach QR confirmation state
 	const [detachQrModalOpen, setDetachQrModalOpen] = useState(false);
 
-	const limit = 8;
+	const limit = 9;
 
 	// Build query params with filters
 	const queryParams: AssetsListParams = useMemo(() => {
@@ -478,7 +478,7 @@ export default function AssetsPage() {
 							</TableHeader>
 							<TableBody>
 								{isLoading ? (
-									Array.from({ length: 8 }).map((_, i) => (
+									Array.from({ length: 9 }).map((_, i) => (
 										<TableRow key={`skeleton-${i}`}>
 											<TableCell>
 												<Skeleton className="h-4 w-24" />

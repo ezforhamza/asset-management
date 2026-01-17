@@ -4,6 +4,77 @@ import { GLOBAL_CONFIG } from "@/global-config";
 import { t } from "@/locales/i18n";
 import userStore from "@/store/userStore";
 
+// Convert technical API error messages to user-friendly messages
+const getUserFriendlyErrorMessage = (rawMessage: string, statusCode?: number): string => {
+	const msg = rawMessage?.toLowerCase() || "";
+
+	// Validation errors - usually from backend validation
+	if (msg.includes("must be a valid mongo id") || msg.includes("must be a valid id")) {
+		return "Invalid search criteria. Please try a different search term.";
+	}
+	if (msg.includes("validation") || msg.includes("is required")) {
+		return "Please check your input and try again.";
+	}
+	if (msg.includes("duplicate") || msg.includes("already exists")) {
+		return "This record already exists. Please use a different value.";
+	}
+	if (msg.includes("not found")) {
+		return "The requested item could not be found.";
+	}
+	if (msg.includes("unauthorized") || msg.includes("invalid token")) {
+		return "You are not authorized to perform this action.";
+	}
+	if (msg.includes("forbidden") || msg.includes("access denied")) {
+		return "You don't have permission to access this resource.";
+	}
+	if (msg.includes("invalid email") || msg.includes("email format")) {
+		return "Please enter a valid email address.";
+	}
+	if (msg.includes("invalid password") || msg.includes("password")) {
+		return "Invalid password. Please try again.";
+	}
+	if (msg.includes("too many requests") || msg.includes("rate limit")) {
+		return "Too many requests. Please wait a moment and try again.";
+	}
+	if (msg.includes("server error") || msg.includes("internal error")) {
+		return "Something went wrong on our end. Please try again later.";
+	}
+	if (msg.includes("timeout") || msg.includes("timed out")) {
+		return "The request took too long. Please try again.";
+	}
+
+	// Status code based fallbacks
+	if (statusCode === 400) {
+		return "Invalid request. Please check your input.";
+	}
+	if (statusCode === 401) {
+		return "Please log in to continue.";
+	}
+	if (statusCode === 403) {
+		return "You don't have permission to perform this action.";
+	}
+	if (statusCode === 404) {
+		return "The requested resource was not found.";
+	}
+	if (statusCode === 409) {
+		return "A conflict occurred. The item may already exist.";
+	}
+	if (statusCode === 422) {
+		return "Unable to process the request. Please check your input.";
+	}
+	if (statusCode && statusCode >= 500) {
+		return "Server error. Please try again later.";
+	}
+
+	// If the message is too technical (contains code references, stack traces, etc.)
+	if (msg.includes("error:") || msg.includes("at /") || msg.includes("node_modules") || msg.length > 150) {
+		return "An error occurred. Please try again.";
+	}
+
+	// Return original message if it seems user-friendly enough (no technical jargon)
+	return rawMessage;
+};
+
 const axiosInstance = axios.create({
 	baseURL: GLOBAL_CONFIG.apiBaseUrl,
 	timeout: 50000,
@@ -114,7 +185,8 @@ axiosInstance.interceptors.response.use(
 
 		// Show error toast for non-auth endpoints (auth endpoints handle their own errors)
 		if (!isAuthEndpoint && response) {
-			const errMsg = response?.data?.message || response?.data?.error || error.message || t("sys.api.errorMessage");
+			const rawMsg = response?.data?.message || response?.data?.error || error.message || t("sys.api.errorMessage");
+			const errMsg = getUserFriendlyErrorMessage(rawMsg, response?.status);
 			toast.error(errMsg, { position: "top-center" });
 		}
 

@@ -16,8 +16,9 @@ export default function AssetHistoryPage() {
 	const fromMap = location.state?.fromMap === true;
 	const highlightLatest = location.state?.highlightLatest === true;
 
-	// Track which verification should be highlighted
+	// Track which verification or registration should be highlighted
 	const [highlightedVerificationId, setHighlightedVerificationId] = useState<string | null>(null);
+	const [highlightRegistration, setHighlightRegistration] = useState(false);
 
 	// Ref for scrolling to the highlighted card
 	const highlightedCardRef = useRef<HTMLDivElement>(null);
@@ -32,18 +33,27 @@ export default function AssetHistoryPage() {
 		enabled: !!assetId,
 	});
 
-	// Set highlighted verification ID when data loads (highlight latest if coming from reports)
+	// Set highlighted verification ID when data loads (highlight latest if coming from reports or map)
 	useEffect(() => {
+		// Check if coming from map and should highlight registration
+		if (fromMap && location.state?.highlightRegistration) {
+			setHighlightRegistration(true);
+			return;
+		}
+
 		if (historyData?.verificationHistory && historyData.verificationHistory.length > 0) {
-			if (highlightLatest) {
-				// Highlight the first (latest) verification
-				setHighlightedVerificationId(historyData.verificationHistory[0].id);
+			if (highlightLatest || fromMap) {
+				// Highlight the most recent verification (last in the sorted array since we sort ascending)
+				const sortedVerifications = [...historyData.verificationHistory].sort(
+					(a, b) => new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime(),
+				);
+				setHighlightedVerificationId(sortedVerifications[0].id);
 			} else if (location.hash.startsWith("#verification-")) {
 				// Highlight specific verification from URL hash
 				setHighlightedVerificationId(location.hash.replace("#verification-", ""));
 			}
 		}
-	}, [historyData, highlightLatest, location.hash]);
+	}, [historyData, highlightLatest, fromMap, location.hash, location.state?.highlightRegistration]);
 
 	// Scroll to highlighted verification card after it's set
 	useEffect(() => {
@@ -58,15 +68,25 @@ export default function AssetHistoryPage() {
 		}
 	}, [highlightedVerificationId]);
 
-	// Clear highlight after 5 seconds (longer to be more visible)
+	// Clear highlight after 2.5 seconds
 	useEffect(() => {
 		if (highlightedVerificationId) {
 			const timeout = setTimeout(() => {
 				setHighlightedVerificationId(null);
-			}, 5000);
+			}, 2500);
 			return () => clearTimeout(timeout);
 		}
 	}, [highlightedVerificationId]);
+
+	// Clear registration highlight after 2.5 seconds
+	useEffect(() => {
+		if (highlightRegistration) {
+			const timeout = setTimeout(() => {
+				setHighlightRegistration(false);
+			}, 2500);
+			return () => clearTimeout(timeout);
+		}
+	}, [highlightRegistration]);
 
 	// Get the current registration that matches the asset's current QR code and is the latest
 	const currentRegistration = useMemo<RegistrationHistoryItem | null>(() => {
@@ -92,15 +112,17 @@ export default function AssetHistoryPage() {
 	}, [historyData?.registrationHistory, historyData?.asset.qrCode]);
 
 	// Filter verifications to only show those after the current registration timestamp
+	// Sort by verifiedAt ascending (oldest first) to follow chronological timeline order
 	const filteredVerifications = useMemo<VerificationHistoryItem[]>(() => {
 		if (!historyData?.verificationHistory || !currentRegistration) return [];
 
 		const registrationTime = new Date(currentRegistration.timestamp).getTime();
 
 		// Only include verifications that occurred AFTER the registration
+		// Sort ascending (oldest first) to follow timeline: Registration -> Verification #1 -> #2 -> #3...
 		return [...historyData.verificationHistory]
 			.filter((v) => new Date(v.verifiedAt).getTime() > registrationTime)
-			.sort((a, b) => new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime());
+			.sort((a, b) => new Date(a.verifiedAt).getTime() - new Date(b.verifiedAt).getTime());
 	}, [historyData?.verificationHistory, currentRegistration]);
 
 	if (isLoading) {
@@ -195,7 +217,11 @@ export default function AssetHistoryPage() {
 								<h2 className={`font-semibold ${!currentRegistration ? "text-muted-foreground" : ""}`}>Registration</h2>
 							</div>
 							{currentRegistration ? (
-								<RegistrationEvent registration={currentRegistration} />
+								<RegistrationEvent
+									registration={currentRegistration}
+									assetId={assetId}
+									isHighlighted={highlightRegistration}
+								/>
 							) : (
 								<div className="pl-8 py-4 text-sm text-muted-foreground border rounded-lg bg-muted/30">
 									No registration recorded for this asset.
@@ -229,11 +255,7 @@ export default function AssetHistoryPage() {
 										const isHighlighted = verification.id === highlightedVerificationId;
 										return (
 											<div key={verification.id} ref={isHighlighted ? highlightedCardRef : undefined}>
-												<VerificationCard
-													verification={verification}
-													index={filteredVerifications.length - index - 1}
-													isHighlighted={isHighlighted}
-												/>
+												<VerificationCard verification={verification} index={index} isHighlighted={isHighlighted} />
 											</div>
 										);
 									})}

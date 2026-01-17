@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon, ClipboardList, Eye, Search, X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { useNavigate } from "react-router";
 import auditLogService, { type AuditLog } from "@/api/services/auditLogService";
@@ -25,21 +25,32 @@ export default function AdminAuditLogsPage() {
 	const [limit] = useState(20);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["audit-logs", entityTypeFilter, actionFilter, searchQuery, dateRange, page, limit],
+		queryKey: ["audit-logs", entityTypeFilter, actionFilter, dateRange, page, limit],
 		queryFn: () =>
 			auditLogService.getAuditLogs({
 				entityType: entityTypeFilter,
 				action: actionFilter,
-				performedBy: searchQuery || undefined,
+				// Note: performedBy requires MongoDB ID, so we filter by name client-side
 				startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined,
 				endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
 				sortBy: "timestamp:desc",
 				page,
-				limit,
+				limit: 100, // Fetch more to allow client-side filtering
 			}),
 	});
 
-	const logs = data?.results || [];
+	// Client-side filtering by user name (since backend requires MongoDB ID for performedBy)
+	const logs = useMemo(() => {
+		const allLogs = data?.results || [];
+		if (!searchQuery.trim()) return allLogs;
+
+		const query = searchQuery.toLowerCase().trim();
+		return allLogs.filter((log) => {
+			const userName = log.performedBy?.name?.toLowerCase() || "";
+			const userEmail = log.performedBy?.email?.toLowerCase() || "";
+			return userName.includes(query) || userEmail.includes(query);
+		});
+	}, [data?.results, searchQuery]);
 
 	const handleClearFilters = () => {
 		setEntityTypeFilter(undefined);

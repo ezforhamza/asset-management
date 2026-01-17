@@ -1,4 +1,5 @@
-import { LogOut } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
+import { useState } from "react";
 import { useSignOut, useUserInfo } from "@/store/userStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -18,9 +19,12 @@ export default function AccountDropdown() {
 	const { username, email, avatar } = userInfo;
 	const profilePic = userInfo.profilePic || avatar;
 	const signOut = useSignOut();
+	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 	const logout = async () => {
+		setIsLoggingOut(true);
 		await signOut();
+		// Note: signOut will redirect to login, so we don't need to reset isLoggingOut
 	};
 
 	return (
@@ -46,9 +50,18 @@ export default function AccountDropdown() {
 					</div>
 				</div>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem className="text-destructive" onClick={logout}>
-					<LogOut className="h-4 w-4 mr-2" />
-					Logout
+				<DropdownMenuItem className="text-destructive" onClick={logout} disabled={isLoggingOut}>
+					{isLoggingOut ? (
+						<>
+							<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+							Logging out...
+						</>
+					) : (
+						<>
+							<LogOut className="h-4 w-4 mr-2" />
+							Logout
+						</>
+					)}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

@@ -265,9 +265,9 @@ export default function MapPage() {
 	}, [filteredAssets, highlightedLocation]);
 
 	// Navigate to AssetHistoryPage instead of ReportsPage
-	const handleViewDetails = (assetId: string) => {
+	const handleViewDetails = (assetId: string, highlightRegistration = false) => {
 		navigate(`/assets/${assetId}/history`, {
-			state: { fromMap: true },
+			state: { fromMap: true, highlightLatest: !highlightRegistration, highlightRegistration },
 		});
 	};
 
@@ -379,10 +379,10 @@ export default function MapPage() {
 							minZoom={2}
 							maxZoom={18}
 							maxBounds={[
-								[-85, -180],
-								[85, 180],
+								[-90, -180],
+								[90, 180],
 							]}
-							maxBoundsViscosity={1.0}
+							maxBoundsViscosity={0.8}
 						>
 							<TileLayer attribution={currentTile.attribution} url={currentTile.url} />
 							<FitBoundsToMarkers assets={filteredAssets} highlightedLocation={highlightedLocation} />
