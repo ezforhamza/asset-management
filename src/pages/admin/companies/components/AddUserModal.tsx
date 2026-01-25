@@ -7,6 +7,7 @@ import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 
 interface AddUserModalProps {
@@ -124,7 +125,7 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 								<FormItem>
 									<FormLabel>Password (Optional)</FormLabel>
 									<FormControl>
-										<Input type="password" placeholder="Leave empty for auto-generated" {...field} />
+										<PasswordInput placeholder="Leave empty for auto-generated" {...field} />
 									</FormControl>
 									<FormDescription>If not provided, a temporary password will be generated</FormDescription>
 									<FormMessage />

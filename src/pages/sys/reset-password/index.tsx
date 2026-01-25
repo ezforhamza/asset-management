@@ -5,11 +5,10 @@ import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
 
 import Logo from "@/components/logo";
-import { GLOBAL_CONFIG } from "@/global-config";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
-import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 
 interface ResetPasswordForm {
 	password: string;
@@ -86,10 +85,7 @@ export default function ResetPasswordPage() {
 	if (!token) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-				<div className="flex items-center gap-3 font-medium cursor-pointer mb-8">
-					<Logo size={48} />
-					<span className="text-2xl font-bold">{GLOBAL_CONFIG.appName}</span>
-				</div>
+				<Logo size={56} showTitle titleClassName="text-2xl" className="cursor-pointer mb-8" />
 				<Card className="w-full max-w-md">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 rounded-full bg-destructive/10 p-3 w-fit">
@@ -112,10 +108,7 @@ export default function ResetPasswordPage() {
 	if (success) {
 		return (
 			<div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-				<div className="flex items-center gap-3 font-medium cursor-pointer mb-8">
-					<Logo size={48} />
-					<span className="text-2xl font-bold">{GLOBAL_CONFIG.appName}</span>
-				</div>
+				<Logo size={56} showTitle titleClassName="text-2xl" className="cursor-pointer mb-8" />
 				<Card className="w-full max-w-md">
 					<CardHeader className="text-center">
 						<div className="mx-auto mb-4 rounded-full bg-green-500/10 p-3 w-fit">
@@ -137,10 +130,7 @@ export default function ResetPasswordPage() {
 	// Form state
 	return (
 		<div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-			<div className="flex items-center gap-3 font-medium cursor-pointer mb-8">
-				<Logo size={48} />
-				<span className="text-2xl font-bold">{GLOBAL_CONFIG.appName}</span>
-			</div>
+			<Logo size={56} showTitle titleClassName="text-2xl" className="cursor-pointer mb-8" />
 			<Card className="w-full max-w-md">
 				<CardHeader className="text-center">
 					<div className="mx-auto mb-4 rounded-full bg-primary/10 p-3 w-fit">
@@ -169,7 +159,7 @@ export default function ResetPasswordPage() {
 									<FormItem>
 										<FormLabel>New Password</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Enter new password" {...field} />
+											<PasswordInput placeholder="Enter new password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -184,7 +174,7 @@ export default function ResetPasswordPage() {
 									<FormItem>
 										<FormLabel>Confirm Password</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Confirm new password" {...field} />
+											<PasswordInput placeholder="Confirm new password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

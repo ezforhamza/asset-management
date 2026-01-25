@@ -9,6 +9,7 @@ import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 
 interface CreateCompanyModalProps {
 	open: boolean;
@@ -259,7 +260,7 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 									<FormItem>
 										<FormLabel>Admin Password *</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Min 8 characters" {...field} />
+											<PasswordInput placeholder="Min 8 characters" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

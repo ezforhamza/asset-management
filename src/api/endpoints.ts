@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
 
 	// Assets Map
 	ASSETS_MAP: "/assets/map",
+	ASSETS_MAP_LOCATIONS: "/assets/map-locations",
 
 	// Uploads
 	UPLOADS: {

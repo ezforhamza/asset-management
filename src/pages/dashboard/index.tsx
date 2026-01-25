@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle, Clock, Package } from "lucide-react";
+import { AlertTriangle, CheckCircle, ClipboardCheck, Clock, MapPin, Package, Wrench } from "lucide-react";
 
 import dashboardService from "@/api/services/dashboardService";
 import { useUserInfo } from "@/store/userStore";
+import { DetailedStatsCard } from "./components/DetailedStatsCard";
 import { RecentActivity } from "./components/RecentActivity";
 import { StatsCard } from "./components/StatsCard";
 
@@ -15,29 +16,12 @@ export default function DashboardPage() {
 	});
 
 	const { data: activityResponse, isLoading: activityLoading } = useQuery({
-		queryKey: ["dashboard", "recent-activity"],
-		queryFn: () => dashboardService.getRecentActivity(10),
+		queryKey: ["dashboard", "recent-activities"],
+		queryFn: () => dashboardService.getRecentActivities(10),
 	});
 
 	const stats = response?.stats;
-
-	// Transform API response to match RecentActivity component expectations
-	// Filter: Only include verifications where asset exists AND has a valid QR code
-	// Sort by verifiedAt date descending (newest first)
-	const recentActivity = ((activityResponse as any)?.results ?? [])
-		.filter((item: any) => item.assetId != null && item.assetId.qrCodeId != null)
-		.slice()
-		.sort((a: any, b: any) => new Date(b.verifiedAt).getTime() - new Date(a.verifiedAt).getTime())
-		.map((item: any) => ({
-			_id: item.id,
-			assetSerialNumber: item.assetId?.serialNumber || "N/A",
-			assetMake: item.assetId?.make || "N/A",
-			assetModel: item.assetId?.model || "N/A",
-			verifiedBy: item.verifiedBy?.name || "N/A",
-			verifiedAt: item.verifiedAt,
-			status: "on_time", // Default to on_time since these are recent verifications
-			distance: item.distanceFromAsset || 0,
-		}));
+	const recentActivities = activityResponse?.results ?? [];
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
@@ -64,31 +48,99 @@ export default function DashboardPage() {
 				<section>
 					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Overview</h2>
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+						{/* Card 1: Total Assets */}
 						<StatsCard
 							title="Total Assets"
 							value={statsLoading ? "-" : (stats?.assets.total ?? 0)}
 							icon={Package}
 							variant="default"
 						/>
-						<StatsCard
-							title="Verified This Month"
-							value={statsLoading ? "-" : (stats?.verificationStatus.onTime ?? 0)}
+						{/* Card 2: Asset Status */}
+						<DetailedStatsCard
+							title="Asset Status"
 							icon={CheckCircle}
 							variant="success"
+							items={
+								statsLoading
+									? []
+									: [
+											{
+												label: "Verified",
+												value:
+													(stats?.verificationStatus.onTime ?? 0) +
+													(stats?.verificationStatus.dueSoon ?? 0) +
+													(stats?.verificationStatus.overdue ?? 0),
+												icon: CheckCircle,
+												iconColor: "text-emerald-500",
+											},
+											{
+												label: "Registered",
+												value: stats?.verificationStatus.registered ?? 0,
+												icon: Package,
+												iconColor: "text-blue-500",
+											},
+											{
+												label: "Unregistered",
+												value: stats?.verificationStatus.unregistered ?? 0,
+												icon: Package,
+												iconColor: "text-muted-foreground",
+											},
+										]
+							}
 						/>
-						<StatsCard
-							title="Due Soon"
-							value={statsLoading ? "-" : (stats?.verificationStatus.dueSoon ?? 0)}
-							subtitle="Within 7 days"
-							icon={Clock}
-							variant="warning"
-						/>
-						<StatsCard
-							title="Overdue"
-							value={statsLoading ? "-" : (stats?.verificationStatus.overdue ?? 0)}
-							subtitle="Requires attention"
+						{/* Card 3: Needs Attention */}
+						<DetailedStatsCard
+							title="Needs Attention"
 							icon={AlertTriangle}
-							variant="danger"
+							variant="warning"
+							items={
+								statsLoading
+									? []
+									: [
+											{
+												label: "Due Soon",
+												value: stats?.verificationStatus.dueSoon ?? 0,
+												icon: Clock,
+												iconColor: "text-orange-500",
+											},
+											{
+												label: "Overdue",
+												value: stats?.verificationStatus.overdue ?? 0,
+												icon: AlertTriangle,
+												iconColor: "text-red-500",
+											},
+										]
+							}
+						/>
+						{/* Card 4: Activity Summary */}
+						<DetailedStatsCard
+							title="Activity Summary"
+							icon={ClipboardCheck}
+							variant="default"
+							items={
+								statsLoading
+									? []
+									: [
+											{
+												label: "Total Verifications",
+												value: stats?.activity.totalVerifications ?? 0,
+												icon: ClipboardCheck,
+												iconColor: "text-primary",
+											},
+											{
+												label: "GPS Overrides",
+												value: stats?.activity.gpsOverrides ?? 0,
+												icon: MapPin,
+												iconColor: "text-blue-500",
+											},
+											{
+												label: "Repairs Needed",
+												value: stats?.activity.repairsNeeded ?? 0,
+												icon: Wrench,
+												iconColor: "text-orange-500",
+											},
+										]
+							}
 						/>
 					</div>
 				</section>
@@ -96,7 +148,7 @@ export default function DashboardPage() {
 				{/* Recent Activity */}
 				<section>
 					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Recent Activity</h2>
-					<RecentActivity data={recentActivity} isLoading={activityLoading} />
+					<RecentActivity data={recentActivities} isLoading={activityLoading} />
 				</section>
 			</div>
 		</div>

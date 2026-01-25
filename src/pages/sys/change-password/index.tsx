@@ -10,7 +10,7 @@ import { useUserActions, useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
-import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 
 interface ChangePasswordForm extends ChangePasswordReq {
 	confirmPassword: string;
@@ -78,7 +78,7 @@ export default function ChangePasswordPage() {
 									<FormItem>
 										<FormLabel>Current Password</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Enter current password" {...field} />
+											<PasswordInput placeholder="Enter current password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -100,7 +100,7 @@ export default function ChangePasswordPage() {
 									<FormItem>
 										<FormLabel>New Password</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Enter new password" {...field} />
+											<PasswordInput placeholder="Enter new password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -115,7 +115,7 @@ export default function ChangePasswordPage() {
 									<FormItem>
 										<FormLabel>Confirm Password</FormLabel>
 										<FormControl>
-											<Input type="password" placeholder="Confirm new password" {...field} />
+											<PasswordInput placeholder="Confirm new password" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

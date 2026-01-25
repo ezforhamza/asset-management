@@ -43,21 +43,12 @@ import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
 
 /**
- * Check if an asset has incomplete registration data.
- * Shows flag if ANY of: unregistered, partially_registered, or missing/empty channel/siteName/client
- * Empty string ("") is treated as missing.
+ * Check if an asset registration is pending (not yet registered).
+ * Returns true only if registrationState is "unregistered".
+ * Both "partially_registered" and "fully_registered" are considered completed.
  */
-const isAssetIncomplete = (asset: Asset): boolean => {
-	const hasIncompleteRegistration =
-		asset.registrationState === "unregistered" || asset.registrationState === "partially_registered";
-
-	// Check for null, undefined, or empty string
-	const isEmptyOrNull = (value: string | null | undefined): boolean =>
-		value === null || value === undefined || value.trim() === "";
-
-	const hasMissingFields = isEmptyOrNull(asset.channel) || isEmptyOrNull(asset.siteName) || isEmptyOrNull(asset.client);
-
-	return hasIncompleteRegistration || hasMissingFields;
+const isRegistrationPending = (asset: Asset): boolean => {
+	return asset.registrationState === "unregistered" || !asset.registrationState;
 };
 
 export default function AssetsPage() {
@@ -559,13 +550,13 @@ export default function AssetsPage() {
 											<TableCell>{getStatusBadge(asset.status)}</TableCell>
 											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
 											<TableCell>
-												{isAssetIncomplete(asset) ? (
+												{isRegistrationPending(asset) ? (
 													<StyledBadge color="orange">
 														<AlertTriangle className="h-3 w-3 mr-1" />
-														Incomplete
+														Pending
 													</StyledBadge>
 												) : (
-													<StyledBadge color="emerald">Complete</StyledBadge>
+													<StyledBadge color="emerald">Completed</StyledBadge>
 												)}
 											</TableCell>
 											<TableCell>

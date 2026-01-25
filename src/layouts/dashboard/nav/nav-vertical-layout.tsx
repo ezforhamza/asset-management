@@ -2,7 +2,6 @@ import { Icon } from "@/components/icon";
 import Logo from "@/components/logo";
 import { NavMini, NavVertical } from "@/components/nav";
 import type { NavProps } from "@/components/nav/types";
-import { GLOBAL_CONFIG } from "@/global-config";
 import { useSettingActions, useSettings } from "@/store/settingStore";
 import { ThemeLayout } from "@/types/enum";
 import { Button } from "@/ui/button";
@@ -42,20 +41,11 @@ export function NavVerticalLayout({ data, className }: Props) {
 					"justify-center": themeLayout === ThemeLayout.Mini,
 				})}
 			>
-				<div className="flex items-center justify-center">
-					<Logo size={themeLayout === ThemeLayout.Mini ? 36 : 44} />
-					<span
-						className="text-xl font-bold transition-all duration-300 ease-in-out"
-						style={{
-							opacity: themeLayout === ThemeLayout.Mini ? 0 : 1,
-							maxWidth: themeLayout === ThemeLayout.Mini ? 0 : "auto",
-							whiteSpace: "nowrap",
-							marginLeft: themeLayout === ThemeLayout.Mini ? 0 : "8px",
-						}}
-					>
-						{GLOBAL_CONFIG.appName}
-					</span>
-				</div>
+				<Logo
+					size={themeLayout === ThemeLayout.Mini ? 40 : 52}
+					showTitle={themeLayout !== ThemeLayout.Mini}
+					titleClassName="text-xl transition-all duration-300 ease-in-out"
+				/>
 
 				<Button
 					variant="outline"

@@ -1,231 +1,167 @@
+import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { useQuery } from "@tanstack/react-query";
-import L from "leaflet";
-import { Layers, Loader2, MapPin } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { format } from "date-fns";
+import { Calendar, CalendarClock, ChevronRight, ExternalLink, Loader2, MapPin, Tag } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import "leaflet/dist/leaflet.css";
 
-import type { MapAsset } from "#/entity";
-import { VerificationStatus } from "#/enum";
-import reportService from "@/api/services/reportService";
+import reportService, { type MapLocationItem } from "@/api/services/reportService";
 import { Button } from "@/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
-import { AssetMarker } from "./components/AssetMarker";
-import { ClusterMarker } from "./components/ClusterMarker";
 
-// Group assets by location (for clustering nearby markers)
-interface MarkerGroup {
+// Google Maps API key from environment
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+
+// Map container style - full height
+const containerStyle = {
+	width: "100%",
+	height: "100%",
+};
+
+// World center
+const worldCenter = {
+	lat: 20,
+	lng: 0,
+};
+
+// Map options - prevent horizontal scrolling/repeating
+const mapOptions: google.maps.MapOptions = {
+	disableDefaultUI: false,
+	zoomControl: true,
+	mapTypeControl: true,
+	streetViewControl: false,
+	fullscreenControl: true,
+	minZoom: 2,
+	maxZoom: 20,
+	restriction: {
+		latLngBounds: {
+			north: 85,
+			south: -85,
+			west: -180,
+			east: 180,
+		},
+		strictBounds: true,
+	},
+	gestureHandling: "greedy",
+	styles: [
+		{
+			featureType: "poi",
+			elementType: "labels",
+			stylers: [{ visibility: "off" }],
+		},
+	],
+};
+
+// Status type including never_verified
+type AssetStatus = "on_time" | "due_soon" | "overdue" | "never_verified" | "all";
+
+// Status colors for markers and legend
+const statusColors: Record<string, { color: string; label: string }> = {
+	on_time: { color: "#10B981", label: "On Time" },
+	due_soon: { color: "#F59E0B", label: "Due Soon" },
+	overdue: { color: "#EF4444", label: "Overdue" },
+	never_verified: { color: "#3B82F6", label: "Registered" },
+};
+
+// Create Google Maps pin-shaped SVG marker
+const createPinMarker = (color: string, isHighlighted = false): string => {
+	const scale = isHighlighted ? 1.3 : 1;
+	const width = Math.round(24 * scale);
+	const height = Math.round(36 * scale);
+	const svg = `
+		<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 24 36">
+			<path d="M12 0C5.4 0 0 5.4 0 12c0 7.2 12 24 12 24s12-16.8 12-24c0-6.6-5.4-12-12-12z" fill="${color}" stroke="white" stroke-width="1.5"/>
+			<circle cx="12" cy="12" r="5" fill="white"/>
+		</svg>
+	`;
+	return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+// Get marker color based on status
+const getMarkerColor = (status: string): string => {
+	return statusColors[status]?.color || "#6B7280";
+};
+
+// Get status label
+const getStatusLabel = (status: string): string => {
+	return statusColors[status]?.label || status;
+};
+
+// Group assets by assetId - cluster same asset's registration + verifications together
+interface AssetCluster {
 	key: string;
-	position: [number, number];
-	assets: MapAsset[];
+	position: { lat: number; lng: number };
+	assets: MapLocationItem[];
 }
 
-const CLUSTER_THRESHOLD = 0.0001; // ~11 meters - group markers within this distance
+const groupAssetsByAssetId = (assets: MapLocationItem[]): AssetCluster[] => {
+	const assetMap = new Map<string, MapLocationItem[]>();
 
-const groupAssetsByLocation = (assets: MapAsset[]): MarkerGroup[] => {
-	const groups: MarkerGroup[] = [];
-	const processed = new Set<string>();
-
+	// Group all records by assetId
 	for (const asset of assets) {
-		if (processed.has(asset.assetId)) continue;
+		const existing = assetMap.get(asset.assetId) || [];
+		existing.push(asset);
+		assetMap.set(asset.assetId, existing);
+	}
 
-		const nearbyAssets = assets.filter((other) => {
-			if (processed.has(other.assetId)) return false;
-			const latDiff = Math.abs(asset.location.latitude - other.location.latitude);
-			const lngDiff = Math.abs(asset.location.longitude - other.location.longitude);
-			return latDiff < CLUSTER_THRESHOLD && lngDiff < CLUSTER_THRESHOLD;
-		});
-
-		for (const nearby of nearbyAssets) {
-			processed.add(nearby.assetId);
-		}
-
-		const avgLat = nearbyAssets.reduce((sum, a) => sum + a.location.latitude, 0) / nearbyAssets.length;
-		const avgLng = nearbyAssets.reduce((sum, a) => sum + a.location.longitude, 0) / nearbyAssets.length;
-
-		groups.push({
-			key: `${avgLat.toFixed(6)}-${avgLng.toFixed(6)}`,
-			position: [avgLat, avgLng],
-			assets: nearbyAssets,
+	// Create clusters for each asset
+	const clusters: AssetCluster[] = [];
+	for (const [assetId, assetRecords] of assetMap) {
+		// Use the first record's location as the cluster position
+		const firstRecord = assetRecords[0];
+		clusters.push({
+			key: assetId,
+			position: { lat: firstRecord.location.latitude, lng: firstRecord.location.longitude },
+			assets: assetRecords,
 		});
 	}
 
-	return groups;
+	return clusters;
 };
 
-// Map tile providers - Premium looking options
-const tileLayers = {
-	default: {
-		url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-		attribution:
-			'&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>',
-		name: "Default",
-	},
-	light: {
-		url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-		attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-		name: "Light",
-	},
-	dark: {
-		url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-		attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
-		name: "Dark",
-	},
-	streets: {
-		url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-		name: "Streets",
-	},
-	satellite: {
-		url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-		attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
-		name: "Satellite",
-	},
-	terrain: {
-		url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-		attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
-		name: "Terrain",
-	},
-};
-
-// Status colors for legend
-const statusColors = {
-	[VerificationStatus.ON_TIME]: { color: "#10B981", label: "On Time" },
-	[VerificationStatus.DUE_SOON]: { color: "#F59E0B", label: "Due Soon" },
-	[VerificationStatus.OVERDUE]: { color: "#EF4444", label: "Overdue" },
-};
-
-// Map verification status string to enum
-const mapVerificationStatus = (status: string | undefined): VerificationStatus | null => {
-	switch (status) {
-		case "on_time":
-			return VerificationStatus.ON_TIME;
-		case "due_soon":
-			return VerificationStatus.DUE_SOON;
-		case "overdue":
-			return VerificationStatus.OVERDUE;
-		default:
-			return null;
-	}
-};
-
-// Verification report item shape from /api/v1/reports/verifications
-interface VerificationReportItem {
-	_id: string;
-	serialNumber: string;
-	make: string;
-	model: string;
-	nextVerificationDue: string;
-	registeredLocation?: {
-		type: string;
-		coordinates: [number, number]; // [longitude, latitude]
-	};
-	lastVerifiedAt: string | null;
-	verificationStatus: "on_time" | "due_soon" | "overdue";
-}
-
-// Check if verification item has valid coordinates
-const hasValidCoordinates = (item: VerificationReportItem): boolean => {
-	const coords = item.registeredLocation?.coordinates;
+// Check if location is valid
+const hasValidLocation = (item: MapLocationItem): boolean => {
 	return (
-		Array.isArray(coords) &&
-		coords.length === 2 &&
-		typeof coords[0] === "number" &&
-		typeof coords[1] === "number" &&
-		!Number.isNaN(coords[0]) &&
-		!Number.isNaN(coords[1])
+		item.location &&
+		typeof item.location.latitude === "number" &&
+		typeof item.location.longitude === "number" &&
+		!Number.isNaN(item.location.latitude) &&
+		!Number.isNaN(item.location.longitude) &&
+		item.location.latitude >= -90 &&
+		item.location.latitude <= 90 &&
+		item.location.longitude >= -180 &&
+		item.location.longitude <= 180
 	);
 };
-
-// Component to fit bounds to all markers
-function FitBoundsToMarkers({
-	assets,
-	highlightedLocation,
-}: {
-	assets: MapAsset[];
-	highlightedLocation?: { lat: number; lng: number };
-}) {
-	const map = useMap();
-	const hasInitialized = useRef(false);
-
-	useEffect(() => {
-		if (hasInitialized.current) return;
-
-		// If there's a highlighted location, center on it with appropriate zoom
-		if (highlightedLocation) {
-			map.setView([highlightedLocation.lat, highlightedLocation.lng], 16);
-			hasInitialized.current = true;
-			return;
-		}
-
-		// Otherwise fit bounds to show all markers
-		if (assets.length > 0) {
-			const bounds = L.latLngBounds(assets.map((a) => [a.location.latitude, a.location.longitude]));
-			// Use larger padding and lower maxZoom to ensure all markers are visible without showing map edges
-			map.fitBounds(bounds, {
-				padding: [80, 80],
-				maxZoom: 12,
-				animate: false,
-			});
-			hasInitialized.current = true;
-		}
-	}, [map, assets, highlightedLocation]);
-
-	return null;
-}
 
 export default function MapPage() {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
-	const [selectedStatus, setSelectedStatus] = useState<VerificationStatus | "all">("all");
-	const [tileLayer, setTileLayer] = useState<keyof typeof tileLayers>("default");
+	const [selectedStatus, setSelectedStatus] = useState<AssetStatus>("all");
+	const [selectedCluster, setSelectedCluster] = useState<AssetCluster | null>(null);
+	const [map, setMap] = useState<google.maps.Map | null>(null);
+	const initialFitDone = useRef(false);
 
-	// Get highlight params from URL (when coming from VerificationCard)
-	const highlightLat = searchParams.get("lat");
-	const highlightLng = searchParams.get("lng");
-	const highlightId = searchParams.get("highlight");
-
-	const highlightedLocation = useMemo(() => {
-		if (highlightLat && highlightLng) {
-			return { lat: parseFloat(highlightLat), lng: parseFloat(highlightLng) };
-		}
-		return undefined;
-	}, [highlightLat, highlightLng]);
-
-	// Fetch verification report data - already excludes never_verified
-	const { data, isLoading } = useQuery({
-		queryKey: ["map", "verifications"],
-		queryFn: () => reportService.getVerificationReport(),
+	// Load Google Maps API
+	const { isLoaded, loadError } = useJsApiLoader({
+		id: "google-map-script",
+		googleMapsApiKey: GOOGLE_MAPS_API_KEY,
 	});
 
-	// Transform verification report items to MapAsset format
-	// API already excludes never_verified, so no filtering needed for that
-	const assets = useMemo(() => {
-		// API returns { results: [...] } - safely extract array
-		const responseData = data as { results?: VerificationReportItem[] } | VerificationReportItem[] | undefined;
-		const items: VerificationReportItem[] = Array.isArray(responseData)
-			? responseData
-			: Array.isArray(responseData?.results)
-				? responseData.results
-				: [];
+	// Get highlight params from URL (supports both lat/lng and assetId)
+	const highlightLat = searchParams.get("lat");
+	const highlightLng = searchParams.get("lng");
+	const highlightAssetId = searchParams.get("assetId") || searchParams.get("highlight");
 
-		return items.filter(hasValidCoordinates).map((item): MapAsset => {
-			const coords = item.registeredLocation!.coordinates;
-			return {
-				assetId: item._id,
-				serialNumber: item.serialNumber,
-				make: item.make,
-				model: item.model,
-				location: {
-					longitude: coords[0],
-					latitude: coords[1],
-				},
-				status: mapVerificationStatus(item.verificationStatus) || VerificationStatus.OVERDUE,
-				lastVerified: item.lastVerifiedAt,
-				nextVerificationDue: item.nextVerificationDue,
-			};
-		});
+	// Fetch map locations data from new API
+	const { data, isLoading } = useQuery({
+		queryKey: ["map", "locations"],
+		queryFn: () => reportService.getMapLocations(),
+	});
+
+	// Get valid assets from response
+	const assets = useMemo(() => {
+		const items = data?.results || [];
+		return items.filter(hasValidLocation);
 	}, [data]);
 
 	// Filter assets by status
@@ -235,133 +171,196 @@ export default function MapPage() {
 		return assets.filter((a) => a.status === selectedStatus);
 	}, [assets, selectedStatus]);
 
-	// Group markers by location for clustering
-	const markerGroups = useMemo(() => {
-		return groupAssetsByLocation(filteredAssets);
+	// Group assets into clusters
+	const clusters = useMemo(() => {
+		return groupAssetsByAssetId(filteredAssets);
 	}, [filteredAssets]);
 
 	// Calculate counts
 	const counts = useMemo(() => {
-		if (!assets || assets.length === 0) return { total: 0, onTime: 0, dueSoon: 0, overdue: 0 };
+		if (!assets || assets.length === 0) return { total: 0, onTime: 0, dueSoon: 0, overdue: 0, registered: 0 };
 		return {
 			total: assets.length,
-			onTime: assets.filter((a) => a.status === VerificationStatus.ON_TIME).length,
-			dueSoon: assets.filter((a) => a.status === VerificationStatus.DUE_SOON).length,
-			overdue: assets.filter((a) => a.status === VerificationStatus.OVERDUE).length,
+			onTime: assets.filter((a) => a.status === "on_time").length,
+			dueSoon: assets.filter((a) => a.status === "due_soon").length,
+			overdue: assets.filter((a) => a.status === "overdue").length,
+			registered: assets.filter((a) => a.status === "never_verified").length,
 		};
 	}, [assets]);
 
-	// Calculate map center - use highlighted location or default
+	// Find highlighted asset from URL params
+	const highlightedAsset = useMemo(() => {
+		if (!highlightAssetId || !assets.length) return null;
+		return assets.find((a) => a.assetId === highlightAssetId) || null;
+	}, [highlightAssetId, assets]);
+
+	// Calculate highlighted location from URL params or asset
+	const highlightedLocation = useMemo(() => {
+		if (highlightLat && highlightLng) {
+			return { lat: parseFloat(highlightLat), lng: parseFloat(highlightLng) };
+		}
+		if (highlightedAsset) {
+			return { lat: highlightedAsset.location.latitude, lng: highlightedAsset.location.longitude };
+		}
+		return null;
+	}, [highlightLat, highlightLng, highlightedAsset]);
+
+	// Calculate map center - center on assets or world center
 	const mapCenter = useMemo(() => {
 		if (highlightedLocation) {
-			return [highlightedLocation.lat, highlightedLocation.lng] as [number, number];
+			return highlightedLocation;
 		}
 		if (!filteredAssets || filteredAssets.length === 0) {
-			return [24.8607, 67.0011] as [number, number];
+			return worldCenter;
 		}
+		// Center on the centroid of all assets
 		const lat = filteredAssets.reduce((sum, a) => sum + a.location.latitude, 0) / filteredAssets.length;
 		const lng = filteredAssets.reduce((sum, a) => sum + a.location.longitude, 0) / filteredAssets.length;
-		return [lat, lng] as [number, number];
+		return { lat, lng };
 	}, [filteredAssets, highlightedLocation]);
 
-	// Navigate to AssetHistoryPage instead of ReportsPage
-	const handleViewDetails = (assetId: string, highlightRegistration = false) => {
-		navigate(`/assets/${assetId}/history`, {
-			state: { fromMap: true, highlightLatest: !highlightRegistration, highlightRegistration },
-		});
+	// Fit bounds to show all markers
+	const onMapLoad = useCallback((mapInstance: google.maps.Map) => {
+		setMap(mapInstance);
+	}, []);
+
+	// Fit bounds when map loads or assets change
+	useEffect(() => {
+		if (!map || initialFitDone.current) return;
+
+		if (highlightedLocation) {
+			// Zoom to highlighted asset
+			map.setCenter(highlightedLocation);
+			map.setZoom(16);
+			initialFitDone.current = true;
+			// Auto-open InfoWindow for highlighted asset
+			if (highlightedAsset) {
+				const cluster = clusters.find((c) => c.assets.some((a) => a.assetId === highlightedAsset.assetId));
+				if (cluster) setSelectedCluster(cluster);
+			}
+		} else if (filteredAssets.length > 0) {
+			// Fit to show all assets
+			const bounds = new google.maps.LatLngBounds();
+			filteredAssets.forEach((asset) => {
+				bounds.extend({ lat: asset.location.latitude, lng: asset.location.longitude });
+			});
+			map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
+			initialFitDone.current = true;
+		}
+	}, [map, filteredAssets, highlightedLocation, highlightedAsset, clusters]);
+
+	// Close InfoWindow when clicking on map
+	const handleMapClick = useCallback(() => {
+		setSelectedCluster(null);
+	}, []);
+
+	// Navigate to AssetHistoryPage
+	const handleViewDetails = useCallback(
+		(assetId: string) => {
+			navigate(`/assets/${assetId}/history`, {
+				state: { fromMap: true, highlightLatest: true },
+			});
+		},
+		[navigate],
+	);
+
+	// Get the primary status color for a cluster (most severe status)
+	const getClusterColor = (clusterAssets: MapLocationItem[]): string => {
+		if (clusterAssets.some((a) => a.status === "overdue")) return statusColors.overdue.color;
+		if (clusterAssets.some((a) => a.status === "due_soon")) return statusColors.due_soon.color;
+		if (clusterAssets.some((a) => a.status === "never_verified")) return statusColors.never_verified.color;
+		return statusColors.on_time.color;
 	};
 
-	const currentTile = tileLayers[tileLayer];
+	if (loadError) {
+		return (
+			<div className="h-[calc(100vh-64px)] flex items-center justify-center">
+				<p className="text-destructive">Error loading Google Maps</p>
+			</div>
+		);
+	}
 
 	return (
 		<div className="h-[calc(100vh-64px)] flex flex-col bg-background">
 			{/* Top Bar */}
-			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/80 backdrop-blur-sm">
-				<div className="flex items-center justify-between">
+			<div className="flex-shrink-0 px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
+				<div className="flex items-center justify-between flex-wrap gap-3">
 					<div className="flex items-center gap-3">
-						<div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-							<MapPin className="h-5 w-5 text-primary" />
+						<div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+							<MapPin className="h-4 w-4 text-primary" />
 						</div>
 						<div>
-							<h1 className="text-lg font-semibold">Asset Map</h1>
-							<p className="text-sm text-muted-foreground">
+							<h1 className="text-base font-semibold">Asset Map</h1>
+							<p className="text-xs text-muted-foreground">
 								{isLoading ? "Loading..." : `${filteredAssets.length} of ${counts.total} assets`}
 							</p>
 						</div>
 					</div>
 
-					<div className="flex items-center gap-3">
-						{/* Status Filter Pills */}
-						<div className="hidden md:flex items-center gap-1 p-1 bg-muted rounded-lg">
-							<button
-								type="button"
-								onClick={() => setSelectedStatus("all")}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									selectedStatus === "all"
-										? "bg-background text-foreground shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								}`}
-							>
-								All ({counts.total})
-							</button>
-							<button
-								type="button"
-								onClick={() => setSelectedStatus(VerificationStatus.ON_TIME)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									selectedStatus === VerificationStatus.ON_TIME
-										? "bg-emerald-500 text-white shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								}`}
-							>
-								On Time ({counts.onTime})
-							</button>
-							<button
-								type="button"
-								onClick={() => setSelectedStatus(VerificationStatus.DUE_SOON)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									selectedStatus === VerificationStatus.DUE_SOON
-										? "bg-orange-500 text-white shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								}`}
-							>
-								Due Soon ({counts.dueSoon})
-							</button>
-							<button
-								type="button"
-								onClick={() => setSelectedStatus(VerificationStatus.OVERDUE)}
-								className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-									selectedStatus === VerificationStatus.OVERDUE
-										? "bg-red-500 text-white shadow-sm"
-										: "text-muted-foreground hover:text-foreground"
-								}`}
-							>
-								Overdue ({counts.overdue})
-							</button>
-						</div>
-
-						{/* Map Style */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" size="sm" className="gap-2">
-									<Layers className="h-4 w-4" />
-									<span className="hidden sm:inline">{currentTile.name}</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="z-[1000]">
-								{Object.entries(tileLayers).map(([key, layer]) => (
-									<DropdownMenuItem key={key} onClick={() => setTileLayer(key as keyof typeof tileLayers)}>
-										{layer.name}
-									</DropdownMenuItem>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
+					{/* Status Filter Pills */}
+					<div className="flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
+						<button
+							type="button"
+							onClick={() => setSelectedStatus("all")}
+							className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+								selectedStatus === "all"
+									? "bg-background text-foreground shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							All ({counts.total})
+						</button>
+						<button
+							type="button"
+							onClick={() => setSelectedStatus("on_time")}
+							className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+								selectedStatus === "on_time"
+									? "bg-emerald-500 text-white shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							On Time ({counts.onTime})
+						</button>
+						<button
+							type="button"
+							onClick={() => setSelectedStatus("due_soon")}
+							className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+								selectedStatus === "due_soon"
+									? "bg-orange-500 text-white shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							Due Soon ({counts.dueSoon})
+						</button>
+						<button
+							type="button"
+							onClick={() => setSelectedStatus("overdue")}
+							className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+								selectedStatus === "overdue"
+									? "bg-red-500 text-white shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							Overdue ({counts.overdue})
+						</button>
+						<button
+							type="button"
+							onClick={() => setSelectedStatus("never_verified")}
+							className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+								selectedStatus === "never_verified"
+									? "bg-blue-500 text-white shadow-sm"
+									: "text-muted-foreground hover:text-foreground"
+							}`}
+						>
+							Registered ({counts.registered})
+						</button>
 					</div>
 				</div>
 			</div>
 
 			{/* Map Container - Full remaining height */}
-			<div className="flex-1 relative">
-				{isLoading ? (
+			<div className="flex-1 relative min-h-0">
+				{isLoading || !isLoaded ? (
 					<div className="absolute inset-0 flex items-center justify-center bg-muted/30">
 						<div className="flex flex-col items-center gap-3">
 							<Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -370,60 +369,197 @@ export default function MapPage() {
 					</div>
 				) : (
 					<>
-						<MapContainer
+						<GoogleMap
+							mapContainerStyle={containerStyle}
 							center={mapCenter}
-							zoom={3}
-							className="h-full w-full map-container-styled"
-							style={{ background: "#aad3df", zIndex: 1 }}
-							zoomControl={true}
-							minZoom={2}
-							maxZoom={18}
-							maxBounds={[
-								[-90, -180],
-								[90, 180],
-							]}
-							maxBoundsViscosity={0.8}
+							zoom={highlightedLocation ? 16 : 2}
+							options={mapOptions}
+							onLoad={onMapLoad}
+							onClick={handleMapClick}
 						>
-							<TileLayer attribution={currentTile.attribution} url={currentTile.url} />
-							<FitBoundsToMarkers assets={filteredAssets} highlightedLocation={highlightedLocation} />
-							{markerGroups.map((group) =>
-								group.assets.length === 1 ? (
-									<AssetMarker
-										key={group.assets[0].assetId}
-										asset={group.assets[0]}
-										onViewDetails={handleViewDetails}
-										isHighlighted={group.assets[0].assetId === highlightId}
-									/>
-								) : (
-									<ClusterMarker
-										key={group.key}
-										assets={group.assets}
-										position={group.position}
-										onViewDetails={handleViewDetails}
-									/>
-								),
+							{clusters.map((cluster) => (
+								<Marker
+									key={cluster.key}
+									position={cluster.position}
+									icon={{
+										url: createPinMarker(
+											cluster.assets.length === 1
+												? getMarkerColor(cluster.assets[0].status)
+												: getClusterColor(cluster.assets),
+											cluster.assets.some((a) => a.assetId === highlightAssetId),
+										),
+										scaledSize: new google.maps.Size(
+											cluster.assets.some((a) => a.assetId === highlightAssetId) ? 31 : 24,
+											cluster.assets.some((a) => a.assetId === highlightAssetId) ? 47 : 36,
+										),
+										anchor: new google.maps.Point(
+											cluster.assets.some((a) => a.assetId === highlightAssetId) ? 15.5 : 12,
+											cluster.assets.some((a) => a.assetId === highlightAssetId) ? 47 : 36,
+										),
+									}}
+									label={
+										cluster.assets.length > 1
+											? {
+													text: String(cluster.assets.length),
+													color: "#1f2937",
+													fontSize: "11px",
+													fontWeight: "bold",
+												}
+											: undefined
+									}
+									onClick={() => setSelectedCluster(cluster)}
+								/>
+							))}
+
+							{selectedCluster && (
+								<InfoWindow position={selectedCluster.position} onCloseClick={() => setSelectedCluster(null)}>
+									<div className="min-w-[280px] max-w-[320px] p-1">
+										{selectedCluster.assets.length === 1 ? (
+											// Single asset view
+											<SingleAssetPopup asset={selectedCluster.assets[0]} onViewDetails={handleViewDetails} />
+										) : (
+											// Multiple assets - show list
+											<ClusterAssetList assets={selectedCluster.assets} onViewDetails={handleViewDetails} />
+										)}
+									</div>
+								</InfoWindow>
 							)}
-						</MapContainer>
+						</GoogleMap>
 
 						{/* Floating Legend */}
-						<div className="absolute bottom-6 left-6 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border p-3 z-[500]">
-							<p className="text-xs font-medium text-muted-foreground mb-2">Legend</p>
-							<div className="flex flex-col gap-1.5">
+						<div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg shadow-lg border p-2.5 z-[500]">
+							<p className="text-xs font-medium text-muted-foreground mb-1.5">Legend</p>
+							<div className="flex flex-col gap-1">
 								{Object.entries(statusColors).map(([, { color, label }]) => (
 									<div key={label} className="flex items-center gap-2">
-										<span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+										<span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
 										<span className="text-xs">{label}</span>
 									</div>
 								))}
 							</div>
 						</div>
 
-						{/* Asset Count Badge - Centered at top */}
-						<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm rounded-full shadow-lg border px-4 py-2 z-[500]">
-							<p className="text-sm font-medium">{filteredAssets.length} assets on map</p>
+						{/* Asset Count Badge */}
+						<div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card/95 backdrop-blur-sm rounded-full shadow-lg border px-3 py-1.5 z-[500]">
+							<p className="text-xs font-medium">{filteredAssets.length} assets on map</p>
 						</div>
 					</>
 				)}
+			</div>
+		</div>
+	);
+}
+
+// Single asset popup component
+function SingleAssetPopup({ asset, onViewDetails }: { asset: MapLocationItem; onViewDetails: (id: string) => void }) {
+	return (
+		<div className="p-2">
+			<div className="flex items-start justify-between mb-2">
+				<div>
+					<h3 className="font-semibold text-sm">{asset.serialNumber}</h3>
+					<p className="text-xs text-gray-600">
+						{asset.make} {asset.model}
+					</p>
+				</div>
+				<span
+					className="px-2 py-0.5 rounded-full text-xs font-medium text-white"
+					style={{ backgroundColor: getMarkerColor(asset.status) }}
+				>
+					{getStatusLabel(asset.status)}
+				</span>
+			</div>
+
+			<div className="space-y-1 text-xs text-gray-600 mb-2">
+				<div className="flex items-center gap-1.5">
+					<Tag className="h-3 w-3" />
+					<span>{asset.category}</span>
+				</div>
+				<div className="flex items-center gap-1.5">
+					<MapPin className="h-3 w-3" />
+					<span>
+						{asset.location.latitude.toFixed(4)}, {asset.location.longitude.toFixed(4)}
+					</span>
+				</div>
+				<div className="flex items-center gap-1.5">
+					<Calendar className="h-3 w-3" />
+					<span>Registered: {format(new Date(asset.registeredAt), "MMM dd, yyyy")}</span>
+				</div>
+				{asset.lastVerified && (
+					<div className="flex items-center gap-1.5">
+						<CalendarClock className="h-3 w-3" />
+						<span>Last verified: {format(new Date(asset.lastVerified), "MMM dd, yyyy")}</span>
+					</div>
+				)}
+				{asset.nextDue && (
+					<div className="flex items-center gap-1.5">
+						<CalendarClock className="h-3 w-3" />
+						<span>Due: {format(new Date(asset.nextDue), "MMM dd, yyyy")}</span>
+					</div>
+				)}
+			</div>
+
+			<Button size="sm" variant="outline" className="w-full h-7 text-xs" onClick={() => onViewDetails(asset.assetId)}>
+				<ExternalLink className="h-3 w-3 mr-1" />
+				View Details
+			</Button>
+		</div>
+	);
+}
+
+// Cluster asset list component
+function ClusterAssetList({
+	assets,
+	onViewDetails,
+}: {
+	assets: MapLocationItem[];
+	onViewDetails: (id: string) => void;
+}) {
+	// Sort assets: registrations first, then by status severity
+	const sortedAssets = useMemo(() => {
+		const statusOrder = { never_verified: 0, overdue: 1, due_soon: 2, on_time: 3 };
+		return [...assets].sort((a, b) => {
+			const orderA = statusOrder[a.status as keyof typeof statusOrder] ?? 4;
+			const orderB = statusOrder[b.status as keyof typeof statusOrder] ?? 4;
+			return orderA - orderB;
+		});
+	}, [assets]);
+
+	return (
+		<div className="p-1">
+			<div className="flex items-center justify-between mb-2 px-1">
+				<h3 className="font-semibold text-sm">{assets.length} Records for this asset</h3>
+			</div>
+			<div className="max-h-[250px] overflow-y-auto space-y-1">
+				{sortedAssets.map((asset) => (
+					<div
+						key={asset.assetId}
+						className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors"
+						onClick={() => onViewDetails(asset.assetId)}
+						onKeyDown={(e) => e.key === "Enter" && onViewDetails(asset.assetId)}
+					>
+						<div className="flex items-center gap-2 min-w-0">
+							<span
+								className="w-2 h-2 rounded-full flex-shrink-0"
+								style={{ backgroundColor: getMarkerColor(asset.status) }}
+							/>
+							<div className="min-w-0">
+								<p className="text-xs font-medium truncate">{asset.serialNumber}</p>
+								<p className="text-xs text-gray-500 truncate">
+									{asset.make} {asset.model}
+								</p>
+							</div>
+						</div>
+						<div className="flex items-center gap-1 flex-shrink-0">
+							<span
+								className="px-1.5 py-0.5 rounded text-xs font-medium text-white"
+								style={{ backgroundColor: getMarkerColor(asset.status) }}
+							>
+								{getStatusLabel(asset.status)}
+							</span>
+							<ChevronRight className="h-3 w-3 text-gray-400" />
+						</div>
+					</div>
+				))}
 			</div>
 		</div>
 	);

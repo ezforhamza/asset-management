@@ -50,6 +50,10 @@ export interface CreateAssetReq {
 	verificationFrequency?: number;
 	locationDescription?: string;
 	notes?: string;
+	channel?: string;
+	siteName?: string;
+	client?: string;
+	geofenceThreshold?: number;
 }
 
 export interface BulkImportAssetRes {

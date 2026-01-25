@@ -36,6 +36,7 @@ export interface CreateCompanyReq {
 export interface UpdateCompanyReq {
 	companyName?: string;
 	contactEmail?: string;
+	logo?: string;
 	settings?: {
 		verificationFrequency?: number;
 		geofenceThreshold?: number;

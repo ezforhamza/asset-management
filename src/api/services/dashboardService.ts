@@ -40,6 +40,8 @@ export interface UserDashboardStats {
 		onTime: number;
 		dueSoon: number;
 		overdue: number;
+		registered: number;
+		unregistered: number;
 	};
 	activity: {
 		totalVerifications: number;
@@ -47,6 +49,45 @@ export interface UserDashboardStats {
 		repairsNeeded: number;
 		openInvestigations: number;
 	};
+}
+
+// Recent Activity Types
+export interface RecentActivityItem {
+	_id: string;
+	activityType: "registration" | "verification";
+	timestamp: string;
+	asset: {
+		_id: string;
+		serialNumber: string;
+		make: string;
+		model: string;
+	};
+	performedBy: {
+		_id: string;
+		name: string;
+		email: string;
+	};
+	details: {
+		// Registration details
+		registrationState?: string;
+		category?: {
+			_id: string;
+			name: string;
+		};
+		hasLocation?: boolean;
+		// Verification details
+		gpsCheckPassed?: boolean;
+		gpsOverrideUsed?: boolean;
+		condition?: string;
+		operationalStatus?: string;
+		repairNeeded?: boolean;
+		investigationStatus?: string | null;
+	};
+}
+
+export interface RecentActivitiesResponse {
+	success: boolean;
+	results: RecentActivityItem[];
 }
 
 export interface UserDashboardResponse {
@@ -65,8 +106,14 @@ const getStats = () => apiClient.get<UserDashboardResponse>({ url: API_ENDPOINTS
 const getRecentActivity = (limit: number = 10) =>
 	apiClient.get({ url: `${API_ENDPOINTS.VERIFICATIONS.BASE}?limit=${limit}` });
 
+const getRecentActivities = (limit: number = 10) =>
+	apiClient.get<RecentActivitiesResponse>({
+		url: `${API_ENDPOINTS.VERIFICATIONS.BASE}/recent-activities?limit=${limit}`,
+	});
+
 export default {
 	getDashboardData,
 	getStats,
 	getRecentActivity,
+	getRecentActivities,
 };

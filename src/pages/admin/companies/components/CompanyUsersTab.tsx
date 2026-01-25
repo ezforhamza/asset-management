@@ -4,10 +4,10 @@ import { Plus, UserCircle } from "lucide-react";
 import { useState } from "react";
 import adminService from "@/api/services/adminService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { StyledBadge } from "@/utils/badge-styles";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { StyledBadge } from "@/utils/badge-styles";
 import { AddUserModal } from "./AddUserModal";
 
 interface CompanyUsersTabProps {

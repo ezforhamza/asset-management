@@ -264,6 +264,7 @@ export interface Company {
 	contactEmail: string;
 	phone?: string;
 	address?: string;
+	logo?: string;
 	settings?: CompanySettings;
 	isActive: boolean;
 	createdAt?: string;

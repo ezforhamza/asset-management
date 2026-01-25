@@ -6,7 +6,7 @@ import userService from "@/api/services/userService";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
-import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 
 interface PasswordForm {
 	currentPassword: string;
@@ -29,8 +29,8 @@ export function PasswordTab() {
 			toast.success("Password changed successfully");
 			form.reset();
 		},
-		onError: (error: any) => {
-			// Error toast is handled by apiClient;
+		onError: () => {
+			// Error toast is handled by apiClient
 		},
 	});
 
@@ -65,7 +65,7 @@ export function PasswordTab() {
 								<FormItem>
 									<FormLabel>Current Password</FormLabel>
 									<FormControl>
-										<Input type="password" placeholder="Enter current password" {...field} />
+										<PasswordInput placeholder="Enter current password" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -86,7 +86,7 @@ export function PasswordTab() {
 								<FormItem>
 									<FormLabel>New Password</FormLabel>
 									<FormControl>
-										<Input type="password" placeholder="Enter new password" {...field} />
+										<PasswordInput placeholder="Enter new password" {...field} />
 									</FormControl>
 									<FormDescription>Must be at least 8 characters long</FormDescription>
 									<FormMessage />
@@ -105,7 +105,7 @@ export function PasswordTab() {
 								<FormItem>
 									<FormLabel>Confirm New Password</FormLabel>
 									<FormControl>
-										<Input type="password" placeholder="Confirm new password" {...field} />
+										<PasswordInput placeholder="Confirm new password" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

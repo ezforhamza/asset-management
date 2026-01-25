@@ -19,6 +19,23 @@ import API_ENDPOINTS from "../endpoints";
 // ============================================
 
 export type ScheduledReportType = "verification_summary" | "asset_status" | "overdue_assets" | "compliance";
+
+// Map location item from /api/v1/assets/map-locations
+export interface MapLocationItem {
+	assetId: string;
+	serialNumber: string;
+	make: string;
+	model: string;
+	category: string;
+	location: {
+		longitude: number;
+		latitude: number;
+	};
+	status: "on_time" | "due_soon" | "overdue" | "never_verified";
+	lastVerified: string | null;
+	registeredAt: string;
+	nextDue: string | null;
+}
 export type ScheduledReportFrequency = "daily" | "weekly" | "monthly" | "quarterly";
 export type ScheduledReportFormat = "csv" | "pdf" | "xlsx";
 
@@ -131,6 +148,10 @@ const getOverdueAssets = (params?: OverdueAssetsParams) =>
 const getMapAssets = (params?: MapAssetsParams) =>
 	apiClient.get<MapAssetsRes>({ url: API_ENDPOINTS.ASSETS_MAP, params });
 
+// New endpoint for map locations including registrations
+const getMapLocations = () =>
+	apiClient.get<{ results: MapLocationItem[] }>({ url: API_ENDPOINTS.ASSETS_MAP_LOCATIONS });
+
 const getDashboardStats = (params?: DashboardStatsParams) =>
 	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });
 
@@ -211,6 +232,7 @@ export default {
 	getVerificationReport,
 	getOverdueAssets,
 	getMapAssets,
+	getMapLocations,
 	getDashboardStats,
 	getFieldWorkerPerformance,
 	exportReport,

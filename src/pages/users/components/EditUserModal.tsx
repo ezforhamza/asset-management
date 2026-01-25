@@ -94,8 +94,12 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 			const updateData: any = {
 				name: values.name,
 				role: values.role as "field_user" | "customer_admin",
-				adminType: values.role === "customer_admin" ? (values.adminType as "full" | "read_only") : null,
 			};
+
+			// Only include adminType for customer_admin role
+			if (values.role === "customer_admin") {
+				updateData.adminType = values.adminType as "full" | "read_only";
+			}
 
 			// Only include profilePic if it changed
 			if (imageUrl !== user.profilePic) {

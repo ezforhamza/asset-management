@@ -20,10 +20,7 @@ function LoginPage() {
 			{/* Left Side - Form */}
 			<div className="flex flex-col gap-4 p-6 md:p-10">
 				<div className="flex justify-center gap-2 md:justify-start">
-					<div className="flex items-center gap-3 font-medium cursor-pointer">
-						<Logo size={48} />
-						<span className="text-2xl font-bold">{GLOBAL_CONFIG.appName}</span>
-					</div>
+					<Logo size={56} showTitle titleClassName="text-2xl" className="cursor-pointer" />
 				</div>
 				<div className="flex flex-1 items-center justify-center">
 					<div className="w-full max-w-sm">

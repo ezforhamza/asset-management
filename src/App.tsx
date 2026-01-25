@@ -1,7 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import Logo from "@/assets/icons/ic-logo-badge.svg";
+
+const FaviconLogo = "/Asset Guard Favicon Logo BLACK and ORANGE Large.png";
+
 import { MotionLazy } from "./components/animate/motion-lazy";
 import { RouteLoadingProgress } from "./components/loading";
 import Toast from "./components/toast";
@@ -41,7 +43,7 @@ function App({ children }: { children: React.ReactNode }) {
 					<VercelAnalytics debug={import.meta.env.PROD} />
 					<Helmet>
 						<title>{GLOBAL_CONFIG.appName}</title>
-						<link rel="icon" href={Logo} />
+						<link rel="icon" href={FaviconLogo} />
 					</Helmet>
 					<Toast />
 					<RouteLoadingProgress />

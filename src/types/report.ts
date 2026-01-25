@@ -23,6 +23,16 @@ export interface VerificationReportItem {
 	lastGpsCheckPassed?: boolean;
 	lastCondition?: "excellent" | "good" | "fair" | "poor";
 	lastOperational?: "operational" | "needs_repair" | "non_operational";
+	verifiedBy?: {
+		_id: string;
+		name: string;
+		email: string;
+	};
+	assetCategory?: {
+		_id: string;
+		name: string;
+		code: string;
+	};
 }
 
 export interface VerificationReportParams {
@@ -31,11 +41,31 @@ export interface VerificationReportParams {
 	status?: "on_time" | "due_soon" | "overdue";
 	assetId?: string;
 	verifiedBy?: string;
+	gpsCheckPassed?: boolean;
+	condition?: "excellent" | "good" | "fair" | "poor";
+	operationalStatus?: "operational" | "needs_repair" | "non_operational";
+	categoryId?: string;
 	limit?: number;
 	page?: number;
 }
 
-export interface VerificationReportRes extends PaginatedResponse<VerificationReportItem> {}
+export interface FleetSummary {
+	totalVerifiedAssets: number;
+	condition: {
+		good: number;
+		fair: number;
+		poor: number;
+	};
+	operationalStatus: {
+		operational: number;
+		needsRepair: number;
+		nonOperational: number;
+	};
+}
+
+export interface VerificationReportRes extends PaginatedResponse<VerificationReportItem> {
+	fleetSummary?: FleetSummary;
+}
 
 // ============================================
 // Overdue Assets Report Types

@@ -1,6 +1,5 @@
 import { format } from "date-fns";
-import { CheckCircle, ChevronLeft, ChevronRight, Eye } from "lucide-react";
-// AlertTriangle removed - not used in this file
+import { CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
@@ -55,14 +54,24 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 		<div className="rounded-xl border bg-card flex flex-col h-full max-h-full overflow-hidden">
 			{/* Fixed Header */}
 			<div className="flex-shrink-0 border-b bg-muted/50 px-4">
-				<div className="grid grid-cols-7 py-3 text-sm font-medium text-muted-foreground gap-4">
-					<div>Asset</div>
-					<div>Status</div>
-					<div>Last Verified</div>
-					<div>Next Due</div>
-					<div>Days Until Due</div>
-					<div>Total Verifications</div>
-					<div className="text-right">Actions</div>
+				<div
+					className="grid py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
+					style={{
+						gridTemplateColumns:
+							"minmax(100px, 1fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+					}}
+				>
+					<div className="text-center">Asset</div>
+					<div className="text-center">Category</div>
+					<div className="text-center">Status</div>
+					<div className="text-center">GPS</div>
+					<div className="text-center">Condition</div>
+					<div className="text-center">Operational</div>
+					<div className="text-center">Verified By</div>
+					<div className="text-center">Last Verified</div>
+					<div className="text-center">Next Due</div>
+					<div className="text-center">Days</div>
+					<div className="text-right">Total</div>
 				</div>
 			</div>
 			{/* Scrollable Body */}
@@ -70,14 +79,75 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 				{data.map((item) => (
 					<div
 						key={item._id}
-						className="grid grid-cols-7 py-3 px-4 border-b last:border-0 items-center gap-4 hover:bg-muted/30 transition-colors"
+						className="grid py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
+						style={{
+							gridTemplateColumns:
+								"minmax(100px, 1fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+						}}
+						onClick={() => onViewDetails(item)}
+						onKeyDown={(e) => e.key === "Enter" && onViewDetails(item)}
+						role="button"
+						tabIndex={0}
 					>
-						<div>
+						<div className="text-center">
 							<p className="font-medium">{item.serialNumber || "N/A"}</p>
 							<p className="text-sm text-muted-foreground">{item.makeModel}</p>
 						</div>
-						<div>{getStatusBadge(item.verificationStatus)}</div>
-						<div>
+						<div className="text-center">
+							<p className="text-sm">{item.assetCategory?.name || "—"}</p>
+						</div>
+						<div className="text-center">{getStatusBadge(item.verificationStatus)}</div>
+						<div className="text-center">
+							{item.lastGpsCheckPassed !== undefined ? (
+								<StyledBadge color={item.lastGpsCheckPassed ? "emerald" : "red"}>
+									{item.lastGpsCheckPassed ? "Passed" : "Failed"}
+								</StyledBadge>
+							) : (
+								<span className="text-sm text-muted-foreground">—</span>
+							)}
+						</div>
+						<div className="text-center">
+							{item.lastCondition ? (
+								<StyledBadge
+									color={
+										item.lastCondition === "good" || item.lastCondition === "excellent"
+											? "emerald"
+											: item.lastCondition === "fair"
+												? "orange"
+												: "red"
+									}
+								>
+									{item.lastCondition.charAt(0).toUpperCase() + item.lastCondition.slice(1)}
+								</StyledBadge>
+							) : (
+								<span className="text-sm text-muted-foreground">—</span>
+							)}
+						</div>
+						<div className="text-center">
+							{item.lastOperational ? (
+								<StyledBadge
+									color={
+										item.lastOperational === "operational"
+											? "emerald"
+											: item.lastOperational === "needs_repair"
+												? "orange"
+												: "red"
+									}
+								>
+									{item.lastOperational === "operational"
+										? "Operational"
+										: item.lastOperational === "needs_repair"
+											? "Needs Repair"
+											: "Non-Operational"}
+								</StyledBadge>
+							) : (
+								<span className="text-sm text-muted-foreground">—</span>
+							)}
+						</div>
+						<div className="text-center">
+							<p className="text-sm">{item.verifiedBy?.name || "—"}</p>
+						</div>
+						<div className="text-center">
 							{item.lastVerifiedAt ? (
 								<>
 									<p className="text-sm">{format(new Date(item.lastVerifiedAt), "MMM dd, yyyy")}</p>
@@ -87,11 +157,11 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 								<span className="text-sm text-muted-foreground">Never</span>
 							)}
 						</div>
-						<div>
+						<div className="text-center">
 							<p className="text-sm">{format(new Date(item.nextVerificationDue), "MMM dd, yyyy")}</p>
 							<p className="text-xs text-muted-foreground">{format(new Date(item.nextVerificationDue), "hh:mm a")}</p>
 						</div>
-						<div>
+						<div className="text-center">
 							<span
 								className={`text-sm font-medium ${
 									item.daysUntilDue < 0
@@ -102,17 +172,11 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 								}`}
 							>
 								{item.daysUntilDue < 0
-									? `${Math.abs(item.daysUntilDue).toFixed(0)} days overdue`
-									: `${item.daysUntilDue.toFixed(0)} days`}
+									? `${Math.abs(item.daysUntilDue).toFixed(0)}d overdue`
+									: `${item.daysUntilDue.toFixed(0)}d`}
 							</span>
 						</div>
-						<div className="text-sm">{item.totalVerifications}</div>
-						<div className="text-right">
-							<Button variant="ghost" size="sm" onClick={() => onViewDetails(item)}>
-								<Eye className="h-4 w-4 mr-1" />
-								View
-							</Button>
-						</div>
+						<div className="text-sm text-right">{item.totalVerifications}</div>
 					</div>
 				))}
 			</div>

@@ -25,6 +25,10 @@ const initialFormState: CreateAssetReq = {
 	verificationFrequency: undefined,
 	locationDescription: "",
 	notes: "",
+	channel: "",
+	siteName: "",
+	client: "",
+	geofenceThreshold: undefined,
 };
 
 export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) {
@@ -93,6 +97,18 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 		}
 		if (form.notes?.trim()) {
 			requestData.notes = form.notes.trim();
+		}
+		if (form.channel?.trim()) {
+			requestData.channel = form.channel.trim();
+		}
+		if (form.siteName?.trim()) {
+			requestData.siteName = form.siteName.trim();
+		}
+		if (form.client?.trim()) {
+			requestData.client = form.client.trim();
+		}
+		if (form.geofenceThreshold) {
+			requestData.geofenceThreshold = form.geofenceThreshold;
 		}
 
 		createMutation.mutate(requestData);
@@ -216,6 +232,53 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 							onChange={(e) => setForm({ ...form, notes: e.target.value })}
 							rows={3}
 						/>
+					</div>
+
+					{/* Channel & Client - Optional */}
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label>Channel</Label>
+							<Input
+								placeholder="e.g., retail"
+								value={form.channel || ""}
+								onChange={(e) => setForm({ ...form, channel: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Client</Label>
+							<Input
+								placeholder="e.g., ABC Corporation"
+								value={form.client || ""}
+								onChange={(e) => setForm({ ...form, client: e.target.value })}
+							/>
+						</div>
+					</div>
+
+					{/* Site Name & Geofence Threshold - Optional */}
+					<div className="grid grid-cols-2 gap-4">
+						<div className="space-y-2">
+							<Label>Site Name</Label>
+							<Input
+								placeholder="e.g., Downtown Branch"
+								value={form.siteName || ""}
+								onChange={(e) => setForm({ ...form, siteName: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Geofence Threshold (meters)</Label>
+							<Input
+								type="number"
+								min={1}
+								placeholder="e.g., 100"
+								value={form.geofenceThreshold || ""}
+								onChange={(e) =>
+									setForm({
+										...form,
+										geofenceThreshold: e.target.value ? parseInt(e.target.value) : undefined,
+									})
+								}
+							/>
+						</div>
 					</div>
 				</div>
 

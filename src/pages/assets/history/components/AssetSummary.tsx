@@ -85,7 +85,9 @@ export function AssetSummary({ asset }: AssetSummaryProps) {
 							<QrCode className="h-3 w-3" />
 							QR Code
 						</div>
-						<p className="font-mono text-xs">{asset.qrCode?.code || "Not linked"}</p>
+						<p className="font-mono text-xs">
+							{typeof asset.qrCode === "string" ? asset.qrCode : asset.qrCode?.code || "Not linked"}
+						</p>
 					</div>
 
 					{/* Registration State */}

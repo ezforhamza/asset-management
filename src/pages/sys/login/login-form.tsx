@@ -11,6 +11,7 @@ import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { PasswordInput } from "@/ui/password-input";
 import { cn } from "@/utils";
 import { LoginStateEnum, useLoginStateContext } from "./providers/login-provider";
 
@@ -106,7 +107,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 							<FormItem>
 								<FormLabel>Password</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="Enter your password" {...field} />
+									<PasswordInput placeholder="Enter your password" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
