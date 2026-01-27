@@ -47,6 +47,7 @@ export default defineConfig(({ mode }) => {
 			sourcemap: !isProduction,
 			cssCodeSplit: true,
 			chunkSizeWarningLimit: 1500,
+			assetsDir: "_assets",
 			rollupOptions: {
 				output: {
 					manualChunks: {

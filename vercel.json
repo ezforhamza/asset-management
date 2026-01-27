@@ -1,7 +1,7 @@
 {
 	"rewrites": [
 		{
-			"source": "/((?!assets|api|_next).*)",
+			"source": "/((?!_assets|api|_next).*)",
 			"destination": "/index.html"
 		}
 	],
@@ -16,7 +16,7 @@
 			]
 		},
 		{
-			"source": "/assets/(.*)",
+			"source": "/_assets/(.*)",
 			"headers": [
 				{
 					"key": "Cache-Control",
