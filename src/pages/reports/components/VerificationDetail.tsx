@@ -3,6 +3,7 @@ import { Calendar, FileText, MapPin, Wrench } from "lucide-react";
 import type { VerificationReportItem } from "#/report";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 
 interface VerificationDetailProps {
 	verification: VerificationReportItem | null;
@@ -22,7 +23,7 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 			case "overdue":
 				return <StyledBadge color="red">Overdue</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 
@@ -146,7 +147,7 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 														: "red"
 											}
 										>
-											{verification.lastOperational.replace("_", " ")}
+											{formatLabel(verification.lastOperational)}
 										</StyledBadge>
 									</div>
 								)}

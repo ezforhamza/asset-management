@@ -11,6 +11,7 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { formatLabel } from "@/utils/formatLabel";
 
 interface ProfileForm {
 	name: string;
@@ -190,7 +191,7 @@ export function ProfileTab() {
 					<div className="grid grid-cols-2 gap-4">
 						<div>
 							<p className="text-sm font-medium text-muted-foreground">Role</p>
-							<p className="text-sm capitalize">{userInfo?.role?.replace("_", " ")}</p>
+							<p className="text-sm capitalize">{formatLabel(userInfo?.role)}</p>
 						</div>
 						<div>
 							<p className="text-sm font-medium text-muted-foreground">User ID</p>

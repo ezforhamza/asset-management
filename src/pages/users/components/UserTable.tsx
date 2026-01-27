@@ -26,7 +26,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { StyledBadge, getUserStatusBadge } from "@/utils/badge-styles";
+import { getUserStatusBadge, StyledBadge } from "@/utils/badge-styles";
 
 interface UserWithSessionData extends UserInfo {
 	hasActiveSession?: boolean;
@@ -172,7 +172,14 @@ export function UserTable({
 									)}
 								</TableCell>
 								<TableCell className="text-muted-foreground">
-									{user.lastLogin ? format(new Date(user.lastLogin), "MMM dd, yyyy") : "Never"}
+									{user.lastLogin ? (
+										<div>
+											<p>{format(new Date(user.lastLogin), "MMM dd, yyyy")}</p>
+											<p className="text-xs">{format(new Date(user.lastLogin), "h:mm a")}</p>
+										</div>
+									) : (
+										"Never"
+									)}
 								</TableCell>
 								<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
 									<DropdownMenu>

@@ -1,4 +1,5 @@
 import { Badge } from "@/ui/badge";
+import { formatLabel } from "./formatLabel";
 
 /**
  * Standardized badge styles for consistent UI across the application.
@@ -9,13 +10,18 @@ import { Badge } from "@/ui/badge";
 // Color style definitions
 const badgeStyles = {
 	blue: "bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700",
-	orange: "bg-orange-100 text-orange-700 border border-orange-300 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-700",
-	emerald: "bg-emerald-100 text-emerald-700 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700",
-	green: "bg-green-100 text-green-700 border border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700",
+	orange:
+		"bg-orange-100 text-orange-700 border border-orange-300 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-700",
+	emerald:
+		"bg-emerald-100 text-emerald-700 border border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-700",
+	green:
+		"bg-green-100 text-green-700 border border-green-300 dark:bg-green-950 dark:text-green-300 dark:border-green-700",
 	gray: "bg-gray-100 text-gray-700 border border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
 	red: "bg-red-100 text-red-700 border border-red-300 dark:bg-red-950 dark:text-red-300 dark:border-red-700",
-	yellow: "bg-yellow-100 text-yellow-700 border border-yellow-300 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700",
-	purple: "bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700",
+	yellow:
+		"bg-yellow-100 text-yellow-700 border border-yellow-300 dark:bg-yellow-950 dark:text-yellow-300 dark:border-yellow-700",
+	purple:
+		"bg-purple-100 text-purple-700 border border-purple-300 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-700",
 	cyan: "bg-cyan-100 text-cyan-700 border border-cyan-300 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-700",
 	pink: "bg-pink-100 text-pink-700 border border-pink-300 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-700",
 } as const;
@@ -41,7 +47,7 @@ export const getQRStatusBadge = (status: string) => {
 		case "retired":
 			return <StyledBadge color="gray">Retired</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 
@@ -57,7 +63,7 @@ export const getCompanyStatusBadge = (status: string) => {
 		case "suspended":
 			return <StyledBadge color="red">Suspended</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 
@@ -75,7 +81,7 @@ export const getUserStatusBadge = (status: string) => {
 		case "suspended":
 			return <StyledBadge color="red">Suspended</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 
@@ -96,7 +102,7 @@ export const getUserRoleBadge = (role: string) => {
 		case "user":
 			return <StyledBadge color="blue">Field Worker</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{role}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(role)}</StyledBadge>;
 	}
 };
 
@@ -128,7 +134,7 @@ export const getAuditActionBadge = (action: string) => {
 		case "password_reset":
 			return <StyledBadge color="yellow">Password</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{action}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(action)}</StyledBadge>;
 	}
 };
 
@@ -144,7 +150,7 @@ export const getAuditEntityBadge = (entityType: string) => {
 		verification: "Verification",
 		session: "Session",
 	};
-	
+
 	switch (entityType?.toLowerCase()) {
 		case "user":
 			return <StyledBadge color="blue">User</StyledBadge>;
@@ -159,7 +165,7 @@ export const getAuditEntityBadge = (entityType: string) => {
 		case "session":
 			return <StyledBadge color="gray">Session</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{typeMap[entityType] || entityType}</StyledBadge>;
+			return <StyledBadge color="gray">{typeMap[entityType] || formatLabel(entityType)}</StyledBadge>;
 	}
 };
 
@@ -179,7 +185,7 @@ export const getAssetStatusBadge = (status: string) => {
 		case "transferred":
 			return <StyledBadge color="blue">Transferred</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 
@@ -199,7 +205,7 @@ export const getVerificationStatusBadge = (status: string) => {
 		case "flagged":
 			return <StyledBadge color="orange">Flagged</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 
@@ -219,7 +225,7 @@ export const getSyncStatusBadge = (status: string) => {
 		case "error":
 			return <StyledBadge color="red">Failed</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{status}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 	}
 };
 

@@ -27,6 +27,7 @@ import { Button } from "@/ui/button";
 import { Dialog, DialogContent } from "@/ui/dialog";
 import { Separator } from "@/ui/separator";
 import { getAuditActionBadge, StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 
 // Field label mappings for different entity types
 const fieldLabelMaps: Record<string, Record<string, string>> = {
@@ -169,7 +170,7 @@ const renderValue = (value: any, key?: string): string => {
 		if (key === "verificationDetails" || key === "conditionDetails") {
 			const parts: string[] = [];
 			if (value.conditionStatus) parts.push(`Condition: ${value.conditionStatus}`);
-			if (value.operationalStatus) parts.push(`Operational: ${value.operationalStatus.replace(/_/g, " ")}`);
+			if (value.operationalStatus) parts.push(`Operational: ${formatLabel(value.operationalStatus)}`);
 			if (value.conditionExplanation && value.conditionExplanation !== "NA")
 				parts.push(`Note: ${value.conditionExplanation}`);
 			return parts.length > 0 ? parts.join(" • ") : "";
@@ -306,8 +307,7 @@ const getFlagBadgeConfig = (
 	}
 
 	// Default: format the flag name nicely
-	const formattedLabel = flag.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-	return { color: "gray", label: formattedLabel };
+	return { color: "gray", label: formatLabel(flag) };
 };
 
 // Check if string looks like an ISO date
@@ -458,8 +458,8 @@ const getActionIcon = (action: string) => {
 
 // Get action description
 const getActionDescription = (log: AuditLog): { title: string; description: string } => {
-	const entity = log.entityType.replace("_", " ");
-	const entityCap = entity.charAt(0).toUpperCase() + entity.slice(1);
+	const entity = formatLabel(log.entityType);
+	const entityCap = entity;
 	const data = log.changes?.after || log.changes?.before || log.metadata;
 	const identifier = data?.serialNumber || data?.qrCode || data?.name || data?.companyName || data?.email || "";
 
@@ -505,7 +505,7 @@ const getActionDescription = (log: AuditLog): { title: string; description: stri
 
 // Get contextual message when no details are available
 const getNoDetailsMessage = (log: AuditLog): { title: string; description: string } => {
-	const entity = log.entityType.replace("_", " ");
+	const entity = formatLabel(log.entityType).toLowerCase();
 
 	switch (log.action) {
 		case "registered":
@@ -892,7 +892,7 @@ export default function AuditLogDetailPage() {
 									</div>
 									<div className="flex-1 min-w-0">
 										<p className="text-xs text-muted-foreground">Entity Type</p>
-										<p className="text-sm font-medium capitalize truncate">{log.entityType.replace("_", " ")}</p>
+										<p className="text-sm font-medium capitalize truncate">{formatLabel(log.entityType)}</p>
 									</div>
 								</div>
 							</div>
@@ -994,7 +994,7 @@ export default function AuditLogDetailPage() {
 										<Separator />
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">Role</p>
-											<StyledBadge color="gray">{log.performedBy.role.replace("_", " ")}</StyledBadge>
+											<StyledBadge color="gray">{formatLabel(log.performedBy.role)}</StyledBadge>
 										</div>
 										<Separator />
 										<div>
@@ -1015,7 +1015,7 @@ export default function AuditLogDetailPage() {
 									<div className="p-6 space-y-4">
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">Entity Type</p>
-											<StyledBadge color="gray">{log.entityType.replace("_", " ")}</StyledBadge>
+											<StyledBadge color="gray">{formatLabel(log.entityType)}</StyledBadge>
 										</div>
 										<Separator />
 										<div>

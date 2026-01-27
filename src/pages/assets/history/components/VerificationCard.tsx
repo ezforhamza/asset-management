@@ -18,6 +18,7 @@ import type { VerificationHistoryItem } from "@/api/services/assetService";
 import { Card, CardContent } from "@/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 import { PhotoGallery } from "./PhotoGallery";
 
 interface VerificationCardProps {
@@ -48,7 +49,7 @@ export function VerificationCard({ verification, index, isHighlighted = false }:
 			case "damaged":
 				return <StyledBadge color="red">Damaged</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 
@@ -61,7 +62,7 @@ export function VerificationCard({ verification, index, isHighlighted = false }:
 			case "needs_repair":
 				return <StyledBadge color="orange">Needs Repair</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 
@@ -227,15 +228,11 @@ export function VerificationCard({ verification, index, isHighlighted = false }:
 									<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-muted/50 rounded-lg">
 										<div>
 											<p className="text-xs text-muted-foreground">Asset Condition</p>
-											<p className="text-sm font-medium capitalize">
-												{verification.assetCondition?.replace(/_/g, " ") || "—"}
-											</p>
+											<p className="text-sm font-medium capitalize">{formatLabel(verification.assetCondition)}</p>
 										</div>
 										<div>
 											<p className="text-xs text-muted-foreground">Operational Status</p>
-											<p className="text-sm font-medium capitalize">
-												{verification.operationalStatus?.replace(/_/g, " ") || "—"}
-											</p>
+											<p className="text-sm font-medium capitalize">{formatLabel(verification.operationalStatus)}</p>
 										</div>
 										<div>
 											<p className="text-xs text-muted-foreground">Repair Needed</p>

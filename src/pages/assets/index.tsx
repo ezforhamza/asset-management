@@ -38,6 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 import { CategoriesModal } from "./components/CategoriesModal";
 import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
@@ -261,7 +262,7 @@ export default function AssetsPage() {
 			case "transferred":
 				return <StyledBadge color="blue">Transferred</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 
@@ -269,14 +270,14 @@ export default function AssetsPage() {
 		switch (status) {
 			case "verified":
 				return <StyledBadge color="emerald">Verified</StyledBadge>;
-			case "due_soon":
-				return <StyledBadge color="yellow">Due Soon</StyledBadge>;
-			case "overdue":
-				return <StyledBadge color="red">Overdue</StyledBadge>;
+			case "failed":
+				return <StyledBadge color="red">Failed</StyledBadge>;
+			case "pending":
+				return <StyledBadge color="yellow">Pending</StyledBadge>;
 			case "never_verified":
 				return <StyledBadge color="gray">Never Verified</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 

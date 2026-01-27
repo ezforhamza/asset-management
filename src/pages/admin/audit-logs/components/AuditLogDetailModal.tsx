@@ -6,6 +6,7 @@ import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { ScrollArea } from "@/ui/scroll-area";
 import { getAuditActionBadge, StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 
 interface AuditLogDetailModalProps {
 	log: AuditLog | null;
@@ -260,9 +261,7 @@ export function AuditLogDetailModal({ log, open, onClose }: AuditLogDetailModalP
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">Role</p>
-									<StyledBadge color="gray">
-										{log.performedBy.role.replace("_", " ")}
-									</StyledBadge>
+									<StyledBadge color="gray">{formatLabel(log.performedBy.role)}</StyledBadge>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">User ID</p>

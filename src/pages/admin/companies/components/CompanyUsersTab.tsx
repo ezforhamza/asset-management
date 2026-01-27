@@ -8,6 +8,7 @@ import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 import { AddUserModal } from "./AddUserModal";
 
 interface CompanyUsersTabProps {
@@ -21,7 +22,7 @@ const getRoleBadge = (role: string) => {
 		case "field_user":
 			return <StyledBadge color="blue">Field User</StyledBadge>;
 		default:
-			return <StyledBadge color="gray">{role}</StyledBadge>;
+			return <StyledBadge color="gray">{formatLabel(role)}</StyledBadge>;
 	}
 };
 
@@ -137,7 +138,14 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 									</TableCell>
 									<TableCell>{getRoleBadge(user.role)}</TableCell>
 									<TableCell className="text-sm text-muted-foreground">
-										{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy") : "Never"}
+										{user.lastLogin ? (
+											<div>
+												<p>{format(new Date(user.lastLogin), "MMM d, yyyy")}</p>
+												<p className="text-xs">{format(new Date(user.lastLogin), "h:mm a")}</p>
+											</div>
+										) : (
+											"Never"
+										)}
 									</TableCell>
 								</TableRow>
 							))}

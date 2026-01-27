@@ -4,6 +4,7 @@ import type { VerificationReportItem } from "#/report";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 
 interface ReportTableProps {
 	data: VerificationReportItem[];
@@ -46,7 +47,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 			case "overdue":
 				return <StyledBadge color="red">Overdue</StyledBadge>;
 			default:
-				return <StyledBadge color="gray">{status}</StyledBadge>;
+				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
 	};
 

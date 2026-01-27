@@ -14,6 +14,7 @@ import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { cn } from "@/utils";
 import { getAuditActionBadge, getAuditEntityBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 
 export default function AdminAuditLogsPage() {
 	const navigate = useNavigate();
@@ -67,8 +68,8 @@ export default function AdminAuditLogsPage() {
 	// Generate meaningful summary based on entity type and action
 	const getSummary = (log: AuditLog) => {
 		const { entityType, action, changes, metadata } = log;
-		const entity = entityType.replace("_", " ");
-		const entityCapitalized = entity.charAt(0).toUpperCase() + entity.slice(1);
+		const entity = formatLabel(entityType);
+		const entityCapitalized = entity;
 
 		// Get identifier from changes or metadata
 		const getIdentifier = () => {

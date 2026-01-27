@@ -6,6 +6,7 @@ import type { RegistrationHistoryItem } from "@/api/services/assetService";
 import { Card, CardContent } from "@/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/ui/collapsible";
 import { StyledBadge } from "@/utils/badge-styles";
+import { formatLabel } from "@/utils/formatLabel";
 import { PhotoGallery } from "./PhotoGallery";
 
 interface RegistrationEventProps {
@@ -169,7 +170,7 @@ export function RegistrationEvent({ registration, assetId, isHighlighted = false
 									<div>
 										<p className="text-xs text-muted-foreground">Condition</p>
 										<p className="text-sm font-medium capitalize">
-											{registration.conditionAtRegistration?.replace(/_/g, " ") || "—"}
+											{formatLabel(registration.conditionAtRegistration)}
 										</p>
 									</div>
 									{registration.qrCode && (
