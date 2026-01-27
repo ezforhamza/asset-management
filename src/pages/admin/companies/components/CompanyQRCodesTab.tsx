@@ -33,18 +33,15 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "company-qrcodes", companyId],
-		queryFn: () => adminService.getAdminQRCodes({ companyId }),
+		queryKey: ["admin", "company-qrcodes", companyId, currentPage],
+		queryFn: () => adminService.getAdminQRCodes({ companyId, page: currentPage, limit: ROWS_PER_PAGE }),
 	});
 
 	const qrCodes = data?.results || [];
-
-	// Pagination calculations
-	const totalResults = qrCodes.length;
-	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const totalResults = data?.totalResults || 0;
+	const totalPages = data?.totalPages || 1;
 	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-	const endIndex = startIndex + ROWS_PER_PAGE;
-	const paginatedQRCodes = qrCodes.slice(startIndex, endIndex);
+	const endIndex = Math.min(startIndex + ROWS_PER_PAGE, totalResults);
 
 	if (isLoading) {
 		return (
@@ -104,7 +101,7 @@ export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{paginatedQRCodes.map((qr) => (
+						{qrCodes.map((qr) => (
 							<TableRow key={qr.id}>
 								<TableCell className="font-mono text-sm">{qr.qrCode}</TableCell>
 								<TableCell>{getStatusBadge(qr.status)}</TableCell>

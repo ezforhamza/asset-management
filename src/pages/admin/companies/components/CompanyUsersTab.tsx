@@ -32,18 +32,15 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "company-users", companyId],
-		queryFn: () => adminService.getAdminUsers({ companyId }),
+		queryKey: ["admin", "company-users", companyId, currentPage],
+		queryFn: () => adminService.getAdminUsers({ companyId, page: currentPage, limit: ROWS_PER_PAGE }),
 	});
 
 	const users = data?.results || [];
-
-	// Pagination calculations
-	const totalResults = users.length;
-	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const totalResults = data?.totalResults || 0;
+	const totalPages = data?.totalPages || 1;
 	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-	const endIndex = startIndex + ROWS_PER_PAGE;
-	const paginatedUsers = users.slice(startIndex, endIndex);
+	const endIndex = Math.min(startIndex + ROWS_PER_PAGE, totalResults);
 
 	if (isLoading) {
 		return (
@@ -122,7 +119,7 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{paginatedUsers.map((user) => (
+							{users.map((user) => (
 								<TableRow key={user.id || user.email}>
 									<TableCell>
 										<div className="flex items-center gap-3">

@@ -31,18 +31,15 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	const [currentPage, setCurrentPage] = useState(1);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["assets", "company", companyId],
-		queryFn: () => assetService.getAssets({ companyId }),
+		queryKey: ["assets", "company", companyId, currentPage],
+		queryFn: () => assetService.getAssets({ companyId, page: currentPage, limit: ROWS_PER_PAGE }),
 	});
 
 	const assets = data?.results || [];
-
-	// Pagination calculations
-	const totalResults = assets.length;
-	const totalPages = Math.ceil(totalResults / ROWS_PER_PAGE);
+	const totalResults = data?.totalResults || 0;
+	const totalPages = data?.totalPages || 1;
 	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-	const endIndex = startIndex + ROWS_PER_PAGE;
-	const paginatedAssets = assets.slice(startIndex, endIndex);
+	const endIndex = Math.min(startIndex + ROWS_PER_PAGE, totalResults);
 
 	if (isLoading) {
 		return (
@@ -102,7 +99,7 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{paginatedAssets.map((asset) => (
+						{assets.map((asset) => (
 							<TableRow key={asset.id}>
 								<TableCell className="font-mono">
 									{asset.serialNumber || <span className="text-muted-foreground italic text-xs">Not added yet</span>}

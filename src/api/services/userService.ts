@@ -36,6 +36,22 @@ export interface ForgotPasswordReq {
 	email: string;
 }
 
+export interface VerifyOtpReq {
+	email: string;
+	otp: string;
+}
+
+export interface VerifyOtpRes {
+	success: boolean;
+	message: string;
+	resetToken: string;
+}
+
+export interface ResetPasswordWithTokenReq {
+	resetToken: string;
+	newPassword: string;
+}
+
 export interface ResetPasswordReq {
 	resetToken: string;
 	newPassword: string;
@@ -112,6 +128,8 @@ enum AuthApi {
 	Login = "/auth/login",
 	Refresh = "/auth/refresh",
 	ForgotPassword = "/auth/forgot-password",
+	VerifyOtp = "/auth/verify-otp",
+	ResetPasswordWithToken = "/auth/reset-password-with-token",
 	ResetPassword = "/auth/reset-password",
 }
 
@@ -130,6 +148,11 @@ const login = (data: SignInReq) => apiClient.post<SignInRes>({ url: AuthApi.Logi
 
 const forgotPassword = (data: ForgotPasswordReq) =>
 	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ForgotPassword, data });
+
+const verifyOtp = (data: VerifyOtpReq) => apiClient.post<VerifyOtpRes>({ url: AuthApi.VerifyOtp, data });
+
+const resetPasswordWithToken = (data: ResetPasswordWithTokenReq) =>
+	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ResetPasswordWithToken, data });
 
 const resetPassword = (data: ResetPasswordReq) =>
 	apiClient.post<{ success: boolean; message: string }>({ url: AuthApi.ResetPassword, data });
@@ -185,6 +208,8 @@ export default {
 	// Auth
 	login,
 	forgotPassword,
+	verifyOtp,
+	resetPasswordWithToken,
 	resetPassword,
 	changePassword,
 	// User Management

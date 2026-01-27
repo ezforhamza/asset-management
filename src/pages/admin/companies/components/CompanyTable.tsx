@@ -3,6 +3,7 @@ import { Building2, Eye, MoreHorizontal, Pencil, Power, Users } from "lucide-rea
 import { memo, useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import type { Company } from "#/entity";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
 	DropdownMenu,
@@ -37,9 +38,12 @@ const CompanyRow = memo(function CompanyRow({ company, onRowClick, onEdit, onTog
 		<TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onRowClick(company._id)}>
 			<TableCell>
 				<div className="flex items-center gap-3">
-					<div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-						<Building2 className="h-4 w-4 text-primary" />
-					</div>
+					<Avatar className="h-9 w-9 rounded-lg">
+						<AvatarImage src={company.logo} alt={company.companyName} className="object-cover" />
+						<AvatarFallback className="rounded-lg bg-primary/10">
+							<Building2 className="h-4 w-4 text-primary" />
+						</AvatarFallback>
+					</Avatar>
 					<div>
 						<p className="font-medium">{company.companyName}</p>
 						{company.address && (
