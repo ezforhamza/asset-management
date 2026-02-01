@@ -3,6 +3,9 @@ import {
 	AlertTriangle,
 	ChevronLeft,
 	ChevronRight,
+	Download,
+	FileSpreadsheet,
+	FileText,
 	FolderOpen,
 	Link2Off,
 	Loader2,
@@ -90,6 +93,9 @@ export default function AssetsPage() {
 
 	// Detach QR confirmation state
 	const [detachQrModalOpen, setDetachQrModalOpen] = useState(false);
+
+	// Export state
+	const [exporting, setExporting] = useState(false);
 
 	const limit = 9;
 
@@ -216,6 +222,7 @@ export default function AssetsPage() {
 			channel: asset.channel ?? "",
 			siteName: asset.siteName ?? "",
 			client: asset.client ?? "",
+			categoryId: asset.category?.id ?? "",
 		});
 		setEditModalOpen(true);
 	};
@@ -244,6 +251,11 @@ export default function AssetsPage() {
 		// Only include geofenceThreshold if it's a valid number
 		if (typeof editForm.geofenceThreshold === "number" && !Number.isNaN(editForm.geofenceThreshold)) {
 			submitData.geofenceThreshold = editForm.geofenceThreshold;
+		}
+
+		// Include categoryId if selected
+		if (editForm.categoryId) {
+			submitData.categoryId = editForm.categoryId;
 		}
 
 		// Handle asset update
@@ -281,6 +293,22 @@ export default function AssetsPage() {
 		}
 	};
 
+	const handleExport = async (format: "csv" | "pdf") => {
+		setExporting(true);
+		try {
+			const params: { format: "csv" | "pdf"; categoryId?: string } = { format };
+			if (categoryFilter) params.categoryId = categoryFilter;
+
+			await assetService.exportAssets(params);
+			toast.success(`Assets exported as ${format.toUpperCase()}`);
+		} catch (error) {
+			console.error("Export error:", error);
+			toast.error("Failed to export assets");
+		} finally {
+			setTimeout(() => setExporting(false), 1000);
+		}
+	};
+
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
 			{/* Header */}
@@ -291,6 +319,28 @@ export default function AssetsPage() {
 						<p className="text-sm text-muted-foreground">View and manage your company assets</p>
 					</div>
 					<div className="flex items-center gap-2">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" disabled={exporting}>
+									{exporting ? (
+										<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+									) : (
+										<Download className="h-4 w-4 mr-2" />
+									)}
+									Export
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onClick={() => handleExport("csv")}>
+									<FileSpreadsheet className="h-4 w-4 mr-2" />
+									Export as CSV
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => handleExport("pdf")}>
+									<FileText className="h-4 w-4 mr-2" />
+									Export as PDF
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<Button variant="outline" onClick={() => setCategoriesModalOpen(true)}>
 							<FolderOpen className="h-4 w-4 mr-2" />
 							Categories
@@ -706,6 +756,26 @@ export default function AssetsPage() {
 								value={editForm.client || ""}
 								onChange={(e) => setEditForm({ ...editForm, client: e.target.value })}
 							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Category</Label>
+							<Select
+								value={editForm.categoryId || ""}
+								onValueChange={(value) => setEditForm({ ...editForm, categoryId: value })}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select a category" />
+								</SelectTrigger>
+								<SelectContent>
+									{categoriesData?.results
+										?.filter((c) => c.status === "active")
+										.map((category) => (
+											<SelectItem key={category.id} value={category.id}>
+												{category.name}
+											</SelectItem>
+										))}
+								</SelectContent>
+							</Select>
 						</div>
 
 						{/* Detach QR Code Section - Only visible if asset has QR code */}

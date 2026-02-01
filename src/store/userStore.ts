@@ -41,17 +41,13 @@ const getOrCreateTabSessionId = (): string => {
 
 const useUserStore = create<UserStore>()(
 	persist(
-		(set, get) => ({
-			userInfo: {},
-			userToken: {},
-			authStatus: "loading" as AuthStatus,
-			sessionId: "",
-			actions: {
-				setUserInfo: (userInfo) => {
+		(set, get) => {
+			const actions = {
+				setUserInfo: (userInfo: UserInfo) => {
 					const tabSessionId = getOrCreateTabSessionId();
 					set({ userInfo, sessionId: tabSessionId, authStatus: "authenticated" });
 				},
-				setUserToken: (userToken) => {
+				setUserToken: (userToken: UserToken) => {
 					const tabSessionId = getOrCreateTabSessionId();
 					set({ userToken, sessionId: tabSessionId });
 				},
@@ -59,7 +55,7 @@ const useUserStore = create<UserStore>()(
 					sessionStorage.removeItem(TAB_SESSION_KEY);
 					set({ userInfo: {}, userToken: {}, authStatus: "unauthenticated", sessionId: "" });
 				},
-				setAuthStatus: (authStatus) => {
+				setAuthStatus: (authStatus: AuthStatus) => {
 					set({ authStatus });
 				},
 				initializeAuth: () => {
@@ -70,11 +66,20 @@ const useUserStore = create<UserStore>()(
 					if (state.userToken?.accessToken && state.userInfo?.role) {
 						set({ authStatus: "authenticated", sessionId: tabSessionId });
 					} else {
-						set({ authStatus: "unauthenticated" });
+						// Clear any stale/partial data to prevent redirect loops
+						set({ userInfo: {}, userToken: {}, authStatus: "unauthenticated", sessionId: "" });
 					}
 				},
-			},
-		}),
+			};
+
+			return {
+				userInfo: {},
+				userToken: {},
+				authStatus: "loading" as AuthStatus,
+				sessionId: "",
+				actions,
+			};
+		},
 		{
 			name: "userStore",
 			storage: createJSONStorage(() => localStorage),
@@ -93,6 +98,13 @@ export const useAuthStatus = () => useUserStore((state) => state.authStatus);
 export const useUserPermissions = () => useUserStore((state) => state.userInfo.permissions || []);
 export const useUserRoles = () => useUserStore((state) => state.userInfo.roles || []);
 export const useUserActions = () => useUserStore((state) => state.actions);
+
+// Individual action selectors to prevent unnecessary re-renders
+export const useSetUserInfo = () => useUserStore((state) => state.actions.setUserInfo);
+export const useSetUserToken = () => useUserStore((state) => state.actions.setUserToken);
+export const useClearUserInfoAndToken = () => useUserStore((state) => state.actions.clearUserInfoAndToken);
+export const useSetAuthStatus = () => useUserStore((state) => state.actions.setAuthStatus);
+export const useInitializeAuth = () => useUserStore((state) => state.actions.initializeAuth);
 
 // Check if user is customer admin
 export const useIsCustomerAdmin = () => useUserStore((state) => state.userInfo.role === UserRole.CUSTOMER_ADMIN);

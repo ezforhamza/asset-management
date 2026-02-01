@@ -1,17 +1,19 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useAuthStatus, useUserActions } from "@/store/userStore";
-import { useRouter } from "../hooks";
+import { useNavigate } from "react-router";
+import { useAuthStatus, useInitializeAuth, useSetAuthStatus } from "@/store/userStore";
 
 type Props = {
 	children: React.ReactNode;
 };
 
 export default function LoginAuthGuard({ children }: Props) {
-	const router = useRouter();
+	const navigate = useNavigate();
 	const authStatus = useAuthStatus();
-	const { initializeAuth, setAuthStatus } = useUserActions();
+	const initializeAuth = useInitializeAuth();
+	const setAuthStatus = useSetAuthStatus();
 	const initialized = useRef(false);
+	const redirected = useRef(false);
 
 	// Initialize auth only once on mount - intentionally no deps to prevent infinite loop
 	// biome-ignore lint/correctness/useExhaustiveDependencies: initializeAuth causes re-render loop if included
@@ -35,10 +37,11 @@ export default function LoginAuthGuard({ children }: Props) {
 
 	// Redirect when auth is resolved and unauthenticated
 	useEffect(() => {
-		if (authStatus === "unauthenticated") {
-			router.replace("/auth/login");
+		if (authStatus === "unauthenticated" && !redirected.current) {
+			redirected.current = true;
+			navigate("/auth/login", { replace: true });
 		}
-	}, [authStatus, router]);
+	}, [authStatus, navigate]);
 
 	// Show loading state while auth is being validated
 	if (authStatus === "loading") {

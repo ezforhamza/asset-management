@@ -1,4 +1,5 @@
 import type { Asset, Verification } from "#/entity";
+import useUserStore from "@/store/userStore";
 import apiClient from "../apiClient";
 
 // ============================================
@@ -39,6 +40,14 @@ export interface UpdateAssetReq {
 	client?: string;
 	channel?: string;
 	siteName?: string;
+	categoryId?: string;
+}
+
+export interface ExportAssetsParams {
+	format: "csv" | "pdf";
+	status?: "active" | "retired" | "transferred";
+	registrationState?: boolean;
+	categoryId?: string;
 }
 
 export interface CreateAssetReq {
@@ -229,6 +238,44 @@ const updateInvestigation = (verificationId: string, data: InvestigateReq) =>
 const getAssetHistory = (assetId: string) =>
 	apiClient.get<AssetHistoryRes>({ url: `${AssetApi.Assets}/${assetId}/history` });
 
+// ============================================
+// Asset Export Service
+// ============================================
+
+const exportAssets = (params: ExportAssetsParams) => {
+	const queryParams = new URLSearchParams();
+	queryParams.append("format", params.format);
+	if (params.status) queryParams.append("status", params.status);
+	if (params.registrationState !== undefined) queryParams.append("registrationState", String(params.registrationState));
+	if (params.categoryId) queryParams.append("categoryId", params.categoryId);
+
+	const { userToken } = useUserStore.getState();
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
+	const token = userToken?.accessToken;
+
+	return fetch(`${baseUrl}${AssetApi.Assets}/export?${queryParams.toString()}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.blob();
+		})
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `assets_export_${new Date().toISOString().split("T")[0]}.${params.format}`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		});
+};
+
 export default {
 	// Assets
 	getAssets,
@@ -240,6 +287,7 @@ export default {
 	bulkImportAssets,
 	transferAsset,
 	retireAsset,
+	exportAssets,
 	// Verifications
 	getVerificationHistory,
 	updateInvestigation,

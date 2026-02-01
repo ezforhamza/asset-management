@@ -10,7 +10,6 @@ import { Label } from "@/ui/label";
 import { Switch } from "@/ui/switch";
 
 interface VerificationSettingsForm {
-	verificationFrequency: number;
 	geofenceThreshold: number;
 	allowGPSOverride: boolean;
 	dueSoonDays: number;
@@ -19,7 +18,6 @@ interface VerificationSettingsForm {
 export function VerificationSettings() {
 	const form = useForm<VerificationSettingsForm>({
 		defaultValues: {
-			verificationFrequency: 30,
 			geofenceThreshold: 20,
 			allowGPSOverride: true,
 			dueSoonDays: 7,
@@ -47,27 +45,11 @@ export function VerificationSettings() {
 					<Clock className="h-5 w-5" />
 					Verification Settings
 				</CardTitle>
-				<CardDescription>Configure how often assets need verification and GPS requirements</CardDescription>
+				<CardDescription>Configure GPS requirements and verification settings</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
 					<div className="grid gap-6 md:grid-cols-2">
-						<div className="space-y-2">
-							<Label htmlFor="verificationFrequency">Default Verification Frequency</Label>
-							<div className="flex items-center gap-2">
-								<Input
-									id="verificationFrequency"
-									type="number"
-									min={1}
-									max={365}
-									{...form.register("verificationFrequency", { valueAsNumber: true })}
-									className="w-24"
-								/>
-								<span className="text-sm text-muted-foreground">days</span>
-							</div>
-							<p className="text-xs text-muted-foreground">How often assets need to be verified by default</p>
-						</div>
-
 						<div className="space-y-2">
 							<Label htmlFor="geofenceThreshold">GPS Geofence Threshold</Label>
 							<div className="flex items-center gap-2">

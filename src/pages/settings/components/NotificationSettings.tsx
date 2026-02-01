@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Loader2, Plus, Save, X } from "lucide-react";
+import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import companyService from "@/api/services/companyService";
@@ -17,12 +18,20 @@ interface NotificationSettingsForm {
 }
 
 export function NotificationSettings() {
+	const queryClient = useQueryClient();
+
+	// Fetch current company settings to get existing emails
+	const { data: companySettings, isLoading } = useQuery({
+		queryKey: ["company-settings"],
+		queryFn: companyService.getSettings,
+	});
+
 	const form = useForm<NotificationSettingsForm>({
 		defaultValues: {
 			emailNotifications: true,
 			overdueAlerts: true,
 			repairAlerts: true,
-			notificationEmails: [{ email: "" }],
+			notificationEmails: [],
 		},
 	});
 
@@ -31,14 +40,33 @@ export function NotificationSettings() {
 		name: "notificationEmails",
 	});
 
+	// Populate form with existing emails when data loads
+	useEffect(() => {
+		if (companySettings?.repairNotificationEmails) {
+			const existingEmails = companySettings.repairNotificationEmails;
+			if (existingEmails.length > 0) {
+				form.setValue(
+					"notificationEmails",
+					existingEmails.map((email: string) => ({ email })),
+				);
+			} else {
+				form.setValue("notificationEmails", [{ email: "" }]);
+			}
+		} else {
+			form.setValue("notificationEmails", [{ email: "" }]);
+		}
+	}, [companySettings, form]);
+
 	const mutation = useMutation({
 		mutationFn: (values: NotificationSettingsForm) => {
+			const emailsToSave = values.notificationEmails.map((e) => e.email).filter(Boolean);
 			return companyService.updateSettings({
-				repairNotificationEmails: values.notificationEmails.map((e) => e.email).filter(Boolean),
+				repairNotificationEmails: emailsToSave,
 			});
 		},
 		onSuccess: () => {
 			toast.success("Notification settings saved");
+			queryClient.invalidateQueries({ queryKey: ["company-settings"] });
 		},
 		onError: () => {
 			// Error toast is handled by apiClient;
@@ -48,6 +76,25 @@ export function NotificationSettings() {
 	const handleSubmit = (values: NotificationSettingsForm) => {
 		mutation.mutate(values);
 	};
+
+	if (isLoading) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle className="flex items-center gap-2">
+						<Bell className="h-5 w-5" />
+						Notification Settings
+					</CardTitle>
+					<CardDescription>Configure email alerts and notification recipients</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<div className="flex items-center justify-center py-8">
+						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>

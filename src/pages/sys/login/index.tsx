@@ -3,15 +3,18 @@ import { Icon } from "@/components/icon";
 import Logo from "@/components/logo";
 import { GLOBAL_CONFIG } from "@/global-config";
 import SettingButton from "@/layouts/components/setting-button";
-import { useUserToken } from "@/store/userStore";
+import { useUserInfo, useUserToken } from "@/store/userStore";
 import ForgotPasswordForm from "./forgot-password-form";
 import LoginForm from "./login-form";
 import { LoginProvider } from "./providers/login-provider";
 
 function LoginPage() {
 	const token = useUserToken();
+	const userInfo = useUserInfo();
 
-	if (token.accessToken) {
+	// Only redirect if we have BOTH a valid token AND user info with role
+	// This prevents redirect loops with LoginAuthGuard which checks the same conditions
+	if (token.accessToken && userInfo.role) {
 		return <Navigate to={GLOBAL_CONFIG.defaultRoute} replace />;
 	}
 

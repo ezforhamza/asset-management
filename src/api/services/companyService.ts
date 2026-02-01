@@ -93,7 +93,6 @@ export interface UpdateProfileReq {
 
 // Settings update request
 export interface UpdateSettingsReq {
-	verificationFrequency?: number;
 	geofenceThreshold?: number;
 	allowGPSOverride?: boolean;
 	dueSoonDays?: number;
