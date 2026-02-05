@@ -12,6 +12,10 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		{ path: "dashboard", element: Component("/pages/dashboard") },
 		{ path: "assets", element: Component("/pages/assets") },
 		{ path: "assets/:assetId/history", element: Component("/pages/assets/history") },
+		{
+			path: "asset-movements",
+			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/asset-movements")}</RoleGuard>,
+		},
 		{ path: "reports", element: Component("/pages/reports") },
 		{ path: "map", element: Component("/pages/map") },
 

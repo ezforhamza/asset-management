@@ -20,6 +20,12 @@ export const clientNavData: NavProps["data"] = [
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
 			{
+				title: "Asset Movements",
+				path: "/asset-movements",
+				icon: <Icon icon="solar:transfer-horizontal-bold-duotone" size="24" />,
+				roles: [UserRole.CUSTOMER_ADMIN],
+			},
+			{
 				title: "Reports",
 				path: "/reports",
 				icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,

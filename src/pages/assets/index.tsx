@@ -11,11 +11,14 @@ import {
 	Loader2,
 	MapPin,
 	MoreHorizontal,
+	PauseCircle,
 	Pencil,
 	Plus,
 	Search,
 	Trash2,
+	Truck,
 	Upload,
+	Wrench,
 	X,
 	XCircle,
 } from "lucide-react";
@@ -45,6 +48,8 @@ import { formatLabel } from "@/utils/formatLabel";
 import { CategoriesModal } from "./components/CategoriesModal";
 import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
+import { RequestMovementModal } from "./components/RequestMovementModal";
+import { RequestRepairModal } from "./components/RequestRepairModal";
 
 /**
  * Check if an asset registration is pending (not yet registered).
@@ -90,6 +95,18 @@ export default function AssetsPage() {
 
 	// Create asset modal state
 	const [createModalOpen, setCreateModalOpen] = useState(false);
+
+	// Request movement modal state
+	const [movementModalOpen, setMovementModalOpen] = useState(false);
+	const [movementAsset, setMovementAsset] = useState<Asset | null>(null);
+
+	// Inactivate modal state
+	const [inactivateModalOpen, setInactivateModalOpen] = useState(false);
+	const [inactivatingAsset, setInactivatingAsset] = useState<Asset | null>(null);
+
+	// Request repair modal state
+	const [repairModalOpen, setRepairModalOpen] = useState(false);
+	const [repairAsset, setRepairAsset] = useState<Asset | null>(null);
 
 	// Detach QR confirmation state
 	const [detachQrModalOpen, setDetachQrModalOpen] = useState(false);
@@ -197,6 +214,21 @@ export default function AssetsPage() {
 		},
 	});
 
+	const inactivateMutation = useMutation({
+		mutationFn: (assetId: string) => assetService.updateAsset(assetId, { status: "inactive" }),
+		onSuccess: () => {
+			toast.success("Asset inactivated successfully");
+			// Invalidate queries to refresh asset data
+			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
+			setInactivateModalOpen(false);
+			setInactivatingAsset(null);
+		},
+		onError: () => {
+			// Error toast is handled by apiClient
+		},
+	});
+
 	const assets = data?.results || [];
 	const totalPages = data?.totalPages || 1;
 	const totalResults = data?.totalResults || 0;
@@ -235,6 +267,21 @@ export default function AssetsPage() {
 	const handleRetireClick = (asset: Asset) => {
 		setRetiringAsset(asset);
 		setRetireModalOpen(true);
+	};
+
+	const handleRequestMovementClick = (asset: Asset) => {
+		setMovementAsset(asset);
+		setMovementModalOpen(true);
+	};
+
+	const handleInactivateClick = (asset: Asset) => {
+		setInactivatingAsset(asset);
+		setInactivateModalOpen(true);
+	};
+
+	const handleRequestRepairClick = (asset: Asset) => {
+		setRepairAsset(asset);
+		setRepairModalOpen(true);
 	};
 
 	const handleUpdateSubmit = async () => {
@@ -625,6 +672,27 @@ export default function AssetsPage() {
 																	Edit
 																</DropdownMenuItem>
 																<DropdownMenuItem
+																	onClick={() => handleRequestMovementClick(asset)}
+																	disabled={asset.status === "retired" || asset.status === "inactive"}
+																>
+																	<Truck className="h-4 w-4 mr-2" />
+																	Request Movement
+																</DropdownMenuItem>
+																<DropdownMenuItem
+																	onClick={() => handleInactivateClick(asset)}
+																	disabled={asset.status === "inactive" || asset.status === "retired"}
+																>
+																	<PauseCircle className="h-4 w-4 mr-2" />
+																	Inactivate
+																</DropdownMenuItem>
+																<DropdownMenuItem
+																	onClick={() => handleRequestRepairClick(asset)}
+																	disabled={asset.status === "retired"}
+																>
+																	<Wrench className="h-4 w-4 mr-2" />
+																	Request Repair
+																</DropdownMenuItem>
+																<DropdownMenuItem
 																	onClick={() => handleRetireClick(asset)}
 																	disabled={asset.status === "retired"}
 																>
@@ -906,6 +974,37 @@ export default function AssetsPage() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			{/* Request Movement Modal */}
+			<RequestMovementModal open={movementModalOpen} onOpenChange={setMovementModalOpen} asset={movementAsset} />
+
+			{/* Inactivate Confirmation Modal */}
+			<Dialog open={inactivateModalOpen} onOpenChange={setInactivateModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Inactivate Asset</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to inactivate asset <strong>{inactivatingAsset?.serialNumber}</strong>? This will
+							temporarily mark the asset as not in function.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setInactivateModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => inactivatingAsset && inactivateMutation.mutate(getAssetId(inactivatingAsset))}
+							disabled={inactivateMutation.isPending}
+						>
+							{inactivateMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Inactivate Asset
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Request Repair Modal */}
+			<RequestRepairModal open={repairModalOpen} onOpenChange={setRepairModalOpen} asset={repairAsset} />
 		</div>
 	);
 }

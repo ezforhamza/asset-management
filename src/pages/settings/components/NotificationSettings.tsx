@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import companyService from "@/api/services/companyService";
+import notificationService, { type NotificationPreferences } from "@/api/services/notificationService";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/ui/card";
 import { Input } from "@/ui/input";
@@ -14,6 +15,7 @@ interface NotificationSettingsForm {
 	emailNotifications: boolean;
 	overdueAlerts: boolean;
 	repairAlerts: boolean;
+	movementAlerts: boolean;
 	notificationEmails: { email: string }[];
 }
 
@@ -21,16 +23,25 @@ export function NotificationSettings() {
 	const queryClient = useQueryClient();
 
 	// Fetch current company settings to get existing emails
-	const { data: companySettings, isLoading } = useQuery({
+	const { data: companySettings, isLoading: isLoadingCompany } = useQuery({
 		queryKey: ["company-settings"],
 		queryFn: companyService.getSettings,
 	});
+
+	// Fetch notification preferences
+	const { data: notificationPrefs, isLoading: isLoadingPrefs } = useQuery({
+		queryKey: ["notification-preferences"],
+		queryFn: notificationService.getNotificationPreferences,
+	});
+
+	const isLoading = isLoadingCompany || isLoadingPrefs;
 
 	const form = useForm<NotificationSettingsForm>({
 		defaultValues: {
 			emailNotifications: true,
 			overdueAlerts: true,
 			repairAlerts: true,
+			movementAlerts: true,
 			notificationEmails: [],
 		},
 	});
@@ -40,7 +51,7 @@ export function NotificationSettings() {
 		name: "notificationEmails",
 	});
 
-	// Populate form with existing emails when data loads
+	// Populate form with existing emails and preferences when data loads
 	useEffect(() => {
 		if (companySettings?.repairNotificationEmails) {
 			const existingEmails = companySettings.repairNotificationEmails;
@@ -57,15 +68,24 @@ export function NotificationSettings() {
 		}
 	}, [companySettings, form]);
 
-	const mutation = useMutation({
-		mutationFn: (values: NotificationSettingsForm) => {
-			const emailsToSave = values.notificationEmails.map((e) => e.email).filter(Boolean);
+	// Populate form with notification preferences
+	useEffect(() => {
+		if (notificationPrefs) {
+			form.setValue("emailNotifications", notificationPrefs.emailNotificationsEnabled);
+			form.setValue("overdueAlerts", notificationPrefs.overdueAlertsEnabled);
+			form.setValue("repairAlerts", notificationPrefs.repairAlertsEnabled);
+			form.setValue("movementAlerts", notificationPrefs.movementAlertsEnabled);
+		}
+	}, [notificationPrefs, form]);
+
+	// Mutation to save notification emails
+	const emailsMutation = useMutation({
+		mutationFn: (emails: string[]) => {
 			return companyService.updateSettings({
-				repairNotificationEmails: emailsToSave,
+				repairNotificationEmails: emails,
 			});
 		},
 		onSuccess: () => {
-			toast.success("Notification settings saved");
 			queryClient.invalidateQueries({ queryKey: ["company-settings"] });
 		},
 		onError: () => {
@@ -73,8 +93,36 @@ export function NotificationSettings() {
 		},
 	});
 
-	const handleSubmit = (values: NotificationSettingsForm) => {
-		mutation.mutate(values);
+	// Mutation to save notification preferences
+	const prefsMutation = useMutation({
+		mutationFn: (prefs: Partial<NotificationPreferences>) => {
+			return notificationService.updateNotificationPreferences(prefs);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["notification-preferences"] });
+		},
+		onError: () => {
+			// Error toast is handled by apiClient;
+		},
+	});
+
+	const isSaving = emailsMutation.isPending || prefsMutation.isPending;
+
+	const handleSubmit = async (values: NotificationSettingsForm) => {
+		const emailsToSave = values.notificationEmails.map((e) => e.email).filter(Boolean);
+
+		// Save both emails and preferences
+		await Promise.all([
+			emailsMutation.mutateAsync(emailsToSave),
+			prefsMutation.mutateAsync({
+				emailNotificationsEnabled: values.emailNotifications,
+				overdueAlertsEnabled: values.overdueAlerts,
+				repairAlertsEnabled: values.repairAlerts,
+				movementAlertsEnabled: values.movementAlerts,
+			}),
+		]);
+
+		toast.success("Notification settings saved");
 	};
 
 	if (isLoading) {
@@ -141,6 +189,17 @@ export function NotificationSettings() {
 								onCheckedChange={(checked) => form.setValue("repairAlerts", checked)}
 							/>
 						</div>
+
+						<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+							<div className="space-y-1 pr-4">
+								<p className="text-sm font-medium leading-none">Asset Movement Alerts</p>
+								<p className="text-xs text-muted-foreground">Get notified when assets are moved</p>
+							</div>
+							<Switch
+								checked={form.watch("movementAlerts")}
+								onCheckedChange={(checked) => form.setValue("movementAlerts", checked)}
+							/>
+						</div>
 					</div>
 
 					{/* Notification emails */}
@@ -174,8 +233,8 @@ export function NotificationSettings() {
 						)}
 					</div>
 
-					<Button type="submit" disabled={mutation.isPending}>
-						{mutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+					<Button type="submit" disabled={isSaving}>
+						{isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
 						Save Changes
 					</Button>
 				</form>

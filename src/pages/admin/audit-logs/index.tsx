@@ -127,6 +127,12 @@ export default function AdminAuditLogsPage() {
 			case "retired":
 				return `${entityCapitalized}${identifierText} was retired`;
 
+			case "repair_requested":
+				return `Repair requested for asset${identifierText}`;
+
+			case "movement_created":
+				return `Movement created for asset${identifierText}`;
+
 			default:
 				return `${entityCapitalized} ${action}`;
 		}
@@ -188,6 +194,8 @@ export default function AdminAuditLogsPage() {
 						<SelectItem value="updated">Updated</SelectItem>
 						<SelectItem value="deleted">Deleted</SelectItem>
 						<SelectItem value="verified">Verified</SelectItem>
+						<SelectItem value="repair_requested">Repair Requested</SelectItem>
+						<SelectItem value="movement_created">Movement Created</SelectItem>
 					</SelectContent>
 				</Select>
 				<Popover>
