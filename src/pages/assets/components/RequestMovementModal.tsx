@@ -116,9 +116,12 @@ export function RequestMovementModal({ open, onOpenChange, asset }: RequestMovem
 								{asset?.make} {asset?.model}
 							</span>
 						</p>
-						{asset?.location?.description && (
+						{asset?.location && (
 							<p className="text-sm text-muted-foreground">
-								Current Location: <span className="font-medium text-foreground">{asset.location.description}</span>
+								Current Location:{" "}
+								<span className="font-medium text-foreground">
+									{asset.location.latitude.toFixed(4)}, {asset.location.longitude.toFixed(4)}
+								</span>
 							</p>
 						)}
 					</div>

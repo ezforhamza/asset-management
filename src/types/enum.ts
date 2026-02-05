@@ -26,6 +26,7 @@ export enum AdminType {
 // Asset Guard - Asset Status
 export enum AssetStatus {
 	ACTIVE = "active",
+	INACTIVE = "inactive",
 	RETIRED = "retired",
 	TRANSFERRED = "transferred",
 }
