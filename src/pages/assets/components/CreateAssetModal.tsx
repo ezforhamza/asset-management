@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type CreateAssetReq } from "@/api/services/assetService";
+import siteNameService from "@/api/services/siteNameService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
@@ -27,6 +28,7 @@ const initialFormState: CreateAssetReq = {
 	notes: "",
 	channel: "",
 	siteName: "",
+	siteNameId: "",
 	client: "",
 	geofenceThreshold: undefined,
 };
@@ -39,6 +41,13 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 	const { data: categoriesData } = useQuery({
 		queryKey: ["asset-categories", 1, 100],
 		queryFn: () => assetCategoryService.getCategories({ page: 1, limit: 100 }),
+		enabled: open,
+	});
+
+	// Fetch site names for dropdown
+	const { data: siteNamesData } = useQuery({
+		queryKey: ["site-names", 1, 100],
+		queryFn: () => siteNameService.getSiteNames({ page: 1, limit: 100, sortBy: "name:asc" }),
 		enabled: open,
 	});
 
@@ -101,8 +110,8 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 		if (form.channel?.trim()) {
 			requestData.channel = form.channel.trim();
 		}
-		if (form.siteName?.trim()) {
-			requestData.siteName = form.siteName.trim();
+		if (form.siteNameId?.trim()) {
+			requestData.siteNameId = form.siteNameId.trim();
 		}
 		if (form.client?.trim()) {
 			requestData.client = form.client.trim();
@@ -258,11 +267,21 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 					<div className="grid grid-cols-2 gap-4">
 						<div className="space-y-2">
 							<Label>Site Name</Label>
-							<Input
-								placeholder="e.g., Downtown Branch"
-								value={form.siteName || ""}
-								onChange={(e) => setForm({ ...form, siteName: e.target.value })}
-							/>
+							<Select value={form.siteNameId || ""} onValueChange={(value) => setForm({ ...form, siteNameId: value })}>
+								<SelectTrigger>
+									<SelectValue placeholder="Select a site name" />
+								</SelectTrigger>
+								<SelectContent>
+									{siteNamesData?.results?.map((sn) => (
+										<SelectItem key={sn.id} value={sn.id}>
+											{sn.name}
+										</SelectItem>
+									))}
+									{(!siteNamesData?.results || siteNamesData.results.length === 0) && (
+										<div className="px-2 py-1.5 text-sm text-muted-foreground">No site names available</div>
+									)}
+								</SelectContent>
+							</Select>
 						</div>
 						<div className="space-y-2">
 							<Label>Geofence Threshold (meters)</Label>

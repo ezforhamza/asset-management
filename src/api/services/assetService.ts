@@ -40,6 +40,7 @@ export interface UpdateAssetReq {
 	client?: string;
 	channel?: string;
 	siteName?: string;
+	siteNameId?: string;
 	categoryId?: string;
 }
 
@@ -61,6 +62,7 @@ export interface CreateAssetReq {
 	notes?: string;
 	channel?: string;
 	siteName?: string;
+	siteNameId?: string;
 	client?: string;
 	geofenceThreshold?: number;
 }

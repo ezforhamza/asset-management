@@ -1,6 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronLeft, ChevronRight, Loader2, MapPin, Search, Trash2, X } from "lucide-react";
+import {
+	CalendarIcon,
+	CheckCircle,
+	ChevronLeft,
+	ChevronRight,
+	Loader2,
+	MapPin,
+	MoreHorizontal,
+	Play,
+	Search,
+	Trash2,
+	X,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import assetMovementService, {
@@ -10,6 +22,7 @@ import assetMovementService, {
 import { Button } from "@/ui/button";
 import { Calendar } from "@/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
@@ -38,12 +51,27 @@ export default function AssetMovementsPage() {
 	const [selectedMovement, setSelectedMovement] = useState<AssetMovement | null>(null);
 	const [loadingDetails, setLoadingDetails] = useState(false);
 
-	// Delete modal state
+	// Delete/Cancel modal state
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [deletingMovement, setDeletingMovement] = useState<AssetMovement | null>(null);
 	const [cancellationReason, setCancellationReason] = useState("");
 
+	// Start movement modal state
+	const [startModalOpen, setStartModalOpen] = useState(false);
+	const [startingMovement, setStartingMovement] = useState<AssetMovement | null>(null);
+
+	// Complete movement modal state
+	const [completeModalOpen, setCompleteModalOpen] = useState(false);
+	const [completingMovement, setCompletingMovement] = useState<AssetMovement | null>(null);
+	const [completionNotes, setCompletionNotes] = useState("");
+
 	const limit = 10;
+
+	const invalidateAll = () => {
+		queryClient.invalidateQueries({ queryKey: ["asset-movements"] });
+		queryClient.invalidateQueries({ queryKey: ["assets"] });
+		queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
+	};
 
 	// Build query params with filters
 	const queryParams: AssetMovementListParams = useMemo(() => {
@@ -65,11 +93,39 @@ export default function AssetMovementsPage() {
 		mutationFn: ({ movementId, reason }: { movementId: string; reason?: string }) =>
 			assetMovementService.deleteAssetMovement(movementId, reason ? { cancellationReason: reason } : undefined),
 		onSuccess: () => {
-			toast.success("Movement request cancelled successfully");
-			queryClient.invalidateQueries({ queryKey: ["asset-movements"] });
+			toast.success("Movement cancelled — asset restored to active");
+			invalidateAll();
 			setDeleteModalOpen(false);
 			setDeletingMovement(null);
 			setCancellationReason("");
+		},
+		onError: () => {
+			// Error toast is handled by apiClient
+		},
+	});
+
+	const startMutation = useMutation({
+		mutationFn: (movementId: string) => assetMovementService.startMovement(movementId),
+		onSuccess: () => {
+			toast.success("Movement started — asset registration data cleared");
+			invalidateAll();
+			setStartModalOpen(false);
+			setStartingMovement(null);
+		},
+		onError: () => {
+			// Error toast is handled by apiClient
+		},
+	});
+
+	const completeMutation = useMutation({
+		mutationFn: ({ movementId, notes }: { movementId: string; notes?: string }) =>
+			assetMovementService.completeMovement(movementId, notes ? { completionNotes: notes } : undefined),
+		onSuccess: () => {
+			toast.success("Movement completed — asset is now active at new location");
+			invalidateAll();
+			setCompleteModalOpen(false);
+			setCompletingMovement(null);
+			setCompletionNotes("");
 		},
 		onError: () => {
 			// Error toast is handled by apiClient
@@ -110,6 +166,19 @@ export default function AssetMovementsPage() {
 		e.stopPropagation();
 		setDeletingMovement(movement);
 		setDeleteModalOpen(true);
+	};
+
+	const handleStartClick = (movement: AssetMovement, e: React.MouseEvent) => {
+		e.stopPropagation();
+		setStartingMovement(movement);
+		setStartModalOpen(true);
+	};
+
+	const handleCompleteClick = (movement: AssetMovement, e: React.MouseEvent) => {
+		e.stopPropagation();
+		setCompletingMovement(movement);
+		setCompletionNotes("");
+		setCompleteModalOpen(true);
 	};
 
 	const getStatusBadge = (status: string) => {
@@ -358,14 +427,41 @@ export default function AssetMovementsPage() {
 											</TableCell>
 											<TableCell>
 												{(movement.status === "pending" || movement.status === "in_progress") && (
-													<Button
-														variant="ghost"
-														size="icon"
-														className="h-8 w-8 text-destructive hover:text-destructive"
-														onClick={(e) => handleDeleteClick(movement, e)}
-													>
-														<Trash2 className="h-4 w-4" />
-													</Button>
+													<DropdownMenu>
+														<DropdownMenuTrigger asChild>
+															<Button
+																variant="ghost"
+																size="icon"
+																className="h-8 w-8"
+																onClick={(e) => e.stopPropagation()}
+															>
+																<MoreHorizontal className="h-4 w-4" />
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent align="end">
+															{movement.status === "pending" && (
+																<DropdownMenuItem onClick={(e) => handleStartClick(movement, e)}>
+																	<Play className="h-4 w-4 mr-2" />
+																	Start Movement
+																</DropdownMenuItem>
+															)}
+															{movement.status === "in_progress" && (
+																<DropdownMenuItem onClick={(e) => handleCompleteClick(movement, e)}>
+																	<CheckCircle className="h-4 w-4 mr-2" />
+																	Complete Movement
+																</DropdownMenuItem>
+															)}
+															{movement.status === "pending" && (
+																<DropdownMenuItem
+																	onClick={(e) => handleDeleteClick(movement, e)}
+																	className="text-destructive focus:text-destructive"
+																>
+																	<Trash2 className="h-4 w-4 mr-2" />
+																	Cancel Movement
+																</DropdownMenuItem>
+															)}
+														</DropdownMenuContent>
+													</DropdownMenu>
 												)}
 											</TableCell>
 										</TableRow>
@@ -498,6 +594,14 @@ export default function AssetMovementsPage() {
 									</p>
 								</div>
 							)}
+
+							{/* Completion Notes (if completed) */}
+							{selectedMovement.status === "completed" && selectedMovement.completionNotes && (
+								<div>
+									<Label className="text-muted-foreground">Completion Notes</Label>
+									<p className="mt-1 text-sm p-3 bg-muted/30 rounded-md">{selectedMovement.completionNotes}</p>
+								</div>
+							)}
 						</div>
 					) : null}
 					<DialogFooter>
@@ -548,6 +652,76 @@ export default function AssetMovementsPage() {
 						>
 							{deleteMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 							Cancel Movement
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Start Movement Confirmation Modal */}
+			<Dialog open={startModalOpen} onOpenChange={setStartModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Start Movement</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to start the movement for asset{" "}
+							<strong>{startingMovement?.assetId?.serialNumber}</strong>? This will clear the asset's registration data
+							(QR code, location, etc.) and send a notification email.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setStartModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => startingMovement && startMutation.mutate(startingMovement.id)}
+							disabled={startMutation.isPending}
+						>
+							{startMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Start Movement
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Complete Movement Modal */}
+			<Dialog open={completeModalOpen} onOpenChange={setCompleteModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Complete Movement</DialogTitle>
+						<DialogDescription>
+							Mark the movement for asset <strong>{completingMovement?.assetId?.serialNumber}</strong> as completed. The
+							asset will become active at the new location.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="py-4">
+						<Label>Completion Notes (Optional)</Label>
+						<Textarea
+							placeholder="e.g., Delivered successfully to Building A"
+							value={completionNotes}
+							onChange={(e) => setCompletionNotes(e.target.value)}
+							className="mt-2"
+							rows={3}
+						/>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setCompleteModalOpen(false);
+								setCompletionNotes("");
+							}}
+						>
+							Cancel
+						</Button>
+						<Button
+							onClick={() =>
+								completingMovement &&
+								completeMutation.mutate({ movementId: completingMovement.id, notes: completionNotes })
+							}
+							disabled={completeMutation.isPending}
+						>
+							{completeMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Complete Movement
 						</Button>
 					</DialogFooter>
 				</DialogContent>

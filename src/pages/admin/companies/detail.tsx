@@ -1,11 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, Building2, Calendar, CheckCircle2, Mail, Package, QrCode, Users } from "lucide-react";
+import {
+	ArrowLeft,
+	Building2,
+	Calendar,
+	CheckCircle2,
+	Download,
+	FileSpreadsheet,
+	FileText,
+	Loader2,
+	Mail,
+	Package,
+	QrCode,
+	Users,
+} from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import adminService from "@/api/services/adminService";
 import assetService from "@/api/services/assetService";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { Input } from "@/ui/input";
+import { Label } from "@/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
 import { getCompanyStatusBadge } from "@/utils/badge-styles";
@@ -44,6 +63,36 @@ function StatCard({ icon, label, value, isLoading, colorClass = "bg-primary/10 t
 export default function CompanyDetailPage() {
 	const { companyId } = useParams<{ companyId: string }>();
 	const navigate = useNavigate();
+
+	// Export state
+	const [exportModalOpen, setExportModalOpen] = useState(false);
+	const [exportStartDate, setExportStartDate] = useState("");
+	const [exportEndDate, setExportEndDate] = useState("");
+	const [exportFormat, setExportFormat] = useState<"csv" | "pdf">("csv");
+	const [exporting, setExporting] = useState(false);
+
+	const handleExport = async () => {
+		if (!companyId) return;
+		if (!exportStartDate || !exportEndDate) {
+			toast.error("Please select both start and end dates");
+			return;
+		}
+		setExporting(true);
+		try {
+			await adminService.exportCompanyData(companyId, {
+				startDate: exportStartDate,
+				endDate: exportEndDate,
+				format: exportFormat,
+			});
+			toast.success(`Company data exported as ${exportFormat.toUpperCase()}`);
+			setExportModalOpen(false);
+		} catch (error) {
+			console.error("Export error:", error);
+			toast.error("Failed to export company data");
+		} finally {
+			setExporting(false);
+		}
+	};
 
 	const { data: company, isLoading: companyLoading } = useQuery({
 		queryKey: ["admin", "company", companyId],
@@ -153,6 +202,10 @@ export default function CompanyDetailPage() {
 							</div>
 						</div>
 					</div>
+					<Button variant="outline" onClick={() => setExportModalOpen(true)}>
+						<Download className="h-4 w-4 mr-2" />
+						Export
+					</Button>
 				</div>
 			</div>
 
@@ -218,6 +271,64 @@ export default function CompanyDetailPage() {
 					</TabsContent>
 				</Tabs>
 			</div>
+			{/* Export Modal */}
+			<Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Export Company Data</DialogTitle>
+						<DialogDescription>
+							Export data for <strong>{company.companyName}</strong>. Select a date range and format.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-4 py-4">
+						<div className="grid grid-cols-2 gap-4">
+							<div className="space-y-2">
+								<Label>
+									Start Date <span className="text-destructive">*</span>
+								</Label>
+								<Input type="date" value={exportStartDate} onChange={(e) => setExportStartDate(e.target.value)} />
+							</div>
+							<div className="space-y-2">
+								<Label>
+									End Date <span className="text-destructive">*</span>
+								</Label>
+								<Input type="date" value={exportEndDate} onChange={(e) => setExportEndDate(e.target.value)} />
+							</div>
+						</div>
+						<div className="space-y-2">
+							<Label>Export Format</Label>
+							<Select value={exportFormat} onValueChange={(val: "csv" | "pdf") => setExportFormat(val)}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="csv">
+										<span className="flex items-center gap-2">
+											<FileSpreadsheet className="h-4 w-4" />
+											CSV
+										</span>
+									</SelectItem>
+									<SelectItem value="pdf">
+										<span className="flex items-center gap-2">
+											<FileText className="h-4 w-4" />
+											PDF
+										</span>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setExportModalOpen(false)} disabled={exporting}>
+							Cancel
+						</Button>
+						<Button onClick={handleExport} disabled={exporting || !exportStartDate || !exportEndDate}>
+							{exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+							Export
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

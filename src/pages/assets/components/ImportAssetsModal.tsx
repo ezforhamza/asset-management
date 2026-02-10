@@ -178,8 +178,8 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 							<strong>Required:</strong> serial_number, make, model, category
 						</p>
 						<p className="text-muted-foreground text-xs">
-							<strong>Optional:</strong> condition, verification_frequency, location, notes, channel, site_name, client,
-							geofence_threshold
+							<strong>Optional:</strong> condition, verification_frequency, location, notes, channel, siteNameId,
+							client, geofence_threshold
 						</p>
 					</div>
 				</div>

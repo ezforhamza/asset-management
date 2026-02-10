@@ -99,6 +99,11 @@ export interface UpdateSettingsReq {
 	repairNotificationEmails?: string[];
 }
 
+// Verification frequency update request (via company settings)
+export interface UpdateCompanySettingsReq {
+	verificationFrequency?: number;
+}
+
 // Asset Template Types
 export interface AssetTemplate {
 	_id: string;
@@ -194,6 +199,12 @@ const updateSettings = (settings: UpdateSettingsReq) => {
 	return apiClient.patch<Company>({ url: `${CompanyApi.Companies}/${companyId}`, data: { settings } });
 };
 
+// Update company settings (verificationFrequency via settings payload)
+const updateCompanySettings = (data: UpdateCompanySettingsReq) => {
+	const companyId = getCurrentCompanyId();
+	return apiClient.patch<Company>({ url: `${CompanyApi.Companies}/${companyId}`, data: { settings: data } });
+};
+
 // ============================================
 // Asset Templates Service
 // ============================================
@@ -226,6 +237,7 @@ export default {
 	updateProfile,
 	getSettings,
 	updateSettings,
+	updateCompanySettings,
 	// Asset Templates
 	getAssetTemplates,
 	createAssetTemplate,

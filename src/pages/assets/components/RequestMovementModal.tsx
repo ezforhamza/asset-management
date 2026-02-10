@@ -46,6 +46,8 @@ export function RequestMovementModal({ open, onOpenChange, asset }: RequestMovem
 		onSuccess: () => {
 			toast.success("Movement request created successfully");
 			queryClient.invalidateQueries({ queryKey: ["asset-movements"] });
+			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
 			handleClose();
 		},
 		onError: () => {
@@ -174,7 +176,7 @@ export function RequestMovementModal({ open, onOpenChange, asset }: RequestMovem
 							Delivery Destination <span className="text-destructive">*</span>
 						</Label>
 						<Input
-							placeholder="e.g., CodeCoy Offices, 123 Main Street"
+							placeholder="123 long street"
 							value={form.deliveryDestinationText}
 							onChange={(e) => setForm({ ...form, deliveryDestinationText: e.target.value })}
 						/>

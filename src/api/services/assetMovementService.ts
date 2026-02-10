@@ -40,6 +40,7 @@ export interface AssetMovement {
 	updatedAt?: string;
 	completedAt?: string;
 	cancellationReason?: string;
+	completionNotes?: string;
 }
 
 export interface CreateAssetMovementReq {
@@ -73,6 +74,10 @@ export interface DeleteAssetMovementReq {
 	cancellationReason?: string;
 }
 
+export interface CompleteAssetMovementReq {
+	completionNotes?: string;
+}
+
 // ============================================
 // API Endpoints
 // ============================================
@@ -100,9 +105,22 @@ const deleteAssetMovement = (movementId: string, data?: DeleteAssetMovementReq) 
 		data,
 	});
 
+const startMovement = (movementId: string) =>
+	apiClient.patch<AssetMovement>({
+		url: `${AssetMovementApi.AssetMovements}/${movementId}/start`,
+	});
+
+const completeMovement = (movementId: string, data?: CompleteAssetMovementReq) =>
+	apiClient.patch<AssetMovement>({
+		url: `${AssetMovementApi.AssetMovements}/${movementId}/complete`,
+		data,
+	});
+
 export default {
 	getAssetMovements,
 	getAssetMovementById,
 	createAssetMovement,
 	deleteAssetMovement,
+	startMovement,
+	completeMovement,
 };

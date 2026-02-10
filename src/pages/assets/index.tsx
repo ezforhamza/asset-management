@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams, type UpdateAssetReq } from "@/api/services/assetService";
+import siteNameService from "@/api/services/siteNameService";
 import { useCanWrite } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
@@ -50,6 +51,7 @@ import { CreateAssetModal } from "./components/CreateAssetModal";
 import { ImportAssetsModal } from "./components/ImportAssetsModal";
 import { RequestMovementModal } from "./components/RequestMovementModal";
 import { RequestRepairModal } from "./components/RequestRepairModal";
+import { SiteNamesModal } from "./components/SiteNamesModal";
 
 /**
  * Check if an asset registration is pending (not yet registered).
@@ -72,6 +74,7 @@ export default function AssetsPage() {
 	const [categoryFilter, setCategoryFilter] = useState<string>("");
 	const [clientFilter, setClientFilter] = useState<string>("");
 	const [siteNameFilter, setSiteNameFilter] = useState<string>("");
+	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [channelFilter, setChannelFilter] = useState<string>("");
 
 	// Edit modal state
@@ -89,6 +92,9 @@ export default function AssetsPage() {
 
 	// Categories modal state
 	const [categoriesModalOpen, setCategoriesModalOpen] = useState(false);
+
+	// Site names modal state
+	const [siteNamesModalOpen, setSiteNamesModalOpen] = useState(false);
 
 	// Import assets modal state
 	const [importModalOpen, setImportModalOpen] = useState(false);
@@ -122,9 +128,10 @@ export default function AssetsPage() {
 		if (categoryFilter) params.categoryId = categoryFilter;
 		if (clientFilter) params.client = clientFilter;
 		if (siteNameFilter) params.siteName = siteNameFilter;
+		if (statusFilter) params.status = statusFilter;
 		if (channelFilter) params.channel = channelFilter;
 		return params;
-	}, [page, categoryFilter, clientFilter, siteNameFilter, channelFilter]);
+	}, [page, categoryFilter, clientFilter, siteNameFilter, statusFilter, channelFilter]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["assets", queryParams],
@@ -137,7 +144,13 @@ export default function AssetsPage() {
 		queryFn: () => assetCategoryService.getCategories({ page: 1, limit: 100 }),
 	});
 
-	// Fetch all assets to extract unique filter values (client, siteName, channel)
+	// Fetch site names from API for filter dropdown
+	const { data: siteNamesData } = useQuery({
+		queryKey: ["site-names", 1, 100],
+		queryFn: () => siteNameService.getSiteNames({ page: 1, limit: 100, sortBy: "name:asc" }),
+	});
+
+	// Fetch all assets to extract unique filter values (client, channel)
 	const { data: allAssetsData } = useQuery({
 		queryKey: ["assets-all-for-filters"],
 		queryFn: () => assetService.getAssets({ page: 1, limit: 1000 }),
@@ -147,9 +160,8 @@ export default function AssetsPage() {
 	const filterOptions = useMemo(() => {
 		const allAssets = allAssetsData?.results || [];
 		const clients = [...new Set(allAssets.map((a) => a.client).filter(Boolean))] as string[];
-		const siteNames = [...new Set(allAssets.map((a) => a.siteName).filter(Boolean))] as string[];
 		const channels = [...new Set(allAssets.map((a) => a.channel).filter(Boolean))] as string[];
-		return { clients, siteNames, channels };
+		return { clients, channels };
 	}, [allAssetsData]);
 
 	const updateMutation = useMutation({
@@ -252,7 +264,7 @@ export default function AssetsPage() {
 			verificationFrequency: asset.verificationFrequency ?? undefined,
 			geofenceThreshold: asset.geofenceThreshold ?? undefined,
 			channel: asset.channel ?? "",
-			siteName: asset.siteName ?? "",
+			siteNameId: asset.siteNameId ?? "",
 			client: asset.client ?? "",
 			categoryId: asset.category?.id ?? "",
 		});
@@ -292,8 +304,12 @@ export default function AssetsPage() {
 			verificationFrequency: editForm.verificationFrequency,
 			client: editForm.client || "",
 			channel: editForm.channel || "",
-			siteName: editForm.siteName || "",
 		};
+
+		// Send siteNameId if selected
+		if (editForm.siteNameId) {
+			submitData.siteNameId = editForm.siteNameId;
+		}
 
 		// Only include geofenceThreshold if it's a valid number
 		if (typeof editForm.geofenceThreshold === "number" && !Number.isNaN(editForm.geofenceThreshold)) {
@@ -392,6 +408,10 @@ export default function AssetsPage() {
 							<FolderOpen className="h-4 w-4 mr-2" />
 							Categories
 						</Button>
+						<Button variant="outline" onClick={() => setSiteNamesModalOpen(true)}>
+							<MapPin className="h-4 w-4 mr-2" />
+							Site Names
+						</Button>
 						{canWrite && (
 							<>
 								<Button variant="outline" onClick={() => setImportModalOpen(true)}>
@@ -410,9 +430,9 @@ export default function AssetsPage() {
 
 			{/* Search and Filters */}
 			<div className="flex-shrink-0 px-6 py-4 border-b space-y-3">
-				<div className="flex items-center gap-4 flex-wrap">
+				<div className="flex items-center gap-3 flex-wrap">
 					{/* Search */}
-					<div className="relative flex-1 min-w-[200px] max-w-md">
+					<div className="relative flex-1 min-w-[180px] max-w-xs">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
 							placeholder="Search by serial number, make, or model..."
@@ -483,14 +503,32 @@ export default function AssetsPage() {
 							<SelectValue placeholder="Site Name" />
 						</SelectTrigger>
 						<SelectContent>
-							{filterOptions.siteNames.map((siteName) => (
-								<SelectItem key={siteName} value={siteName}>
-									{siteName}
+							{siteNamesData?.results?.map((sn) => (
+								<SelectItem key={sn.id} value={sn.name}>
+									{sn.name}
 								</SelectItem>
 							))}
-							{filterOptions.siteNames.length === 0 && (
+							{(!siteNamesData?.results || siteNamesData.results.length === 0) && (
 								<div className="px-2 py-1.5 text-sm text-muted-foreground">No sites</div>
 							)}
+						</SelectContent>
+					</Select>
+
+					{/* Status Filter */}
+					<Select
+						value={statusFilter}
+						onValueChange={(val) => {
+							setStatusFilter(val);
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className="w-[130px]">
+							<SelectValue placeholder="Status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="active">Active</SelectItem>
+							<SelectItem value="inactive">Inactive</SelectItem>
+							<SelectItem value="retired">Retired</SelectItem>
 						</SelectContent>
 					</Select>
 
@@ -518,7 +556,7 @@ export default function AssetsPage() {
 					</Select>
 
 					{/* Clear Filters */}
-					{(categoryFilter || clientFilter || siteNameFilter || channelFilter) && (
+					{(categoryFilter || clientFilter || siteNameFilter || statusFilter || channelFilter) && (
 						<Button
 							variant="ghost"
 							size="sm"
@@ -526,6 +564,7 @@ export default function AssetsPage() {
 								setCategoryFilter("");
 								setClientFilter("");
 								setSiteNameFilter("");
+								setStatusFilter("");
 								setChannelFilter("");
 								setPage(1);
 							}}
@@ -811,11 +850,24 @@ export default function AssetsPage() {
 						</div>
 						<div className="space-y-2">
 							<Label>Site Name</Label>
-							<Input
-								placeholder="Enter site name"
-								value={editForm.siteName || ""}
-								onChange={(e) => setEditForm({ ...editForm, siteName: e.target.value })}
-							/>
+							<Select
+								value={editForm.siteNameId || ""}
+								onValueChange={(value) => setEditForm({ ...editForm, siteNameId: value })}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder="Select a site name" />
+								</SelectTrigger>
+								<SelectContent>
+									{siteNamesData?.results?.map((sn) => (
+										<SelectItem key={sn.id} value={sn.id}>
+											{sn.name}
+										</SelectItem>
+									))}
+									{(!siteNamesData?.results || siteNamesData.results.length === 0) && (
+										<div className="px-2 py-1.5 text-sm text-muted-foreground">No site names available</div>
+									)}
+								</SelectContent>
+							</Select>
 						</div>
 						<div className="space-y-2">
 							<Label>Client</Label>
@@ -930,6 +982,9 @@ export default function AssetsPage() {
 
 			{/* Categories Modal */}
 			<CategoriesModal open={categoriesModalOpen} onOpenChange={setCategoriesModalOpen} />
+
+			{/* Site Names Modal */}
+			<SiteNamesModal open={siteNamesModalOpen} onOpenChange={setSiteNamesModalOpen} />
 
 			{/* Import Assets Modal */}
 			<ImportAssetsModal open={importModalOpen} onOpenChange={setImportModalOpen} />

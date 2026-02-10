@@ -17,8 +17,15 @@ import type {
 	UpdateCompanyReq,
 } from "#/admin";
 import type { UserInfo } from "#/entity";
+import userStore from "@/store/userStore";
 import apiClient from "../apiClient";
 import API_ENDPOINTS from "../endpoints";
+
+// Helper to get auth token for fetch-based requests
+const getAuthToken = (): string => {
+	const { userToken } = userStore.getState();
+	return userToken?.accessToken || "";
+};
 
 // Re-export types for consumers
 export type {
@@ -332,6 +339,45 @@ const createSuperuser = (data: CreateSuperuserReq) =>
 		data,
 	});
 
+// ============================================
+// Company Export
+// ============================================
+
+const exportCompanyData = (
+	companyId: string,
+	params: { startDate: string; endDate: string; format: "csv" | "pdf" },
+) => {
+	const queryParams = new URLSearchParams();
+	queryParams.append("startDate", params.startDate);
+	queryParams.append("endDate", params.endDate);
+	queryParams.append("format", params.format);
+
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
+	const token = getAuthToken();
+
+	return fetch(`${baseUrl}/admin/companies/${companyId}/export?${queryParams.toString()}`, {
+		headers: {
+			Authorization: `Bearer ${token}`,
+		},
+	})
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.blob();
+		})
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `company_export_${params.startDate}_${params.endDate}.${params.format}`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		});
+};
+
 export default {
 	// Health & Monitoring
 	getHealth,
@@ -377,4 +423,6 @@ export default {
 	// Global Settings
 	getGlobalSettings,
 	updateGlobalSettings,
+	// Company Export
+	exportCompanyData,
 };

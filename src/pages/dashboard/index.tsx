@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle, ClipboardCheck, Clock, MapPin, Package, Wrench } from "lucide-react";
+import { AlertTriangle, CheckCircle, ClipboardCheck, Clock, MapPin, Package, Truck, Wrench } from "lucide-react";
 
 import dashboardService from "@/api/services/dashboardService";
 import { useUserInfo } from "@/store/userStore";
@@ -85,6 +85,12 @@ export default function DashboardPage() {
 												icon: Package,
 												iconColor: "text-muted-foreground",
 											},
+											{
+												label: "Movements",
+												value: stats?.movements?.total ?? 0,
+												icon: Truck,
+												iconColor: "text-purple-500",
+											},
 										]
 							}
 						/>
@@ -108,6 +114,12 @@ export default function DashboardPage() {
 												value: stats?.verificationStatus.overdue ?? 0,
 												icon: AlertTriangle,
 												iconColor: "text-red-500",
+											},
+											{
+												label: "Pending Movements",
+												value: stats?.movements?.pending ?? 0,
+												icon: Truck,
+												iconColor: "text-yellow-500",
 											},
 										]
 							}
@@ -138,6 +150,12 @@ export default function DashboardPage() {
 												value: stats?.activity.repairsNeeded ?? 0,
 												icon: Wrench,
 												iconColor: "text-orange-500",
+											},
+											{
+												label: "In-Progress Movements",
+												value: stats?.movements?.inProgress ?? 0,
+												icon: Truck,
+												iconColor: "text-blue-500",
 											},
 										]
 							}

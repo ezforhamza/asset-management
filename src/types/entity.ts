@@ -154,6 +154,7 @@ export interface Asset {
 	condition?: string | null;
 	channel?: string | null;
 	siteName?: string | null;
+	siteNameId?: string | null;
 	client?: string | null;
 	registeredLocation: { type: string; coordinates: [number, number] } | GeoLocation;
 	location?: {

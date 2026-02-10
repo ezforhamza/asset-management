@@ -31,6 +31,7 @@ export interface UserDashboardStats {
 	assets: {
 		byStatus: {
 			active: number;
+			inactive: number;
 			retired: number;
 			transferred: number;
 		};
@@ -48,6 +49,13 @@ export interface UserDashboardStats {
 		gpsOverrides: number;
 		repairsNeeded: number;
 		openInvestigations: number;
+	};
+	movements?: {
+		total: number;
+		pending: number;
+		inProgress: number;
+		completed: number;
+		cancelled: number;
 	};
 }
 
