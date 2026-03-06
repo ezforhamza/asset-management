@@ -45,7 +45,7 @@ export interface UpdateAssetReq {
 }
 
 export interface ExportAssetsParams {
-	format: "csv" | "pdf";
+	format: "xlsx" | "pdf";
 	status?: "active" | "retired" | "transferred";
 	registrationState?: boolean;
 	categoryId?: string;
@@ -203,6 +203,30 @@ const bulkImportAssets = (file: File) => {
 	});
 };
 
+const downloadImportTemplate = () => {
+	const { userToken } = useUserStore.getState();
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
+	const token = userToken?.accessToken;
+
+	return fetch(`${baseUrl}${AssetApi.Assets}/import-template`, {
+		headers: { Authorization: `Bearer ${token}` },
+	})
+		.then((response) => {
+			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+			return response.blob();
+		})
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "asset-import-template.xlsx";
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		});
+};
+
 const transferAsset = (data: TransferAssetReq) =>
 	apiClient.post<TransferAssetRes>({ url: `${AssetApi.Assets}/transfer`, data });
 
@@ -270,7 +294,7 @@ const exportAssets = (params: ExportAssetsParams) => {
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `assets_export_${new Date().toISOString().split("T")[0]}.${params.format}`;
+			a.download = `assets-export-${new Date().toISOString().split("T")[0]}.${params.format}`;
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
@@ -287,6 +311,7 @@ export default {
 	deleteAsset,
 	detachQrCode,
 	bulkImportAssets,
+	downloadImportTemplate,
 	transferAsset,
 	retireAsset,
 	exportAssets,

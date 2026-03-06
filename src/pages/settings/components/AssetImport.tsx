@@ -6,7 +6,6 @@ import assetService from "@/api/services/assetService";
 import { Alert, AlertDescription } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Progress } from "@/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 
 interface ImportResult {
 	success: boolean;
@@ -17,21 +16,15 @@ interface ImportResult {
 	totalProcessed: number;
 }
 
-interface ParsedAsset {
-	serialNumber: string;
-	make: string;
-	model: string;
-	verificationFrequency?: number;
-	location?: string;
-	notes?: string;
-}
+const isXlsxFile = (f: File) =>
+	f.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || f.name.endsWith(".xlsx");
 
 export function AssetImport() {
 	const queryClient = useQueryClient();
 	const [file, setFile] = useState<File | null>(null);
-	const [preview, setPreview] = useState<ParsedAsset[]>([]);
 	const [importResult, setImportResult] = useState<ImportResult | null>(null);
 	const [dragActive, setDragActive] = useState(false);
+	const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
 	const importMutation = useMutation({
 		mutationFn: assetService.bulkImportAssets,
@@ -56,78 +49,10 @@ export function AssetImport() {
 		},
 	});
 
-	const parseCSV = useCallback((text: string): ParsedAsset[] => {
-		const lines = text.trim().split("\n");
-		if (lines.length < 2) return [];
-
-		const headers = lines[0]
-			.toLowerCase()
-			.split(",")
-			.map((h) => h.trim());
-		const assets: ParsedAsset[] = [];
-
-		for (let i = 1; i < lines.length; i++) {
-			const values = lines[i].split(",").map((v) => v.trim());
-			const asset: ParsedAsset = {
-				serialNumber: "",
-				make: "",
-				model: "",
-			};
-
-			headers.forEach((header, idx) => {
-				const value = values[idx] || "";
-				switch (header) {
-					case "serial_number":
-					case "serialnumber":
-					case "serial":
-						asset.serialNumber = value;
-						break;
-					case "make":
-					case "manufacturer":
-						asset.make = value;
-						break;
-					case "model":
-						asset.model = value;
-						break;
-					case "verification_frequency":
-					case "frequency":
-						asset.verificationFrequency = parseInt(value) || undefined;
-						break;
-					case "location":
-						asset.location = value;
-						break;
-					case "notes":
-						asset.notes = value;
-						break;
-				}
-			});
-
-			if (asset.serialNumber && asset.make && asset.model) {
-				assets.push(asset);
-			}
-		}
-
-		return assets;
+	const handleFileChange = useCallback((selectedFile: File | null) => {
+		setFile(selectedFile);
+		setImportResult(null);
 	}, []);
-
-	const handleFileChange = useCallback(
-		(selectedFile: File | null) => {
-			setFile(selectedFile);
-			setImportResult(null);
-			setPreview([]);
-
-			if (selectedFile) {
-				const reader = new FileReader();
-				reader.onload = (e) => {
-					const text = e.target?.result as string;
-					const parsed = parseCSV(text);
-					setPreview(parsed.slice(0, 5)); // Show first 5 rows
-				};
-				reader.readAsText(selectedFile);
-			}
-		},
-		[parseCSV],
-	);
 
 	const handleDrag = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
@@ -147,10 +72,10 @@ export function AssetImport() {
 
 			if (e.dataTransfer.files?.[0]) {
 				const droppedFile = e.dataTransfer.files[0];
-				if (droppedFile.type === "text/csv" || droppedFile.name.endsWith(".csv")) {
+				if (isXlsxFile(droppedFile)) {
 					handleFileChange(droppedFile);
 				} else {
-					toast.error("Please upload a CSV file");
+					toast.error("Please upload an XLSX file");
 				}
 			}
 		},
@@ -162,24 +87,19 @@ export function AssetImport() {
 		importMutation.mutate(file);
 	};
 
-	const downloadTemplate = () => {
-		const template = `serial_number,make,model,verification_frequency,location,notes
-SN-001234,Caterpillar,320D,30,Site A,Heavy excavator
-SN-001235,Komatsu,PC200,14,Site B,Mini excavator
-SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
-
-		const blob = new Blob([template], { type: "text/csv" });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = "asset_import_template.csv";
-		a.click();
-		URL.revokeObjectURL(url);
+	const downloadTemplate = async () => {
+		setDownloadingTemplate(true);
+		try {
+			await assetService.downloadImportTemplate();
+		} catch {
+			toast.error("Failed to download template");
+		} finally {
+			setDownloadingTemplate(false);
+		}
 	};
 
 	const clearFile = () => {
 		setFile(null);
-		setPreview([]);
 		setImportResult(null);
 	};
 
@@ -188,11 +108,15 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 			{/* Download Template */}
 			<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
 				<div>
-					<p className="text-sm font-medium">Download CSV Template</p>
+					<p className="text-sm font-medium">Download XLSX Template</p>
 					<p className="text-xs text-muted-foreground">Use this template to format your asset data correctly</p>
 				</div>
-				<Button variant="outline" size="sm" onClick={downloadTemplate}>
-					<Download className="h-4 w-4 mr-2" />
+				<Button variant="outline" size="sm" onClick={downloadTemplate} disabled={downloadingTemplate}>
+					{downloadingTemplate ? (
+						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+					) : (
+						<Download className="h-4 w-4 mr-2" />
+					)}
 					Template
 				</Button>
 			</div>
@@ -209,17 +133,24 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 					onDrop={handleDrop}
 				>
 					<Upload className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
-					<p className="text-sm font-medium mb-1">Drag and drop your CSV file here</p>
+					<p className="text-sm font-medium mb-1">Drag and drop your XLSX file here</p>
 					<p className="text-xs text-muted-foreground mb-4">or click to browse</p>
 					<input
 						type="file"
-						accept=".csv"
+						accept=".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 						className="hidden"
-						id="csv-upload"
-						onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
+						id="xlsx-upload"
+						onChange={(e) => {
+							const f = e.target.files?.[0] || null;
+							if (f && !isXlsxFile(f)) {
+								toast.error("Please upload an XLSX file");
+								return;
+							}
+							handleFileChange(f);
+						}}
 					/>
 					<Button variant="outline" asChild>
-						<label htmlFor="csv-upload" className="cursor-pointer">
+						<label htmlFor="xlsx-upload" className="cursor-pointer">
 							Select File
 						</label>
 					</Button>
@@ -232,44 +163,13 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 							<FileSpreadsheet className="h-8 w-8 text-primary" />
 							<div>
 								<p className="text-sm font-medium">{file.name}</p>
-								<p className="text-xs text-muted-foreground">
-									{(file.size / 1024).toFixed(1)} KB • {preview.length}+ assets detected
-								</p>
+								<p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
 							</div>
 						</div>
 						<Button variant="ghost" size="icon" onClick={clearFile}>
 							<X className="h-4 w-4" />
 						</Button>
 					</div>
-
-					{/* Preview Table */}
-					{preview.length > 0 && (
-						<div className="rounded-md border overflow-hidden">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Serial Number</TableHead>
-										<TableHead>Make</TableHead>
-										<TableHead>Model</TableHead>
-										<TableHead>Frequency</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{preview.map((asset, idx) => (
-										<TableRow key={idx}>
-											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
-											<TableCell>{asset.make}</TableCell>
-											<TableCell>{asset.model}</TableCell>
-											<TableCell>{asset.verificationFrequency || 30} days</TableCell>
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-							{preview.length === 5 && (
-								<div className="p-2 bg-muted/50 text-center text-xs text-muted-foreground">Showing first 5 rows...</div>
-							)}
-						</div>
-					)}
 
 					{/* Import Progress */}
 					{importMutation.isPending && (
@@ -320,9 +220,9 @@ SN-001236,John Deere,310L,7,Warehouse,Backhoe loader`;
 						<Button variant="outline" onClick={clearFile}>
 							Cancel
 						</Button>
-						<Button onClick={handleImport} disabled={importMutation.isPending || preview.length === 0}>
+						<Button onClick={handleImport} disabled={importMutation.isPending}>
 							{importMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-							Import {preview.length}+ Assets
+							Import Assets
 						</Button>
 					</div>
 				</div>

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileUp, Loader2, Upload, X } from "lucide-react";
+import { Download, FileUp, Loader2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Company } from "#/entity";
@@ -28,6 +28,7 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 	const [file, setFile] = useState<File | null>(null);
 	const [companyId, setCompanyId] = useState("none");
 	const [result, setResult] = useState<ImportResult | null>(null);
+	const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
 	const mutation = useMutation({
 		mutationFn: (data: { file: File; companyId?: string }) => qrService.bulkImportQRCodes(data.file, data.companyId),
@@ -50,14 +51,18 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 			const responseData = error.response?.data;
 
 			// Check if error response contains duplicate info
-			if (responseData && typeof responseData.duplicates !== 'undefined') {
+			if (responseData && typeof responseData.duplicates !== "undefined") {
 				setResult(responseData);
 				queryClient.invalidateQueries({ queryKey: ["qr"] });
 
 				if (responseData.imported === 0 && responseData.duplicates > 0) {
-					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes imported`, { position: "top-center" });
+					toast.warning(`All ${responseData.duplicates} QR codes were duplicates - no new codes imported`, {
+						position: "top-center",
+					});
 				} else if (responseData.imported > 0 && responseData.duplicates > 0) {
-					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`, { position: "top-center" });
+					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`, {
+						position: "top-center",
+					});
 				}
 				// Fallback error is handled by apiClient
 			}
@@ -74,11 +79,31 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const selectedFile = e.target.files?.[0];
-		if (selectedFile) setFile(selectedFile);
+		if (selectedFile) {
+			const isXlsx =
+				selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+				selectedFile.name.endsWith(".xlsx");
+			if (!isXlsx) {
+				toast.error("Please select an XLSX file");
+				return;
+			}
+			setFile(selectedFile);
+		}
 	};
 
 	const handleImport = () => {
 		if (file) mutation.mutate({ file, companyId: companyId === "none" ? undefined : companyId });
+	};
+
+	const handleDownloadTemplate = async () => {
+		setDownloadingTemplate(true);
+		try {
+			await qrService.downloadQRImportTemplate();
+		} catch {
+			toast.error("Failed to download template");
+		} finally {
+			setDownloadingTemplate(false);
+		}
 	};
 
 	// Show result
@@ -125,10 +150,25 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 				<DialogHeader>
 					<DialogTitle>Bulk Import QR Codes</DialogTitle>
 					<DialogDescription>
-						Upload a CSV file with QR codes to import. Optionally allocate all to a company.
+						Upload an XLSX file with QR codes to import. Optionally allocate all to a company.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 py-4">
+					{/* Download Template */}
+					<div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+						<div>
+							<p className="text-sm font-medium">Download XLSX Template</p>
+							<p className="text-xs text-muted-foreground">Two columns: qrCode (required), companyId (optional)</p>
+						</div>
+						<Button variant="outline" size="sm" onClick={handleDownloadTemplate} disabled={downloadingTemplate}>
+							{downloadingTemplate ? (
+								<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+							) : (
+								<Download className="h-4 w-4 mr-2" />
+							)}
+							Template
+						</Button>
+					</div>
 					<div className="space-y-2">
 						<Label>Company (Optional)</Label>
 						<Select value={companyId} onValueChange={setCompanyId}>
@@ -145,13 +185,19 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 							</SelectContent>
 						</Select>
 					</div>
-					<input ref={fileInputRef} type="file" accept=".csv" onChange={handleFileChange} className="hidden" />
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".xlsx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+						onChange={handleFileChange}
+						className="hidden"
+					/>
 					<div
 						onClick={() => fileInputRef.current?.click()}
 						className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors border-muted-foreground/25 hover:border-primary/50"
 					>
 						<FileUp className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-						<p className="text-sm font-medium">Click to select a CSV file</p>
+						<p className="text-sm font-medium">Click to select an XLSX file</p>
 						<p className="text-xs text-muted-foreground mt-1">or drag & drop</p>
 					</div>
 					{file && (
@@ -167,8 +213,10 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 						</div>
 					)}
 					<div className="text-xs text-muted-foreground">
-						<p className="font-medium mb-1">CSV Format:</p>
-						<code className="block p-2 bg-muted rounded text-xs">qrCode,companyId (optional)</code>
+						<p className="font-medium mb-1">XLSX Format:</p>
+						<code className="block p-2 bg-muted rounded text-xs">
+							Column A: qrCode &nbsp;|&nbsp; Column B: companyId (optional)
+						</code>
 					</div>
 				</div>
 				<DialogFooter>

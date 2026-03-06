@@ -156,7 +156,7 @@ export interface DashboardStatsRes {
 // ============================================
 
 export interface ExportReportParams {
-	format: "csv" | "pdf";
+	format: "xlsx" | "pdf";
 	reportType: "verifications" | "overdue" | "assets";
 	startDate?: string;
 	endDate?: string;

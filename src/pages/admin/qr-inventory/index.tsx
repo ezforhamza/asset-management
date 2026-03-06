@@ -174,26 +174,15 @@ export default function AdminQRInventoryPage() {
 								</span>
 							)}
 						</Button>
-						<Button 
-							variant="outline" 
-							onClick={() => setImportModalOpen(true)}
-							disabled={selectedQRIds.size > 0}
-						>
+						<Button variant="outline" onClick={() => setImportModalOpen(true)} disabled={selectedQRIds.size > 0}>
 							<Upload className="h-4 w-4 mr-2" />
-							CSV Import
+							XLSX Import
 						</Button>
-						<Button 
-							variant="outline" 
-							onClick={() => setBulkCreateModalOpen(true)}
-							disabled={selectedQRIds.size > 0}
-						>
+						<Button variant="outline" onClick={() => setBulkCreateModalOpen(true)} disabled={selectedQRIds.size > 0}>
 							<Plus className="h-4 w-4 mr-2" />
 							Bulk Create
 						</Button>
-						<Button 
-							onClick={() => setCreateModalOpen(true)}
-							disabled={selectedQRIds.size > 0}
-						>
+						<Button onClick={() => setCreateModalOpen(true)} disabled={selectedQRIds.size > 0}>
 							<Plus className="h-4 w-4 mr-2" />
 							Create QR Code
 						</Button>

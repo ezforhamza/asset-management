@@ -345,7 +345,7 @@ const createSuperuser = (data: CreateSuperuserReq) =>
 
 const exportCompanyData = (
 	companyId: string,
-	params: { startDate: string; endDate: string; format: "csv" | "pdf" },
+	params: { startDate: string; endDate: string; format: "xlsx" | "pdf" },
 ) => {
 	const queryParams = new URLSearchParams();
 	queryParams.append("startDate", params.startDate);
@@ -370,7 +370,7 @@ const exportCompanyData = (
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `company_export_${params.startDate}_${params.endDate}.${params.format}`;
+			a.download = `company-activity-${params.startDate}_${params.endDate}.${params.format}`;
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);

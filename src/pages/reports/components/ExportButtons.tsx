@@ -14,7 +14,7 @@ interface ExportButtonsProps {
 export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps) {
 	const [exporting, setExporting] = useState(false);
 
-	const handleExport = async (format: "csv" | "pdf") => {
+	const handleExport = async (format: "xlsx" | "pdf") => {
 		setExporting(true);
 		try {
 			const params: any = {
@@ -45,9 +45,9 @@ export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuItem onClick={() => handleExport("csv")}>
+				<DropdownMenuItem onClick={() => handleExport("xlsx")}>
 					<FileSpreadsheet className="h-4 w-4 mr-2" />
-					Export as CSV
+					Export as Excel
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={() => handleExport("pdf")}>
 					<FileText className="h-4 w-4 mr-2" />

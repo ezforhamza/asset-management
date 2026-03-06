@@ -1,5 +1,6 @@
 // @ts-nocheck
 import type { QRCode } from "#/entity";
+import useUserStore from "@/store/userStore";
 import apiClient from "../apiClient";
 import API_ENDPOINTS from "../endpoints";
 
@@ -113,7 +114,7 @@ const createQRCode = (data: CreateQRCodeReq) => apiClient.post<QRCode>({ url: AP
 const bulkCreateQRCodes = (data: BulkCreateQRCodesReq) =>
 	apiClient.post<{ created: number; duplicates: number }>({ url: API_ENDPOINTS.QR_CODES.BULK, data });
 
-// Bulk import QR codes from CSV
+// Bulk import QR codes from XLSX
 const bulkImportQRCodes = (file: File, companyId?: string) => {
 	const formData = new FormData();
 	formData.append("file", file);
@@ -170,6 +171,30 @@ const exportQRCodesPDFAdvanced = async (
 	return response;
 };
 
+const downloadQRImportTemplate = () => {
+	const { userToken } = useUserStore.getState();
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
+	const token = userToken?.accessToken;
+
+	return fetch(`${baseUrl}${API_ENDPOINTS.QR_CODES.BASE}/import-template`, {
+		headers: { Authorization: `Bearer ${token}` },
+	})
+		.then((response) => {
+			if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+			return response.blob();
+		})
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = "qr-import-template.xlsx";
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		});
+};
+
 export default {
 	getQRCodes,
 	getQRCodeStats,
@@ -178,6 +203,7 @@ export default {
 	createQRCode,
 	bulkCreateQRCodes,
 	bulkImportQRCodes,
+	downloadQRImportTemplate,
 	allocateQRCodes,
 	updateQRCode,
 	deleteQRCode,

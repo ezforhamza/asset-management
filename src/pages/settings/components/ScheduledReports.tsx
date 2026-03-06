@@ -30,7 +30,6 @@ const FREQUENCIES: { value: ScheduledReportFrequency; label: string }[] = [
 ];
 
 const FORMATS: { value: ScheduledReportFormat; label: string }[] = [
-	{ value: "csv", label: "CSV" },
 	{ value: "pdf", label: "PDF" },
 	{ value: "xlsx", label: "Excel (XLSX)" },
 ];
@@ -40,7 +39,7 @@ export function ScheduledReports() {
 	const [name, setName] = useState("");
 	const [reportType, setReportType] = useState<ScheduledReportType>("verification_summary");
 	const [frequency, setFrequency] = useState<ScheduledReportFrequency>("weekly");
-	const [reportFormat, setReportFormat] = useState<ScheduledReportFormat>("csv");
+	const [reportFormat, setReportFormat] = useState<ScheduledReportFormat>("xlsx");
 	const [recipients, setRecipients] = useState("");
 	const [includePhotos, setIncludePhotos] = useState(false);
 
@@ -59,7 +58,7 @@ export function ScheduledReports() {
 		setName("");
 		setReportType("verification_summary");
 		setFrequency("weekly");
-		setReportFormat("csv");
+		setReportFormat("xlsx");
 		setRecipients("");
 		setIncludePhotos(false);
 	};

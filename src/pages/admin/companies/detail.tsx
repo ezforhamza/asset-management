@@ -68,7 +68,7 @@ export default function CompanyDetailPage() {
 	const [exportModalOpen, setExportModalOpen] = useState(false);
 	const [exportStartDate, setExportStartDate] = useState("");
 	const [exportEndDate, setExportEndDate] = useState("");
-	const [exportFormat, setExportFormat] = useState<"csv" | "pdf">("csv");
+	const [exportFormat, setExportFormat] = useState<"xlsx" | "pdf">("xlsx");
 	const [exporting, setExporting] = useState(false);
 
 	const handleExport = async () => {
@@ -297,15 +297,15 @@ export default function CompanyDetailPage() {
 						</div>
 						<div className="space-y-2">
 							<Label>Export Format</Label>
-							<Select value={exportFormat} onValueChange={(val: "csv" | "pdf") => setExportFormat(val)}>
+							<Select value={exportFormat} onValueChange={(val: "xlsx" | "pdf") => setExportFormat(val)}>
 								<SelectTrigger>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="csv">
+									<SelectItem value="xlsx">
 										<span className="flex items-center gap-2">
 											<FileSpreadsheet className="h-4 w-4" />
-											CSV
+											Excel (.xlsx)
 										</span>
 									</SelectItem>
 									<SelectItem value="pdf">

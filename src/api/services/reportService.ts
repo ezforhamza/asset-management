@@ -37,7 +37,7 @@ export interface MapLocationItem {
 	nextDue: string | null;
 }
 export type ScheduledReportFrequency = "daily" | "weekly" | "monthly" | "quarterly";
-export type ScheduledReportFormat = "csv" | "pdf" | "xlsx";
+export type ScheduledReportFormat = "pdf" | "xlsx";
 
 export interface ScheduledReport {
 	_id: string;
@@ -180,7 +180,7 @@ const exportReport = (params: ExportReportParams) => {
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement("a");
 			a.href = url;
-			a.download = `report_${params.reportType}_${new Date().toISOString().split("T")[0]}.${params.format}`;
+			a.download = `${params.reportType}-report-${new Date().toISOString().split("T")[0]}.${params.format}`;
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
@@ -209,7 +209,7 @@ const createSchedule = (data: CreateScheduleReq | CreateScheduledReportReq) => {
 					name: `${data.frequency.charAt(0).toUpperCase() + data.frequency.slice(1)} ${data.reportType.replace(/_/g, " ")}`,
 					reportType: data.reportType as ScheduledReportType,
 					frequency: data.frequency,
-					format: data.includeAttachment ? "csv" : "pdf",
+					format: data.includeAttachment ? "xlsx" : "pdf",
 					recipients: data.recipients,
 					filters: { includePhotos: false },
 					isActive: true,
