@@ -924,23 +924,29 @@ export default function AuditLogDetailPage() {
 						<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 							{/* Left Column - 2/3 width */}
 							<div className="lg:col-span-2 space-y-6">
-								{/* Details Section */}
-								<div className="rounded-lg border bg-card">
-									<div className="p-6 border-b">
-										<div className="flex items-center gap-2">
-											{getActionIcon(log.action)}
-											<h2 className="text-lg font-semibold">{getActionDescription(log).title}</h2>
+								{/* Details Section - hidden for movement actions */}
+								{!log.action.startsWith("movement_") && (
+									<div className="rounded-lg border bg-card">
+										<div className="p-6 border-b">
+											<div className="flex items-center gap-2">
+												{getActionIcon(log.action)}
+												<h2 className="text-lg font-semibold">{getActionDescription(log).title}</h2>
+											</div>
 										</div>
+										<div className="p-6">{renderChangesComparison(log)}</div>
 									</div>
-									<div className="p-6">{renderChangesComparison(log)}</div>
-								</div>
+								)}
 
 								{/* Additional Metadata Section */}
 								{(() => {
 									if (!log.metadata) return null;
+									const movementExcluded = log.action.startsWith("movement_")
+										? ["registrationState", "verificationFrequency", "geofenceThreshold"]
+										: [];
 									const filteredEntries = Object.entries(log.metadata).filter(([key, value]) => {
 										if (isImageUrl(value)) return false;
 										if (excludedFields.includes(key)) return false;
+										if (movementExcluded.includes(key)) return false;
 										if (complexObjectFields.includes(key)) return false;
 										const rendered = renderValue(value, key);
 										return rendered && !isEmptyValue(rendered);
