@@ -149,7 +149,7 @@ export default function AssetHistoryPage() {
 							{error instanceof Error ? error.message : "An unexpected error occurred"}
 						</p>
 					</div>
-					<Button variant="outline" onClick={() => navigate("/assets")}>
+					<Button variant="outline" onClick={() => navigate("/customer-portal/assets")}>
 						<ArrowLeft className="h-4 w-4 mr-2" />
 						Back to Assets
 					</Button>
@@ -170,7 +170,7 @@ export default function AssetHistoryPage() {
 			<div className="flex-shrink-0 px-6 py-4 border-b bg-background sticky top-0 z-10">
 				<div className="flex items-center justify-between w-full">
 					<div className="flex items-center gap-4">
-						<Button variant="ghost" size="icon" onClick={() => navigate("/assets")}>
+						<Button variant="ghost" size="icon" onClick={() => navigate("/customer-portal/assets")}>
 							<ArrowLeft className="h-5 w-5" />
 						</Button>
 						<div>
@@ -184,13 +184,23 @@ export default function AssetHistoryPage() {
 						</div>
 					</div>
 					{fromReports && (
-						<Button variant="outline" size="sm" onClick={() => navigate("/reports")} className="flex-shrink-0">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => navigate("/customer-portal/reports")}
+							className="flex-shrink-0"
+						>
 							<FileText className="h-4 w-4 mr-2" />
 							Back to Reports
 						</Button>
 					)}
 					{fromMap && (
-						<Button variant="outline" size="sm" onClick={() => navigate("/map")} className="flex-shrink-0">
+						<Button
+							variant="outline"
+							size="sm"
+							onClick={() => navigate("/customer-portal/map")}
+							className="flex-shrink-0"
+						>
 							<MapPin className="h-4 w-4 mr-2" />
 							Back to Map
 						</Button>

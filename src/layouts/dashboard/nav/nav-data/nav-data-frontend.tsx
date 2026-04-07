@@ -9,31 +9,31 @@ export const clientNavData: NavProps["data"] = [
 		items: [
 			{
 				title: "Dashboard",
-				path: "/dashboard",
+				path: "/customer-portal/dashboard",
 				icon: <Icon icon="solar:home-2-bold-duotone" size="24" />,
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
 			{
 				title: "Assets",
-				path: "/assets",
+				path: "/customer-portal/assets",
 				icon: <Icon icon="solar:box-bold-duotone" size="24" />,
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
 			{
 				title: "Asset Movements",
-				path: "/asset-movements",
+				path: "/customer-portal/asset-movements",
 				icon: <Icon icon="solar:transfer-horizontal-bold-duotone" size="24" />,
 				roles: [UserRole.CUSTOMER_ADMIN],
 			},
 			{
 				title: "Reports",
-				path: "/reports",
+				path: "/customer-portal/reports",
 				icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
 			{
 				title: "Map",
-				path: "/map",
+				path: "/customer-portal/map",
 				icon: <Icon icon="solar:map-point-bold-duotone" size="24" />,
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
@@ -44,13 +44,13 @@ export const clientNavData: NavProps["data"] = [
 		items: [
 			{
 				title: "Users",
-				path: "/users",
+				path: "/customer-portal/users",
 				icon: <Icon icon="solar:users-group-rounded-bold-duotone" size="24" />,
 				roles: [UserRole.CUSTOMER_ADMIN],
 			},
 			{
 				title: "Settings",
-				path: "/settings",
+				path: "/customer-portal/settings",
 				icon: <Icon icon="solar:settings-bold-duotone" size="24" />,
 				roles: [UserRole.CUSTOMER_ADMIN],
 			},

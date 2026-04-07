@@ -657,7 +657,7 @@ export default function AssetsPage() {
 											onClick={(e) => {
 												const target = e.target as HTMLElement;
 												if (target.closest("button") || target.closest('[role="menuitem"]')) return;
-												navigate(`/assets/${getAssetId(asset)}/history`);
+												navigate(`/customer-portal/assets/${getAssetId(asset)}/history`);
 											}}
 										>
 											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
@@ -672,7 +672,7 @@ export default function AssetsPage() {
 														variant="ghost"
 														size="sm"
 														className="h-7 px-2 text-xs"
-														onClick={() => navigate(`/map?assetId=${getAssetId(asset)}`)}
+														onClick={() => navigate(`/customer-portal/map?assetId=${getAssetId(asset)}`)}
 													>
 														<MapPin className="h-3 w-3 mr-1" />
 														View on Map

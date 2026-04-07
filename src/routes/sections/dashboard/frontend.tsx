@@ -9,28 +9,37 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 		// ============================================
 		// Client Panel Pages (Customer Admin & Field User)
 		// ============================================
-		{ path: "dashboard", element: Component("/pages/dashboard") },
-		{ path: "assets", element: Component("/pages/assets") },
-		{ path: "assets/:assetId/history", element: Component("/pages/assets/history") },
 		{
-			path: "asset-movements",
-			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/asset-movements")}</RoleGuard>,
-		},
-		{ path: "reports", element: Component("/pages/reports") },
-		{ path: "map", element: Component("/pages/map") },
+			path: "customer-portal",
+			children: [
+				{ index: true, element: <Navigate to="dashboard" replace /> },
+				{ path: "dashboard", element: Component("/pages/dashboard") },
+				{ path: "assets", element: Component("/pages/assets") },
+				{ path: "assets/:assetId/history", element: Component("/pages/assets/history") },
+				{
+					path: "asset-movements",
+					element: (
+						<RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/asset-movements")}</RoleGuard>
+					),
+				},
+				{ path: "reports", element: Component("/pages/reports") },
+				{ path: "map", element: Component("/pages/map") },
+				{ path: "change-password", element: Component("/pages/sys/change-password") },
 
-		// Management pages (Customer Admin only)
-		{
-			path: "users",
-			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users")}</RoleGuard>,
-		},
-		{
-			path: "users/:userId",
-			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users/detail")}</RoleGuard>,
-		},
-		{
-			path: "settings",
-			element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/settings")}</RoleGuard>,
+				// Management pages (Customer Admin only)
+				{
+					path: "users",
+					element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users")}</RoleGuard>,
+				},
+				{
+					path: "users/:userId",
+					element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/users/detail")}</RoleGuard>,
+				},
+				{
+					path: "settings",
+					element: <RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/settings")}</RoleGuard>,
+				},
+			],
 		},
 
 		// ============================================
@@ -49,13 +58,9 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "audit-logs", element: Component("/pages/admin/audit-logs") },
 				{ path: "audit-logs/:id", element: Component("/pages/admin/audit-logs/detail") },
 				{ path: "settings", element: Component("/pages/admin/settings") },
+				{ path: "change-password", element: Component("/pages/sys/change-password") },
 			],
 		},
-
-		// ============================================
-		// Common Pages
-		// ============================================
-		{ path: "change-password", element: Component("/pages/sys/change-password") },
 
 		// Error pages
 		{

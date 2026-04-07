@@ -2,17 +2,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download, FileUp, Loader2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import assetService from "@/api/services/assetService";
+import siteNameService from "@/api/services/siteNameService";
+import { downloadFailedImportFile } from "@/utils/download-failed-import";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
-import { downloadFailedImportFile } from "@/utils/download-failed-import";
 
-interface ImportAssetsModalProps {
+interface ImportSiteNamesModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }
 
-export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps) {
+export function ImportSiteNamesModal({ open, onOpenChange }: ImportSiteNamesModalProps) {
 	const queryClient = useQueryClient();
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,36 +20,27 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 	const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
 	const importMutation = useMutation({
-		mutationFn: (file: File) => assetService.bulkImportAssets(file),
+		mutationFn: (file: File) => siteNameService.bulkImportSiteNames(file),
 		onSuccess: (data) => {
 			if (data.imported > 0) {
-				toast.success(`Successfully imported ${data.imported} of ${data.totalProcessed} assets`);
+				toast.success(`Successfully imported ${data.imported} of ${data.totalProcessed} site names`);
 			}
 
 			if (data.duplicates && data.duplicates > 0) {
-				const duplicateSerials = data.duplicatesList?.join(", ") || "";
-				toast.warning(`${data.duplicates} duplicate(s) skipped${duplicateSerials ? `: ${duplicateSerials}` : ""}`);
-			}
-
-			if (data.warnings && data.warnings.length > 0) {
-				toast.warning(`${data.warnings.length} site name(s) auto-corrected via fuzzy match`);
-			}
-
-			const otherErrors = data.errors?.filter((err) => !err.includes("Duplicate")) || [];
-			if (otherErrors.length > 0) {
-				toast.error(`${otherErrors.length} row(s) failed to import`);
+				const dupes = data.duplicatesList?.join(", ") || "";
+				toast.warning(`${data.duplicates} duplicate(s) skipped${dupes ? `: ${dupes}` : ""}`);
 			}
 
 			if (data.imported === 0 && data.totalProcessed > 0 && !data.failedFile) {
-				toast.error("No assets were imported. Please check your XLSX file.");
+				toast.error("No site names were imported. Please check your XLSX file.");
 			}
 
 			if (data.failedFile && data.failedCount && data.failedCount > 0) {
-				toast.error(`${data.failedCount} of ${data.totalProcessed} entries failed — downloading error file`);
-				downloadFailedImportFile(data.failedFile, "failed-assets.xlsx");
+				toast.error(`${data.failedCount} of ${data.totalProcessed} entries failed to import`);
+				downloadFailedImportFile(data.failedFile, "failed-sitenames.xlsx");
 			}
 
-			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["site-names"] });
 			handleClose();
 		},
 		onError: (error: any) => {
@@ -60,10 +51,10 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 				const total = responseData.totalProcessed ?? failed;
 				toast.error(`${imported} of ${total} imported — ${failed} failed`);
 				if (responseData.failedFile) {
-					downloadFailedImportFile(responseData.failedFile, "failed-assets.xlsx");
+					downloadFailedImportFile(responseData.failedFile, "failed-sitenames.xlsx");
 				}
 			} else {
-				toast.error("Failed to import assets. Please try again.");
+				toast.error("Failed to import site names. Please try again.");
 			}
 		},
 	});
@@ -130,7 +121,7 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 	const handleDownloadTemplate = async () => {
 		setDownloadingTemplate(true);
 		try {
-			await assetService.downloadImportTemplate();
+			await siteNameService.downloadImportTemplate();
 		} catch {
 			toast.error("Failed to download template");
 		} finally {
@@ -142,8 +133,8 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 		<Dialog open={open} onOpenChange={handleClose}>
 			<DialogContent className="max-w-md">
 				<DialogHeader>
-					<DialogTitle>Import Assets</DialogTitle>
-					<DialogDescription>Upload an XLSX file to bulk import assets</DialogDescription>
+					<DialogTitle>Import Site Names</DialogTitle>
+					<DialogDescription>Upload an XLSX file to bulk import site names</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
@@ -214,11 +205,7 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 					<div className="rounded-md bg-muted/50 p-3 text-sm">
 						<p className="font-medium mb-1">XLSX Format</p>
 						<p className="text-muted-foreground text-xs">
-							<strong>Required:</strong> serial_number, make, model, category
-						</p>
-						<p className="text-muted-foreground text-xs">
-							<strong>Optional:</strong> condition, verification_frequency, location, notes, channel, site_name, client,
-							geofence_threshold
+							<strong>Required:</strong> site_name
 						</p>
 					</div>
 				</div>
@@ -229,7 +216,7 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 					</Button>
 					<Button onClick={handleImport} disabled={!selectedFile || importMutation.isPending}>
 						{importMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-						Import Assets
+						Import Site Names
 					</Button>
 				</DialogFooter>
 			</DialogContent>

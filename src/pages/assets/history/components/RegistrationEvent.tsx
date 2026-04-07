@@ -138,7 +138,7 @@ export function RegistrationEvent({ registration, assetId, isHighlighted = false
 												</p>
 												{registration.location && (
 													<Link
-														to={`/map?lat=${registration.location.latitude}&lng=${registration.location.longitude}&assetId=${assetId}`}
+														to={`/customer-portal/map?lat=${registration.location.latitude}&lng=${registration.location.longitude}&assetId=${assetId}`}
 														state={{ fromRegistration: true, assetId }}
 														className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
 													>

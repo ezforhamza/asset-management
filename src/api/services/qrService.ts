@@ -51,6 +51,9 @@ export interface BulkImportRes {
 	duplicates: number;
 	duplicatesList: string[];
 	errors: string[];
+	totalProcessed?: number;
+	failedCount?: number;
+	failedFile?: string;
 }
 
 export interface QRCodeStatsRes {

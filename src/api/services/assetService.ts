@@ -73,7 +73,10 @@ export interface BulkImportAssetRes {
 	duplicates?: number;
 	duplicatesList?: string[];
 	errors: string[];
+	warnings?: string[];
 	totalProcessed: number;
+	failedCount?: number;
+	failedFile?: string;
 }
 
 export interface TransferAssetReq {

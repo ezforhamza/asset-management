@@ -249,7 +249,7 @@ export default function UsersPage() {
 					onDeactivate={setDeactivateUser}
 					onViewSessions={setViewSessionsUser}
 					onForceLogout={setForceLogoutUser}
-					onRowClick={(user) => navigate(`/users/${user.id}`)}
+					onRowClick={(user) => navigate(`/customer-portal/users/${user.id}`)}
 					canWrite={canWrite}
 				/>
 			</div>

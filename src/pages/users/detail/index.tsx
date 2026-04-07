@@ -23,7 +23,7 @@ export default function UserDetailsPage() {
 	});
 
 	const handleBack = () => {
-		navigate("/users");
+		navigate("/customer-portal/users");
 	};
 
 	// Loading state

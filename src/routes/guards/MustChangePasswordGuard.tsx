@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
+import { UserRole } from "#/enum";
 import { useUserInfo } from "@/store/userStore";
 
 interface MustChangePasswordGuardProps {
@@ -7,21 +8,24 @@ interface MustChangePasswordGuardProps {
 }
 
 /**
- * Guard that redirects users with mustChangePassword=true to the change password page.
- * This ensures new users with temporary passwords must change them before accessing the app.
+ * Guard that redirects users with mustChangePassword=true to their role-specific change password page.
  */
 export function MustChangePasswordGuard({ children }: MustChangePasswordGuardProps) {
 	const userInfo = useUserInfo();
 	const location = useLocation();
 
-	// Allow access to change-password page
-	if (location.pathname === "/change-password") {
+	const changePasswordPaths = ["/admin/change-password", "/customer-portal/change-password"];
+
+	// Allow access to change-password pages
+	if (changePasswordPaths.includes(location.pathname)) {
 		return <>{children}</>;
 	}
 
-	// If user must change password, redirect them
+	// If user must change password, redirect to role-specific page
 	if (userInfo.mustChangePassword === true) {
-		return <Navigate to="/change-password" replace />;
+		const changePwPath =
+			userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/change-password" : "/customer-portal/change-password";
+		return <Navigate to={changePwPath} replace />;
 	}
 
 	return <>{children}</>;

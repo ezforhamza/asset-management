@@ -257,7 +257,7 @@ export default function MapPage() {
 	// Navigate to AssetHistoryPage
 	const handleViewDetails = useCallback(
 		(assetId: string) => {
-			navigate(`/assets/${assetId}/history`, {
+			navigate(`/customer-portal/assets/${assetId}/history`, {
 				state: { fromMap: true, highlightLatest: true },
 			});
 		},

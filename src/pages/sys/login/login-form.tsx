@@ -5,7 +5,6 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { UserRole } from "#/enum";
 import type { SignInReq } from "@/api/services/userService";
-import { GLOBAL_CONFIG } from "@/global-config";
 import { useSignIn, useUserActions } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
@@ -15,7 +14,12 @@ import { PasswordInput } from "@/ui/password-input";
 import { cn } from "@/utils";
 import { LoginStateEnum, useLoginStateContext } from "./providers/login-provider";
 
-export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<"form">) {
+interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
+	expectedRole: UserRole.SYSTEM_ADMIN | UserRole.CUSTOMER_ADMIN;
+	redirectTo: string;
+}
+
+export function LoginForm({ className, expectedRole, redirectTo, ...props }: LoginFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [remember, setRemember] = useState(true);
 	const navigate = useNavigate();
@@ -38,10 +42,7 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 		try {
 			const result = await signIn(values);
 
-			if (!result) {
-				// Login failed - error already shown by signIn
-				return;
-			}
+			if (!result) return;
 
 			// Block field_user from accessing web dashboard
 			if (result.role === UserRole.FIELD_USER) {
@@ -53,14 +54,25 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 				return;
 			}
 
-			if (result.mustChangePassword) {
-				navigate("/change-password", { replace: true });
+			// Validate role matches this login portal
+			if (result.role !== expectedRole) {
+				clearUserInfoAndToken();
+				const portalName = expectedRole === UserRole.SYSTEM_ADMIN ? "System Admin" : "Customer Admin";
+				toast.error(`Access denied. This login is for ${portalName} accounts only.`, {
+					position: "top-center",
+					duration: 5000,
+				});
 				return;
 			}
 
-			// Redirect based on user role
-			const redirectPath = result.role === UserRole.SYSTEM_ADMIN ? "/admin/dashboard" : GLOBAL_CONFIG.defaultRoute;
-			navigate(redirectPath, { replace: true });
+			if (result.mustChangePassword) {
+				const changePwPath =
+					expectedRole === UserRole.SYSTEM_ADMIN ? "/admin/change-password" : "/customer-portal/change-password";
+				navigate(changePwPath, { replace: true });
+				return;
+			}
+
+			navigate(redirectTo, { replace: true });
 			toast.success("Welcome back!", { closeButton: true });
 		} catch {
 			// Error already handled in signIn

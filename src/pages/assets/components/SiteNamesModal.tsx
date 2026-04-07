@@ -1,13 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	ChevronLeft,
-	ChevronRight,
-	Loader2,
-	MoreHorizontal,
-	Pencil,
-	Plus,
-	Trash2,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, MoreHorizontal, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import siteNameService, { type SiteName } from "@/api/services/siteNameService";
@@ -25,6 +17,7 @@ import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { ImportSiteNamesModal } from "./ImportSiteNamesModal";
 
 interface SiteNamesModalProps {
 	open: boolean;
@@ -48,6 +41,9 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 	const [deletingSiteName, setDeletingSiteName] = useState<SiteName | null>(null);
 
+	// Import modal state
+	const [importModalOpen, setImportModalOpen] = useState(false);
+
 	// Fetch site names
 	const { data, isLoading } = useQuery({
 		queryKey: ["site-names", page, ROWS_PER_PAGE],
@@ -70,13 +66,8 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 
 	// Update site name mutation
 	const updateMutation = useMutation({
-		mutationFn: ({
-			siteNameId,
-			data,
-		}: {
-			siteNameId: string;
-			data: { name: string };
-		}) => siteNameService.updateSiteName(siteNameId, data),
+		mutationFn: ({ siteNameId, data }: { siteNameId: string; data: { name: string } }) =>
+			siteNameService.updateSiteName(siteNameId, data),
 		onSuccess: () => {
 			toast.success("Site name updated successfully");
 			queryClient.invalidateQueries({ queryKey: ["site-names"] });
@@ -141,7 +132,13 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 					{/* Add New Site Name Section */}
 					{canWrite && (
 						<div className="space-y-3 py-2">
-							<Label>Add New Site Name</Label>
+							<div className="flex items-center justify-between">
+								<Label>Add New Site Name</Label>
+								<Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)}>
+									<Upload className="h-4 w-4 mr-2" />
+									Bulk Import
+								</Button>
+							</div>
 							<div className="flex gap-2">
 								<Input
 									placeholder="Enter site name..."
@@ -324,6 +321,9 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+
+			{/* Import Site Names Modal */}
+			<ImportSiteNamesModal open={importModalOpen} onOpenChange={setImportModalOpen} />
 		</>
 	);
 }

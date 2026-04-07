@@ -159,8 +159,12 @@ export const useSignIn = () => {
 
 export const useSignOut = () => {
 	const { clearUserInfoAndToken } = useUserActions();
+	const userInfo = useUserInfo();
 
 	const signOut = async () => {
+		// Determine login page before clearing user data
+		const loginPath = userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/login" : "/customer-portal/login";
+
 		try {
 			// Call session logout API to invalidate tokens on server
 			await sessionService.logout();
@@ -180,8 +184,8 @@ export const useSignOut = () => {
 			// Clear sessionStorage
 			sessionStorage.clear();
 
-			// Redirect to login page
-			window.location.href = "/auth/login";
+			// Redirect to role-specific login page
+			window.location.href = loginPath;
 		}
 	};
 

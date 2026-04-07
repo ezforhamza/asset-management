@@ -116,7 +116,7 @@ export default function ReportsPage() {
 
 	const handleViewDetails = (verification: VerificationReportItem) => {
 		// Navigate to Asset History page - highlight latest verification
-		navigate(`/assets/${verification.assetId}/history`, {
+		navigate(`/customer-portal/assets/${verification.assetId}/history`, {
 			state: { fromReports: true, highlightLatest: true },
 		});
 	};

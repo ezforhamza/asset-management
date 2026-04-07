@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Company } from "#/entity";
 import qrService from "@/api/services/qrService";
+import { downloadFailedImportFile } from "@/utils/download-failed-import";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Label } from "@/ui/label";
@@ -20,6 +21,9 @@ interface ImportResult {
 	duplicates: number;
 	duplicatesList: string[];
 	errors: string[];
+	totalProcessed?: number;
+	failedCount?: number;
+	failedFile?: string;
 }
 
 export function BulkImportModal({ open, onClose, companies }: BulkImportModalProps) {
@@ -46,12 +50,16 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 			} else {
 				toast.info("No QR codes were imported");
 			}
+
+			if (data.failedFile && data.failedCount && data.failedCount > 0) {
+				toast.error(`${data.failedCount} of ${data.totalProcessed} entries failed to import`);
+				downloadFailedImportFile(data.failedFile, "failed-qrcodes.xlsx");
+			}
 		},
 		onError: (error: any) => {
 			const responseData = error.response?.data;
 
-			// Check if error response contains duplicate info
-			if (responseData && typeof responseData.duplicates !== "undefined") {
+			if (responseData && (typeof responseData.duplicates !== "undefined" || responseData.failedCount !== undefined)) {
 				setResult(responseData);
 				queryClient.invalidateQueries({ queryKey: ["qr"] });
 
@@ -63,6 +71,14 @@ export function BulkImportModal({ open, onClose, companies }: BulkImportModalPro
 					toast.success(`Imported ${responseData.imported} QR codes, ${responseData.duplicates} duplicates skipped`, {
 						position: "top-center",
 					});
+				} else if (responseData.failedCount !== undefined) {
+					const imported = responseData.imported ?? 0;
+					const total = responseData.totalProcessed ?? responseData.failedCount;
+					toast.error(`${imported} of ${total} imported — ${responseData.failedCount} failed`);
+				}
+
+				if (responseData.failedFile) {
+					downloadFailedImportFile(responseData.failedFile, "failed-qrcodes.xlsx");
 				}
 				// Fallback error is handled by apiClient
 			}

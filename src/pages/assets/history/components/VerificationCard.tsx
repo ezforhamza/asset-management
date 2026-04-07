@@ -187,7 +187,7 @@ export function VerificationCard({ verification, index, isHighlighted = false }:
 													{verification.verifiedAtLocation.longitude.toFixed(6)}
 												</p>
 												<Link
-													to={`/map?lat=${verification.verifiedAtLocation.latitude}&lng=${verification.verifiedAtLocation.longitude}&highlight=${verification.id}`}
+													to={`/customer-portal/map?lat=${verification.verifiedAtLocation.latitude}&lng=${verification.verifiedAtLocation.longitude}&highlight=${verification.id}`}
 													state={{ fromVerification: true, assetId: verification.id }}
 													className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
 												>

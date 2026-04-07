@@ -1,6 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAuthStatus, useInitializeAuth, useSetAuthStatus } from "@/store/userStore";
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
 
 export default function LoginAuthGuard({ children }: Props) {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const authStatus = useAuthStatus();
 	const initializeAuth = useInitializeAuth();
 	const setAuthStatus = useSetAuthStatus();
@@ -39,9 +40,11 @@ export default function LoginAuthGuard({ children }: Props) {
 	useEffect(() => {
 		if (authStatus === "unauthenticated" && !redirected.current) {
 			redirected.current = true;
-			navigate("/auth/login", { replace: true });
+			// Redirect to role-specific login based on the current path
+			const loginPath = location.pathname.startsWith("/admin") ? "/admin/login" : "/customer-portal/login";
+			navigate(loginPath, { replace: true });
 		}
-	}, [authStatus, navigate]);
+	}, [authStatus, navigate, location.pathname]);
 
 	// Show loading state while auth is being validated
 	if (authStatus === "loading") {

@@ -57,7 +57,7 @@ export const reportHandlers = [
 		await delay(100);
 
 		const url = new URL(request.url);
-		const format = url.searchParams.get("format") || "csv";
+		const format = url.searchParams.get("format") || "xlsx";
 
 		// In real app, this would return a file download
 		return HttpResponse.json({

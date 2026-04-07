@@ -14,5 +14,5 @@ export function RoleBasedRedirect() {
 		return <Navigate to="/admin/dashboard" replace />;
 	}
 
-	return <Navigate to="/dashboard" replace />;
+	return <Navigate to="/customer-portal/dashboard" replace />;
 }

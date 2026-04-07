@@ -3,6 +3,7 @@ import { AlertCircle, Check, Download, FileSpreadsheet, Loader2, Upload, X } fro
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import assetService from "@/api/services/assetService";
+import { downloadFailedImportFile } from "@/utils/download-failed-import";
 import { Alert, AlertDescription } from "@/ui/alert";
 import { Button } from "@/ui/button";
 import { Progress } from "@/ui/progress";
@@ -13,7 +14,10 @@ interface ImportResult {
 	duplicates?: number;
 	duplicatesList?: string[];
 	errors: string[];
+	warnings?: string[];
 	totalProcessed: number;
+	failedCount?: number;
+	failedFile?: string;
 }
 
 const isXlsxFile = (f: File) =>
@@ -37,14 +41,32 @@ export function AssetImport() {
 			if (result.duplicates && result.duplicates > 0) {
 				toast.warning(`${result.duplicates} duplicate(s) skipped`);
 			}
+			if (result.warnings && result.warnings.length > 0) {
+				toast.warning(`${result.warnings.length} site name(s) auto-corrected via fuzzy match`);
+			}
 			if (result.errors && result.errors.length > 0) {
 				const otherErrors = result.errors.filter((e) => !e.includes("Duplicate"));
 				if (otherErrors.length > 0) {
-					toast.error(`${otherErrors.length} asset(s) failed to import`);
+					toast.error(`${otherErrors.length} row(s) failed to import`);
 				}
 			}
+			if (result.failedFile && result.failedCount && result.failedCount > 0) {
+				toast.error(`${result.failedCount} of ${result.totalProcessed} entries failed — downloading error file`);
+				downloadFailedImportFile(result.failedFile, "failed-assets.xlsx");
+			}
 		},
-		onError: () => {
+		onError: (error: any) => {
+			const responseData = error?.response?.data;
+			if (responseData?.failedCount !== undefined || responseData?.totalProcessed !== undefined) {
+				setImportResult(responseData);
+				const imported = responseData.imported ?? 0;
+				const failed = responseData.failedCount ?? 0;
+				const total = responseData.totalProcessed ?? failed;
+				toast.error(`${imported} of ${total} imported — ${failed} failed`);
+				if (responseData.failedFile) {
+					downloadFailedImportFile(responseData.failedFile, "failed-assets.xlsx");
+				}
+			}
 			// Error toast is handled by apiClient;
 		},
 	});
@@ -184,35 +206,52 @@ export function AssetImport() {
 
 					{/* Import Result */}
 					{importResult && (
-						<Alert variant={importResult.errors.length > 0 ? "destructive" : "default"}>
-							<AlertCircle className="h-4 w-4" />
-							<AlertDescription>
-								<div className="flex items-center gap-4">
-									<span className="flex items-center gap-1">
-										<Check className="h-4 w-4 text-green-600" />
-										{importResult.imported} imported
-									</span>
-									{importResult.duplicates && importResult.duplicates > 0 && (
-										<span className="flex items-center gap-1 text-yellow-600">
-											{importResult.duplicates} duplicate(s)
+						<div className="space-y-2">
+							<Alert variant={importResult.errors.length > 0 ? "destructive" : "default"}>
+								<AlertCircle className="h-4 w-4" />
+								<AlertDescription>
+									<div className="flex items-center gap-4">
+										<span className="flex items-center gap-1">
+											<Check className="h-4 w-4 text-green-600" />
+											{importResult.imported} imported
 										</span>
-									)}
+										{importResult.duplicates && importResult.duplicates > 0 && (
+											<span className="flex items-center gap-1 text-yellow-600">
+												{importResult.duplicates} duplicate(s)
+											</span>
+										)}
+										{importResult.errors.length > 0 && (
+											<span className="flex items-center gap-1 text-destructive">
+												<X className="h-4 w-4" />
+												{importResult.errors.length} failed row(s)
+											</span>
+										)}
+									</div>
 									{importResult.errors.length > 0 && (
-										<span className="flex items-center gap-1 text-destructive">
-											<X className="h-4 w-4" />
-											{importResult.errors.length} error(s)
-										</span>
+										<ul className="mt-2 text-xs space-y-1">
+											{importResult.errors.slice(0, 3).map((err) => (
+												<li key={err}>{err}</li>
+											))}
+										</ul>
 									)}
-								</div>
-								{importResult.errors.length > 0 && (
-									<ul className="mt-2 text-xs space-y-1">
-										{importResult.errors.slice(0, 3).map((err) => (
-											<li key={err}>{err}</li>
-										))}
-									</ul>
-								)}
-							</AlertDescription>
-						</Alert>
+								</AlertDescription>
+							</Alert>
+
+							{importResult.warnings && importResult.warnings.length > 0 && (
+								<Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+									<AlertCircle className="h-4 w-4 text-amber-600" />
+									<AlertDescription className="text-amber-800 dark:text-amber-200">
+										<p className="font-medium mb-1">Auto-corrected ({importResult.warnings.length})</p>
+										<ul className="text-xs space-y-1">
+											{importResult.warnings.slice(0, 3).map((w) => (
+												<li key={w}>{w}</li>
+											))}
+											{importResult.warnings.length > 3 && <li>...and {importResult.warnings.length - 3} more</li>}
+										</ul>
+									</AlertDescription>
+								</Alert>
+							)}
+						</div>
 					)}
 
 					{/* Import Button */}
