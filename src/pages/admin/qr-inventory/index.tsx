@@ -71,7 +71,7 @@ export default function AdminQRInventoryPage() {
 		queryKey: ["qr", "list", searchQuery, statusFilter, companyFilter, page, limit, sortOrder],
 		queryFn: () =>
 			qrService.getQRCodes({
-				qrCode: searchQuery || undefined,
+				search: searchQuery || undefined,
 				status: statusFilter,
 				companyId: companyFilter,
 				page,

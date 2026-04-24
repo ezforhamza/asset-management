@@ -9,7 +9,7 @@ import API_ENDPOINTS from "../endpoints";
 // ============================================
 
 export interface QRCodesListParams {
-	qrCode?: string;
+	search?: string;
 	status?: string;
 	companyId?: string;
 	sortBy?: string;
