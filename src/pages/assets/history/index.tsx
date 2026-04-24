@@ -111,12 +111,15 @@ export default function AssetHistoryPage() {
 		);
 	}, [historyData?.registrationHistory, historyData?.asset.qrCode]);
 
-	// Filter verifications to only show those after the current registration timestamp
+	// Filter verifications to only show those after the asset's registration date
 	// Sort by verifiedAt ascending (oldest first) to follow chronological timeline order
 	const filteredVerifications = useMemo<VerificationHistoryItem[]>(() => {
-		if (!historyData?.verificationHistory || !currentRegistration) return [];
+		if (!historyData?.verificationHistory) return [];
+		if (!currentRegistration && historyData.verificationHistory.length === 0) return [];
 
-		const registrationTime = new Date(currentRegistration.timestamp).getTime();
+		// Use asset.registeredAt as the reference — currentRegistration.timestamp can reflect
+		// when the history record was written, not the actual registration date
+		const registrationTime = new Date(historyData.asset.registeredAt ?? 0).getTime();
 		const registrationTimeIsValid = !Number.isNaN(registrationTime) && registrationTime > 0;
 
 		// Only include verifications that occurred AFTER the registration.
@@ -129,7 +132,7 @@ export default function AssetHistoryPage() {
 				return verifiedTime >= registrationTime;
 			})
 			.sort((a, b) => new Date(a.verifiedAt).getTime() - new Date(b.verifiedAt).getTime());
-	}, [historyData?.verificationHistory, currentRegistration]);
+	}, [historyData?.verificationHistory, historyData?.asset.registeredAt, currentRegistration]);
 
 	if (isLoading) {
 		return (
