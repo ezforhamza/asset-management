@@ -15,10 +15,19 @@ import { EditCompanyModal } from "./components/EditCompanyModal";
 export default function AdminCompaniesPage() {
 	const queryClient = useQueryClient();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<boolean | undefined>(undefined);
 	const [sortBy, setSortBy] = useState("createdAt:desc");
 	const [page, setPage] = useState(1);
 	const [limit] = useState(100);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(searchQuery);
+			setPage(1);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [editCompany, setEditCompany] = useState<Company | null>(null);
 	const [toggleCompany, setToggleCompany] = useState<Company | null>(null);
@@ -27,10 +36,10 @@ export default function AdminCompaniesPage() {
 	const pendingInvalidation = useRef<boolean>(false);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["admin", "companies", searchQuery, statusFilter, sortBy, page, limit],
+		queryKey: ["admin", "companies", debouncedSearch, statusFilter, sortBy, page, limit],
 		queryFn: () =>
 			adminService.getCompanies({
-				companyName: searchQuery || undefined,
+				search: debouncedSearch || undefined,
 				isActive: statusFilter,
 				sortBy,
 				page,

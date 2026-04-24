@@ -142,7 +142,7 @@ const getMonitoring = () =>
 // ============================================
 
 const getCompanies = (params?: {
-	companyName?: string;
+	search?: string;
 	isActive?: boolean;
 	sortBy?: string;
 	page?: number;
