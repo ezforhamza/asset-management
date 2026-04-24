@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Plus, QrCode, Search, Upload } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowDownAZ, ArrowUpAZ, Download, Plus, QrCode, Search, Upload } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { QRCode as QRCodeType } from "#/entity";
 import adminService from "@/api/services/adminService";
@@ -36,17 +36,26 @@ export default function AdminQRInventoryPage() {
 	const [confirmRetireOpen, setConfirmRetireOpen] = useState(false);
 	const [exportModalOpen, setExportModalOpen] = useState(false);
 	const [selectedQRIds, setSelectedQRIds] = useState<Set<string>>(new Set());
+	// Stores full objects for ALL selected QRs across pages so we can compute status-based counts
+	const [selectedQRObjects, setSelectedQRObjects] = useState<Map<string, QRCodeType>>(new Map());
 	const [viewModalOpen, setViewModalOpen] = useState(false);
 	const [selectedQR, setSelectedQR] = useState<QRCodeType | null>(null);
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+	const clearSelection = useCallback(() => {
+		setSelectedQRIds(new Set());
+		setSelectedQRObjects(new Map());
+	}, []);
 
 	// Debounce search input
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			setSearchQuery(searchInput);
 			setPage(1);
+			clearSelection();
 		}, 500);
 		return () => clearTimeout(timer);
-	}, [searchInput]);
+	}, [searchInput, clearSelection]);
 
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
@@ -59,7 +68,7 @@ export default function AdminQRInventoryPage() {
 	});
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["qr", "list", searchQuery, statusFilter, companyFilter, page, limit],
+		queryKey: ["qr", "list", searchQuery, statusFilter, companyFilter, page, limit, sortOrder],
 		queryFn: () =>
 			qrService.getQRCodes({
 				qrCode: searchQuery || undefined,
@@ -67,7 +76,7 @@ export default function AdminQRInventoryPage() {
 				companyId: companyFilter,
 				page,
 				limit,
-				sortBy: "createdAt:desc",
+				sortBy: `qrCode:${sortOrder}`,
 			}),
 	});
 
@@ -128,17 +137,34 @@ export default function AdminQRInventoryPage() {
 		setViewModalOpen(true);
 	};
 
-	// Sort QR codes: primary by createdAt DESC, secondary by qrCode ASC for deterministic ordering
-	const qrCodes = [...(data?.results || [])].sort((a, b) => {
-		// Primary sort: createdAt DESC (newest first)
-		const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-		const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-		if (dateB !== dateA) {
-			return dateB - dateA;
+	// Keep full QR objects in sync with selectedQRIds so we can check status across pages
+	const handleSelectionChange = (newSelectedIds: Set<string>) => {
+		setSelectedQRIds(newSelectedIds);
+		setSelectedQRObjects((prev) => {
+			const next = new Map(prev);
+			// Remove deselected items
+			for (const id of next.keys()) {
+				if (!newSelectedIds.has(id)) next.delete(id);
+			}
+			// Add newly selected items from the current page
+			for (const qr of data?.results || []) {
+				const id = qr.id || qr._id || "";
+				if (newSelectedIds.has(id)) next.set(id, qr);
+			}
+			return next;
+		});
+	};
+
+	// Count only "available" QR codes among all selected (across all pages)
+	const allocatableCount = useMemo(() => {
+		let count = 0;
+		for (const qr of selectedQRObjects.values()) {
+			if (qr.status === "available") count++;
 		}
-		// Secondary sort: qrCode ASC (alphabetical) for stable ordering when timestamps are the same
-		return (a.qrCode || "").localeCompare(b.qrCode || "");
-	});
+		return count;
+	}, [selectedQRObjects]);
+
+	const qrCodes = data?.results || [];
 	const companies = companiesData?.results || [];
 	const stats = statsData?.stats || { available: 0, allocated: 0, used: 0, retired: 0, total: 0 };
 
@@ -168,9 +194,9 @@ export default function AdminQRInventoryPage() {
 						</Button>
 						<Button variant="outline" onClick={() => setAllocateModalOpen(true)}>
 							Allocate to Company
-							{selectedQRIds.size > 0 && (
+							{allocatableCount > 0 && (
 								<span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
-									{selectedQRIds.size}
+									{allocatableCount}
 								</span>
 							)}
 						</Button>
@@ -190,81 +216,85 @@ export default function AdminQRInventoryPage() {
 				</div>
 			</div>
 
-			{/* Stats & Filters */}
-			<div className="flex-shrink-0 px-6 py-4 border-b flex flex-wrap items-center gap-4">
-				<div className="flex items-center gap-6">
-					<div className="flex items-center gap-2">
-						<QrCode className="h-4 w-4 text-muted-foreground" />
-						<span className="text-sm">
-							<strong>{stats.total}</strong> Total
-						</span>
+			{/* Filters row */}
+			<div className="flex-shrink-0 px-6 pt-4 pb-2 border-b">
+				<div className="flex items-center gap-3">
+					<div className="relative flex-1 min-w-0">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+						<Input
+							placeholder="Search QR codes..."
+							value={searchInput}
+							onChange={(e) => setSearchInput(e.target.value)}
+							className="pl-9 w-full"
+						/>
 					</div>
-					<div className="flex items-center gap-2">
-						<span className="h-2 w-2 rounded-full bg-blue-500" />
-						<span className="text-sm">
-							<strong>{stats.available}</strong> Available
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="h-2 w-2 rounded-full bg-orange-500" />
-						<span className="text-sm">
-							<strong>{stats.allocated}</strong> Allocated
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="h-2 w-2 rounded-full bg-green-500" />
-						<span className="text-sm">
-							<strong>{stats.used}</strong> Used
-						</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<span className="h-2 w-2 rounded-full bg-gray-500" />
-						<span className="text-sm">
-							<strong>{stats.retired}</strong> Retired
-						</span>
-					</div>
+					<Select
+						value={statusFilter || "all"}
+						onValueChange={(value) => {
+							setStatusFilter(value === "all" ? undefined : value);
+							setPage(1);
+							clearSelection();
+						}}
+					>
+						<SelectTrigger className="w-[140px] shrink-0">
+							<SelectValue placeholder="Status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All Status</SelectItem>
+							<SelectItem value="available">Available</SelectItem>
+							<SelectItem value="allocated">Allocated</SelectItem>
+							<SelectItem value="used">Used</SelectItem>
+							<SelectItem value="retired">Retired</SelectItem>
+						</SelectContent>
+					</Select>
+					<Select
+						value={companyFilter || "all"}
+						onValueChange={(value) => {
+							setCompanyFilter(value === "all" ? undefined : value);
+							setPage(1);
+							clearSelection();
+						}}
+					>
+						<SelectTrigger className="w-[180px] shrink-0">
+							<SelectValue placeholder="Company" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All Companies</SelectItem>
+							{companies.map((company) => (
+								<SelectItem key={company._id} value={company._id}>
+									{company.companyName}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => setSortOrder((o) => (o === "asc" ? "desc" : "asc"))}
+						className="flex items-center gap-1.5 shrink-0"
+					>
+						{sortOrder === "asc" ? <ArrowDownAZ className="h-4 w-4" /> : <ArrowUpAZ className="h-4 w-4" />}
+						<span className="text-xs">{sortOrder === "asc" ? "001 → 999" : "999 → 001"}</span>
+					</Button>
 				</div>
-				<div className="flex-1" />
-				<div className="relative w-64">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-					<Input
-						placeholder="Search QR codes..."
-						value={searchInput}
-						onChange={(e) => setSearchInput(e.target.value)}
-						className="pl-9"
-					/>
+				{/* Stats summary */}
+				<div className="flex items-center gap-4 mt-2 pb-2 text-sm text-muted-foreground">
+					<span>
+						<strong className="text-foreground">{stats.total}</strong> Total
+					</span>
+					<span>
+						<strong className="text-blue-500">{stats.available}</strong> Available
+					</span>
+					<span>
+						<strong className="text-orange-500">{stats.allocated}</strong> Allocated
+					</span>
+					<span>
+						<strong className="text-green-500">{stats.used}</strong> Used
+					</span>
+					<span>
+						<strong className="text-gray-500">{stats.retired}</strong> Retired
+					</span>
 				</div>
-				<Select
-					value={statusFilter || "all"}
-					onValueChange={(value) => setStatusFilter(value === "all" ? undefined : value)}
-				>
-					<SelectTrigger className="w-[140px]">
-						<SelectValue placeholder="Status" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All Status</SelectItem>
-						<SelectItem value="available">Available</SelectItem>
-						<SelectItem value="allocated">Allocated</SelectItem>
-						<SelectItem value="used">Used</SelectItem>
-						<SelectItem value="retired">Retired</SelectItem>
-					</SelectContent>
-				</Select>
-				<Select
-					value={companyFilter || "all"}
-					onValueChange={(value) => setCompanyFilter(value === "all" ? undefined : value)}
-				>
-					<SelectTrigger className="w-[180px]">
-						<SelectValue placeholder="Company" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All Companies</SelectItem>
-						{companies.map((company) => (
-							<SelectItem key={company._id} value={company._id}>
-								{company.companyName}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
 			</div>
 
 			{/* Table */}
@@ -274,11 +304,7 @@ export default function AdminQRInventoryPage() {
 						<span className="text-sm text-muted-foreground">
 							<strong>{selectedQRIds.size}</strong> QR code{selectedQRIds.size !== 1 ? "s" : ""} selected
 						</span>
-						<button
-							type="button"
-							onClick={() => setSelectedQRIds(new Set())}
-							className="text-xs text-primary hover:underline"
-						>
+						<button type="button" onClick={clearSelection} className="text-xs text-primary hover:underline">
 							Clear selection
 						</button>
 					</div>
@@ -299,7 +325,7 @@ export default function AdminQRInventoryPage() {
 					onRetire={handleRetire}
 					enableSelection={true}
 					selectedIds={selectedQRIds}
-					onSelectionChange={setSelectedQRIds}
+					onSelectionChange={handleSelectionChange}
 				/>
 			</div>
 
@@ -312,8 +338,8 @@ export default function AdminQRInventoryPage() {
 				onClose={() => setAllocateModalOpen(false)}
 				companies={companies}
 				selectedQRIds={selectedQRIds}
-				qrCodes={qrCodes}
-				onClearSelection={() => setSelectedQRIds(new Set())}
+				qrCodes={Array.from(selectedQRObjects.values())}
+				onClearSelection={clearSelection}
 			/>
 			<ExportPDFModal
 				open={exportModalOpen}
@@ -325,6 +351,7 @@ export default function AdminQRInventoryPage() {
 					status: statusFilter,
 					companyId: companyFilter,
 					searchQuery: searchQuery,
+					sortOrder: sortOrder,
 				}}
 			/>
 

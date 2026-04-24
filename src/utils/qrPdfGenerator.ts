@@ -5,6 +5,7 @@ export interface QRCodeData {
 	id: string;
 	qrCode: string;
 	label?: string;
+	status?: string;
 }
 
 export interface CompanyInfo {
@@ -37,7 +38,7 @@ const PAGE_DIMENSIONS: Record<PageSize, { width: number; height: number }> = {
 
 const MARGIN_MM = 10;
 const CELL_PADDING_MM = 5;
-const LABEL_HEIGHT_MM = 6;
+const LABEL_HEIGHT_MM = 11;
 const GRID_LINE_WIDTH = 0.3;
 const HEADER_HEIGHT_MM = 35; // Height reserved for company header on first page
 
@@ -254,7 +255,7 @@ export async function generateQRCodePDF(qrCodes: QRCodeData[], config: PDFExport
 
 				// Simple truncation check
 				if (pdf.getTextWidth(displayLabel) > maxLabelWidth) {
-					while (pdf.getTextWidth(displayLabel + "...") > maxLabelWidth && displayLabel.length > 0) {
+					while (pdf.getTextWidth(`${displayLabel}...`) > maxLabelWidth && displayLabel.length > 0) {
 						displayLabel = displayLabel.slice(0, -1);
 					}
 					displayLabel += "...";
@@ -264,6 +265,25 @@ export async function generateQRCodePDF(qrCodes: QRCodeData[], config: PDFExport
 				const labelWidth = pdf.getTextWidth(displayLabel);
 				const labelX = cellX + (cellWidth - labelWidth) / 2;
 				pdf.text(displayLabel, labelX, labelY);
+
+				// Draw status badge below the label
+				if (qr.status) {
+					const statusY = labelY + 4.5;
+					const statusColors: Record<string, [number, number, number]> = {
+						available: [37, 99, 235],
+						allocated: [234, 88, 12],
+						used: [22, 163, 74],
+						retired: [107, 114, 128],
+					};
+					const [r, g, b] = statusColors[qr.status] || [100, 100, 100];
+					pdf.setFontSize(6);
+					pdf.setTextColor(r, g, b);
+					const statusText = qr.status.charAt(0).toUpperCase() + qr.status.slice(1);
+					const statusWidth = pdf.getTextWidth(statusText);
+					const statusX = cellX + (cellWidth - statusWidth) / 2;
+					pdf.text(statusText, statusX, statusY);
+					pdf.setTextColor(80, 80, 80); // reset
+				}
 			}
 		}
 

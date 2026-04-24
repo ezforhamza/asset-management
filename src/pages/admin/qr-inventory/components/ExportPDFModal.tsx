@@ -28,6 +28,7 @@ interface ExportPDFModalProps {
 		status?: string;
 		companyId?: string;
 		searchQuery?: string;
+		sortOrder?: "asc" | "desc";
 	};
 }
 
@@ -134,44 +135,50 @@ export function ExportPDFModal({
 			let qrDataToExport: QRCodeData[] = [];
 
 			if (hasSelectedQRs) {
-				// Use selected QR codes from the provided qrCodes array
-				const selectedQRCodes = qrCodes.filter((qr) => {
-					const id = qr.id || qr._id || "";
-					return selectedQRIds.has(id);
-				});
+				// Check how many selected IDs are on the current page
+				const currentPageMatches = qrCodes.filter((qr) => selectedQRIds.has(qr.id || qr._id || ""));
 
-				if (selectedQRCodes.length === 0) {
-					// If selected QRs are not in current page, fetch them from API
-					const response = await qrService.getQRCodes({ limit: 1000 });
-					const allQRs = response.results || [];
-					const filteredQRs = allQRs.filter((qr) => {
-						const id = qr.id || qr._id || "";
-						return selectedQRIds.has(id);
-					});
-					qrDataToExport = filteredQRs.map((qr) => ({
+				if (currentPageMatches.length === selectedQRIds.size) {
+					// All selected QRs happen to be on the current page — use them directly
+					qrDataToExport = currentPageMatches.map((qr) => ({
 						id: qr.id || qr._id || "",
 						qrCode: qr.qrCode,
 						label: qr.qrCode,
+						status: qr.status,
 					}));
 				} else {
-					qrDataToExport = selectedQRCodes.map((qr) => ({
+					// Selected QRs span multiple pages — fetch all from API then filter
+					const sortBy = currentFilters?.sortOrder ? `qrCode:${currentFilters.sortOrder}` : "qrCode:asc";
+					const response = await qrService.getQRCodes({
+						companyId: currentFilters?.companyId,
+						status: currentFilters?.status,
+						limit: 2000,
+						sortBy,
+					});
+					const allQRs = response.results || [];
+					const matched = allQRs.filter((qr) => selectedQRIds.has(qr.id || qr._id || ""));
+					qrDataToExport = matched.map((qr) => ({
 						id: qr.id || qr._id || "",
 						qrCode: qr.qrCode,
 						label: qr.qrCode,
+						status: qr.status,
 					}));
 				}
 			} else {
 				// Fetch QR codes by company and status filter
+				const sortBy = currentFilters?.sortOrder ? `qrCode:${currentFilters.sortOrder}` : "qrCode:asc";
 				const response = await qrService.getQRCodes({
 					companyId,
 					status: status === "all" ? undefined : status,
 					limit: 1000,
+					sortBy,
 				});
 				const fetchedQRs = response.results || [];
 				qrDataToExport = fetchedQRs.map((qr) => ({
 					id: qr.id || qr._id || "",
 					qrCode: qr.qrCode,
 					label: qr.qrCode,
+					status: qr.status,
 				}));
 			}
 

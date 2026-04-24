@@ -117,11 +117,17 @@ export default function AssetHistoryPage() {
 		if (!historyData?.verificationHistory || !currentRegistration) return [];
 
 		const registrationTime = new Date(currentRegistration.timestamp).getTime();
+		const registrationTimeIsValid = !Number.isNaN(registrationTime) && registrationTime > 0;
 
-		// Only include verifications that occurred AFTER the registration
-		// Sort ascending (oldest first) to follow timeline: Registration -> Verification #1 -> #2 -> #3...
+		// Only include verifications that occurred AFTER the registration.
+		// If registration timestamp is invalid (corrupted date), show all verifications.
 		return [...historyData.verificationHistory]
-			.filter((v) => new Date(v.verifiedAt).getTime() > registrationTime)
+			.filter((v) => {
+				if (!registrationTimeIsValid) return true;
+				const verifiedTime = new Date(v.verifiedAt).getTime();
+				if (Number.isNaN(verifiedTime) || verifiedTime === 0) return true;
+				return verifiedTime >= registrationTime;
+			})
 			.sort((a, b) => new Date(a.verifiedAt).getTime() - new Date(b.verifiedAt).getTime());
 	}, [historyData?.verificationHistory, currentRegistration]);
 
