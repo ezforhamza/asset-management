@@ -8,6 +8,7 @@ import apiClient from "../apiClient";
 
 export interface AssetsListParams {
 	companyId?: string;
+	search?: string;
 	serialNumber?: string;
 	make?: string;
 	model?: string;

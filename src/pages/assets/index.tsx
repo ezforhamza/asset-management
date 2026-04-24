@@ -22,7 +22,7 @@ import {
 	X,
 	XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
@@ -69,6 +69,15 @@ export default function AssetsPage() {
 
 	const [page, setPage] = useState(1);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(searchQuery);
+			setPage(1);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
 
 	// Filter state
 	const [categoryFilter, setCategoryFilter] = useState<string>("");
@@ -125,13 +134,14 @@ export default function AssetsPage() {
 	// Build query params with filters
 	const queryParams: AssetsListParams = useMemo(() => {
 		const params: AssetsListParams = { page, limit };
+		if (debouncedSearch) params.search = debouncedSearch;
 		if (categoryFilter) params.categoryId = categoryFilter;
 		if (clientFilter) params.client = clientFilter;
 		if (siteNameFilter) params.siteName = siteNameFilter;
 		if (statusFilter) params.status = statusFilter;
 		if (channelFilter) params.channel = channelFilter;
 		return params;
-	}, [page, categoryFilter, clientFilter, siteNameFilter, statusFilter, channelFilter]);
+	}, [page, debouncedSearch, categoryFilter, clientFilter, siteNameFilter, statusFilter, channelFilter]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["assets", queryParams],
@@ -245,15 +255,7 @@ export default function AssetsPage() {
 	const totalPages = data?.totalPages || 1;
 	const totalResults = data?.totalResults || 0;
 
-	// Client-side search filter
-	const filteredAssets = searchQuery
-		? assets.filter(
-				(asset) =>
-					asset.serialNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					asset.make?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-					asset.model?.toLowerCase().includes(searchQuery.toLowerCase()),
-			)
-		: assets;
+	const filteredAssets = assets;
 
 	// Helper to get asset ID (API returns 'id', some places use '_id')
 	const getAssetId = (asset: Asset) => asset.id || asset._id || "";
@@ -435,7 +437,7 @@ export default function AssetsPage() {
 					<div className="relative flex-1 min-w-[180px] max-w-xs">
 						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 						<Input
-							placeholder="Search by serial number, make, or model..."
+							placeholder="Search serial, make, model, site, channel, client..."
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className="pl-9"
