@@ -59,10 +59,11 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 					className="grid py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
 					style={{
 						gridTemplateColumns:
-							"minmax(100px, 1fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+							"minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
 					}}
 				>
 					<div className="text-center">Asset</div>
+					<div className="text-center">Site</div>
 					<div className="text-center">Category</div>
 					<div className="text-center">Status</div>
 					<div className="text-center">GPS</div>
@@ -78,21 +79,22 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 			{/* Scrollable Body */}
 			<div className="flex-1 min-h-0 overflow-y-auto">
 				{data.map((item) => (
-					<div
+					<button
 						key={item._id}
-						className="grid py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
+						type="button"
+						className="grid w-full text-left py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
 						style={{
 							gridTemplateColumns:
-								"minmax(100px, 1fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+								"minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
 						}}
 						onClick={() => onViewDetails(item)}
-						onKeyDown={(e) => e.key === "Enter" && onViewDetails(item)}
-						role="button"
-						tabIndex={0}
 					>
 						<div className="text-center">
 							<p className="font-medium">{item.serialNumber || "N/A"}</p>
 							<p className="text-sm text-muted-foreground">{item.makeModel}</p>
+						</div>
+						<div className="text-center">
+							<p className="text-sm">{item.siteName || "—"}</p>
 						</div>
 						<div className="text-center">
 							<p className="text-sm">{item.assetCategory?.name || "—"}</p>
@@ -178,7 +180,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							</span>
 						</div>
 						<div className="text-sm text-right">{item.totalVerifications}</div>
-					</div>
+					</button>
 				))}
 			</div>
 

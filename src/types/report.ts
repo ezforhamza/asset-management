@@ -11,6 +11,7 @@ export interface VerificationReportItem {
 	make: string;
 	model: string;
 	makeModel: string;
+	siteName?: string;
 	verificationStatus: "on_time" | "due_soon" | "overdue";
 	nextVerificationDue: string;
 	daysUntilDue: number;

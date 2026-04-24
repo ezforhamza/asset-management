@@ -106,7 +106,9 @@ export default function ReportsPage() {
 					v.serialNumber?.toLowerCase().includes(query) ||
 					v.make?.toLowerCase().includes(query) ||
 					v.model?.toLowerCase().includes(query) ||
-					v.makeModel?.toLowerCase().includes(query)
+					v.makeModel?.toLowerCase().includes(query) ||
+					v.siteName?.toLowerCase().includes(query) ||
+					v.assetCategory?.name?.toLowerCase().includes(query)
 				);
 			});
 		}

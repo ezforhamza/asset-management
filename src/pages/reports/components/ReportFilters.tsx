@@ -60,7 +60,7 @@ export function ReportFilters({
 	return (
 		<div className="flex flex-wrap gap-3 items-end">
 			{/* Search */}
-			<div className="flex-1 min-w-[150px] max-w-[200px]">
+			<div className="flex-1 min-w-[180px] max-w-[260px]">
 				<Label htmlFor="search" className="text-sm font-medium mb-2 block">
 					Search
 				</Label>
@@ -68,7 +68,7 @@ export function ReportFilters({
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
 						id="search"
-						placeholder="Serial number, make, model..."
+						placeholder="Serial, make, model, site..."
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 						className="pl-9"
