@@ -52,7 +52,7 @@ export default function ResetPasswordPage() {
 		setError(null);
 
 		try {
-			const response = await fetch("https://assetguard.codecoytechnologies.live/v1/auth/reset-password", {
+			const response = await fetch("https://api.assetguardza.com/v1/auth/reset-password", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
