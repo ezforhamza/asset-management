@@ -27,6 +27,7 @@ export interface MapLocationItem {
 	make: string;
 	model: string;
 	category: string;
+	siteName?: string | null;
 	location: {
 		longitude: number;
 		latitude: number;

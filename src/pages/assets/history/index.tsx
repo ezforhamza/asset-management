@@ -189,6 +189,7 @@ export default function AssetHistoryPage() {
 							</h1>
 							<p className="text-sm text-muted-foreground">
 								{asset.serialNumber} • {asset.make} {asset.model}
+								{asset.siteName ? ` • ${asset.siteName}` : ""}
 							</p>
 						</div>
 					</div>

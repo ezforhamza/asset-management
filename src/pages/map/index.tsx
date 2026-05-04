@@ -1,7 +1,7 @@
 import { GoogleMap, InfoWindow, Marker, useJsApiLoader } from "@react-google-maps/api";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Calendar, CalendarClock, ChevronRight, ExternalLink, Loader2, MapPin, Tag } from "lucide-react";
+import { Building2, Calendar, CalendarClock, ChevronRight, ExternalLink, Loader2, MapPin, Tag } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 
@@ -474,6 +474,12 @@ function SingleAssetPopup({ asset, onViewDetails }: { asset: MapLocationItem; on
 					<Tag className="h-3 w-3" />
 					<span>{asset.category}</span>
 				</div>
+				{asset.siteName && (
+					<div className="flex items-center gap-1.5">
+						<Building2 className="h-3 w-3" />
+						<span>{asset.siteName}</span>
+					</div>
+				)}
 				<div className="flex items-center gap-1.5">
 					<MapPin className="h-3 w-3" />
 					<span>
