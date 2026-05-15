@@ -903,7 +903,7 @@ export default function AuditLogDetailPage() {
 									</div>
 									<div className="flex-1 min-w-0">
 										<p className="text-xs text-muted-foreground">Performed By</p>
-										<p className="text-sm font-medium truncate">{log.performedBy.name}</p>
+										<p className="text-sm font-medium truncate">{log.performedBy?.name ?? "Deleted User"}</p>
 									</div>
 								</div>
 							</div>
@@ -990,22 +990,22 @@ export default function AuditLogDetailPage() {
 									<div className="p-6 space-y-4">
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">Name</p>
-											<p className="text-sm font-medium">{log.performedBy.name}</p>
+											<p className="text-sm font-medium">{log.performedBy?.name ?? "Deleted User"}</p>
 										</div>
 										<Separator />
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">Email</p>
-											<p className="text-sm break-all">{log.performedBy.email}</p>
+											<p className="text-sm break-all">{log.performedBy?.email ?? "—"}</p>
 										</div>
 										<Separator />
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">Role</p>
-											<StyledBadge color="gray">{formatLabel(log.performedBy.role)}</StyledBadge>
+											<StyledBadge color="gray">{formatLabel(log.performedBy?.role ?? "")}</StyledBadge>
 										</div>
 										<Separator />
 										<div>
 											<p className="text-xs font-medium text-muted-foreground mb-1">User ID</p>
-											<p className="text-xs font-mono break-all text-muted-foreground">{log.performedBy.id}</p>
+											<p className="text-xs font-mono break-all text-muted-foreground">{log.performedBy?.id}</p>
 										</div>
 									</div>
 								</div>

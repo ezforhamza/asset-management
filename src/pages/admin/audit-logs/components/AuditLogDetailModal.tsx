@@ -253,19 +253,19 @@ export function AuditLogDetailModal({ log, open, onClose }: AuditLogDetailModalP
 							<div className="grid grid-cols-2 gap-4">
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">Name</p>
-									<p className="text-sm font-medium">{log.performedBy.name}</p>
+									<p className="text-sm font-medium">{log.performedBy?.name ?? "Deleted User"}</p>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">Email</p>
-									<p className="text-sm">{log.performedBy.email}</p>
+									<p className="text-sm">{log.performedBy?.email ?? "—"}</p>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">Role</p>
-									<StyledBadge color="gray">{formatLabel(log.performedBy.role)}</StyledBadge>
+									<StyledBadge color="gray">{formatLabel(log.performedBy?.role ?? "")}</StyledBadge>
 								</div>
 								<div>
 									<p className="text-xs text-muted-foreground mb-1">User ID</p>
-									<p className="text-sm font-mono">{log.performedBy.id}</p>
+									<p className="text-sm font-mono">{log.performedBy?.id}</p>
 								</div>
 							</div>
 						</div>

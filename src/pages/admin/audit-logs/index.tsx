@@ -325,8 +325,8 @@ export default function AdminAuditLogsPage() {
 											<TableCell>{getAuditActionBadge(log.action)}</TableCell>
 											<TableCell className="text-sm">
 												<div>
-													<p className="font-medium truncate">{log.performedBy.name}</p>
-													<p className="text-xs text-muted-foreground truncate">{log.performedBy.email}</p>
+													<p className="font-medium truncate">{log.performedBy?.name ?? "Deleted User"}</p>
+													<p className="text-xs text-muted-foreground truncate">{log.performedBy?.email ?? "—"}</p>
 												</div>
 											</TableCell>
 											<TableCell className="text-sm text-muted-foreground">{getSummary(log)}</TableCell>
