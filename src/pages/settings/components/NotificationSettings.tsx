@@ -147,7 +147,7 @@ export function NotificationSettings() {
 
 		const payload = {
 			email: trimmedEmail,
-			notificationTypes: formReceiveAll ? [] : formTypes,
+			notificationTypes: formReceiveAll ? availableTypes : formTypes,
 			receiveAll: formReceiveAll,
 		};
 
