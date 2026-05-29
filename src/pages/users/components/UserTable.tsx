@@ -8,6 +8,7 @@ import {
 	LogOut,
 	Mail,
 	MoreHorizontal,
+	Trash2,
 	UserX,
 	Wifi,
 	WifiOff,
@@ -37,9 +38,11 @@ interface UserWithSessionData extends UserInfo {
 interface UserTableProps {
 	users: UserWithSessionData[];
 	isLoading: boolean;
+	currentUserId?: string;
 	onEdit: (user: UserInfo) => void;
 	onResetPassword: (user: UserInfo) => void;
 	onDeactivate: (user: UserInfo) => void;
+	onDelete: (user: UserInfo) => void;
 	onViewSessions: (user: UserInfo) => void;
 	onForceLogout: (user: UserInfo) => void;
 	onRowClick?: (user: UserInfo) => void;
@@ -71,9 +74,11 @@ const getInitials = (name?: string) => {
 export function UserTable({
 	users,
 	isLoading,
+	currentUserId,
 	onEdit,
 	onResetPassword,
 	onDeactivate,
+	onDelete,
 	onViewSessions,
 	onForceLogout,
 	onRowClick,
@@ -204,22 +209,35 @@ export function UserTable({
 														<Eye className="h-4 w-4 mr-2" />
 														View Sessions
 													</DropdownMenuItem>
-													<DropdownMenuItem
-														onClick={() => onForceLogout(user)}
-														disabled={!user.hasActiveSession}
-														className={user.hasActiveSession ? "text-orange-500 focus:text-orange-500" : ""}
-													>
-														<LogOut className="h-4 w-4 mr-2" />
-														Force Logout
-													</DropdownMenuItem>
+													{user.id !== currentUserId && (
+														<DropdownMenuItem
+															onClick={() => onForceLogout(user)}
+															disabled={!user.hasActiveSession}
+															className={user.hasActiveSession ? "text-orange-500 focus:text-orange-500" : ""}
+														>
+															<LogOut className="h-4 w-4 mr-2" />
+															Force Logout
+														</DropdownMenuItem>
+													)}
 													<DropdownMenuSeparator />
-													<DropdownMenuItem
-														onClick={() => onDeactivate(user)}
-														className="text-red-500 focus:text-red-500"
-													>
-														<UserX className="h-4 w-4 mr-2" />
-														Deactivate
-													</DropdownMenuItem>
+													{user.id !== currentUserId && (
+														<DropdownMenuItem
+															onClick={() => onDeactivate(user)}
+															className="text-red-500 focus:text-red-500"
+														>
+															<UserX className="h-4 w-4 mr-2" />
+															Deactivate
+														</DropdownMenuItem>
+													)}
+													{user.id !== currentUserId && !user.isDefaultAdmin && (
+														<DropdownMenuItem
+															onClick={() => onDelete(user)}
+															className="text-red-500 focus:text-red-500"
+														>
+															<Trash2 className="h-4 w-4 mr-2" />
+															Delete User
+														</DropdownMenuItem>
+													)}
 												</>
 											) : (
 												<DropdownMenuItem disabled>No actions available (Read-only)</DropdownMenuItem>

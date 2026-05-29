@@ -36,8 +36,9 @@ export function ConfirmModal({
 		setLoading(true);
 		try {
 			await onConfirm();
+			setLoading(false);
 			onClose();
-		} finally {
+		} catch {
 			setLoading(false);
 		}
 	};

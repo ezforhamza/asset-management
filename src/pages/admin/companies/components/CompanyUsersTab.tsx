@@ -1,15 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Plus, UserCircle } from "lucide-react";
+import { MoreHorizontal, Plus, Trash2, UserCircle } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import type { UserInfo } from "#/entity";
 import adminService from "@/api/services/adminService";
+import { useUserInfo } from "@/store/userStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
 import { formatLabel } from "@/utils/formatLabel";
 import { AddUserModal } from "./AddUserModal";
+import { ConfirmModal } from "./ConfirmModal";
 
 interface CompanyUsersTabProps {
 	companyId: string;
@@ -29,8 +34,11 @@ const getRoleBadge = (role: string) => {
 const ROWS_PER_PAGE = 6;
 
 export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
+	const queryClient = useQueryClient();
+	const currentUser = useUserInfo();
 	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
+	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "company-users", companyId, currentPage],
@@ -43,6 +51,18 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 	const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
 	const endIndex = Math.min(startIndex + ROWS_PER_PAGE, totalResults);
 
+	const handleDelete = async () => {
+		if (!deleteUser?.id) return;
+		try {
+			await adminService.deleteUser(deleteUser.id);
+			toast.success("User deleted successfully");
+			setDeleteUser(null);
+			queryClient.invalidateQueries({ queryKey: ["admin", "company-users", companyId] });
+		} catch {
+			// Error toast is handled by apiClient
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="rounded-md border">
@@ -53,6 +73,7 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 							<TableHead>Email</TableHead>
 							<TableHead>Role</TableHead>
 							<TableHead>Last Login</TableHead>
+							<TableHead className="w-[50px]" />
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -69,6 +90,9 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 								</TableCell>
 								<TableCell>
 									<Skeleton className="h-5 w-24" />
+								</TableCell>
+								<TableCell>
+									<Skeleton className="h-8 w-8" />
 								</TableCell>
 							</TableRow>
 						))}
@@ -117,6 +141,7 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 								<TableHead>User</TableHead>
 								<TableHead>Role</TableHead>
 								<TableHead>Last Login</TableHead>
+								<TableHead className="w-[50px]" />
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -145,6 +170,26 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 											</div>
 										) : (
 											"Never"
+										)}
+									</TableCell>
+									<TableCell>
+										{user.role !== "system_admin" && user.id !== currentUser.id && (
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button variant="ghost" size="icon" className="h-8 w-8">
+														<MoreHorizontal className="h-4 w-4" />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end">
+													<DropdownMenuItem
+														onClick={() => setDeleteUser(user)}
+														className="text-red-500 focus:text-red-500"
+													>
+														<Trash2 className="h-4 w-4 mr-2" />
+														Delete User
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
 										)}
 									</TableCell>
 								</TableRow>
@@ -181,7 +226,18 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 					</div>
 				)}
 			</div>
+
 			<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
+
+			<ConfirmModal
+				open={!!deleteUser}
+				onClose={() => setDeleteUser(null)}
+				onConfirm={handleDelete}
+				title="Delete User"
+				description={`Are you sure you want to delete ${deleteUser?.name}? This action cannot be undone.`}
+				confirmText="Delete"
+				variant="destructive"
+			/>
 		</>
 	);
 }

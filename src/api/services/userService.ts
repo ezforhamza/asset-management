@@ -183,7 +183,8 @@ const createUser = (data: CreateUserReq) => apiClient.post<CreateUserRes>({ url:
 const updateUser = (userId: string, data: UpdateUserReq) =>
 	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data });
 
-const deactivateUser = (userId: string) => apiClient.put<UserInfo>({ url: `${UserApi.Users}/${userId}/deactivate` });
+const deactivateUser = (userId: string) =>
+	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data: { status: "inactive" } });
 
 const deleteUser = (userId: string) => apiClient.delete<void>({ url: `${UserApi.Users}/${userId}` });
 

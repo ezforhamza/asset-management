@@ -196,7 +196,8 @@ const updateUser = (userId: string, data: { name?: string; email?: string; role?
 
 const deleteUser = (userId: string) => apiClient.delete<void>({ url: API_ENDPOINTS.USERS.BY_ID(userId) });
 
-const deactivateUser = (userId: string) => apiClient.put<UserInfo>({ url: API_ENDPOINTS.USERS.DEACTIVATE(userId) });
+const deactivateUser = (userId: string) =>
+	apiClient.patch<UserInfo>({ url: API_ENDPOINTS.USERS.BY_ID(userId), data: { status: "inactive" } });
 
 const resetUserPassword = (userId: string) =>
 	apiClient.post<{ success: boolean; temporaryPassword?: string; message: string }>({

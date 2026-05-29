@@ -109,11 +109,11 @@ export function EditUserModal({ user, open, onClose, onSuccess }: EditUserModalP
 			await userService.updateUser(user.id, updateData);
 
 			toast.success("User updated successfully");
+			setLoading(false);
 			onSuccess();
 			onClose();
 		} catch {
 			// Error toast is handled by apiClient
-		} finally {
 			setLoading(false);
 		}
 	};

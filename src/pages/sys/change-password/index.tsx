@@ -1,7 +1,6 @@
 import { Loader2, Lock } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { UserRole } from "#/enum";
 import userService, { type ChangePasswordReq } from "@/api/services/userService";
@@ -18,7 +17,6 @@ interface ChangePasswordForm extends ChangePasswordReq {
 
 export default function ChangePasswordPage() {
 	const [loading, setLoading] = useState(false);
-	const navigate = useNavigate();
 	const { setUserInfo } = useUserActions();
 	const userInfo = useUserInfo();
 
@@ -43,13 +41,12 @@ export default function ChangePasswordPage() {
 				newPassword: values.newPassword,
 			});
 
-			// Merge with existing user info to preserve role and other data
-			setUserInfo({ ...userInfo, mustChangePassword: false } as any);
 			toast.success("Password changed successfully");
 
-			// Redirect based on user role
+			// Use hard redirect so the guard re-initialises cleanly with mustChangePassword: false
 			const redirectPath = userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/dashboard" : GLOBAL_CONFIG.defaultRoute;
-			navigate(redirectPath, { replace: true });
+			setUserInfo({ ...userInfo, mustChangePassword: false } as any);
+			window.location.replace(redirectPath);
 		} catch {
 			// Error toast is handled by apiClient;
 		} finally {

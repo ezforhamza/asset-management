@@ -1,17 +1,24 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Search, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import type { UserInfo } from "#/entity";
 import adminService from "@/api/services/adminService";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+import { ConfirmModal } from "../companies/components/ConfirmModal";
 import { AdminUserTable } from "./components/AdminUserTable";
 import { CreateSuperuserModal } from "./components/CreateSuperuserModal";
 
 export default function AdminUsersPage() {
+	const queryClient = useQueryClient();
+	const currentUser = useUserInfo();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [companyFilter, setCompanyFilter] = useState("all");
 	const [createModalOpen, setCreateModalOpen] = useState(false);
+	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
 
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
@@ -38,6 +45,18 @@ export default function AdminUsersPage() {
 
 	const totalUsers = data?.totalResults || 0;
 	const adminCount = users.filter((u) => u.role === "customer_admin" || u.role === "system_admin").length;
+
+	const handleDelete = async () => {
+		if (!deleteUser?.id) return;
+		try {
+			await adminService.deleteUser(deleteUser.id);
+			toast.success("User deleted successfully");
+			setDeleteUser(null);
+			queryClient.invalidateQueries({ queryKey: ["admin", "users", companyFilter] });
+		} catch {
+			// Error toast is handled by apiClient
+		}
+	};
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -103,11 +122,27 @@ export default function AdminUsersPage() {
 
 			{/* Table */}
 			<div className="flex-1 overflow-hidden px-6 py-4">
-				<AdminUserTable users={filteredUsers} companies={companies} isLoading={isLoading} />
+				<AdminUserTable
+					users={filteredUsers}
+					companies={companies}
+					isLoading={isLoading}
+					currentUserId={currentUser.id}
+					onDelete={setDeleteUser}
+				/>
 			</div>
 
 			{/* Modals */}
 			<CreateSuperuserModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} />
+
+			<ConfirmModal
+				open={!!deleteUser}
+				onClose={() => setDeleteUser(null)}
+				onConfirm={handleDelete}
+				title="Delete User"
+				description={`Are you sure you want to delete ${deleteUser?.name}? This action cannot be undone.`}
+				confirmText="Delete"
+				variant="destructive"
+			/>
 		</div>
 	);
 }

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { MoreHorizontal, Pencil, Shield, User, UserX } from "lucide-react";
+import { MoreHorizontal, Pencil, Shield, Trash2, User, UserX } from "lucide-react";
 import type { Company, UserInfo } from "#/entity";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -18,11 +18,21 @@ interface AdminUserTableProps {
 	users: UserInfo[];
 	companies: Company[];
 	isLoading: boolean;
+	currentUserId?: string;
 	onEdit?: (user: UserInfo) => void;
 	onDeactivate?: (user: UserInfo) => void;
+	onDelete?: (user: UserInfo) => void;
 }
 
-export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactivate }: AdminUserTableProps) {
+export function AdminUserTable({
+	users,
+	companies,
+	isLoading,
+	currentUserId,
+	onEdit,
+	onDeactivate,
+	onDelete,
+}: AdminUserTableProps) {
 	const getCompanyName = (companyId: string) => {
 		const company = companies.find((c) => c._id === companyId);
 		return company?.companyName || "Unknown";
@@ -118,9 +128,7 @@ export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactiva
 							<TableCell className="text-sm text-muted-foreground">
 								{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy HH:mm") : "Never"}
 							</TableCell>
-							<TableCell>
-								{getUserStatusBadge(user.status !== "inactive" ? "active" : "inactive")}
-							</TableCell>
+							<TableCell>{getUserStatusBadge(user.status !== "inactive" ? "active" : "inactive")}</TableCell>
 							<TableCell>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
@@ -138,6 +146,12 @@ export function AdminUserTable({ users, companies, isLoading, onEdit, onDeactiva
 											<UserX className="h-4 w-4 mr-2" />
 											Deactivate
 										</DropdownMenuItem>
+										{user.role !== "system_admin" && user.id !== currentUserId && (
+											<DropdownMenuItem onClick={() => onDelete?.(user)} className="text-red-500 focus:text-red-500">
+												<Trash2 className="h-4 w-4 mr-2" />
+												Delete User
+											</DropdownMenuItem>
+										)}
 									</DropdownMenuContent>
 								</DropdownMenu>
 							</TableCell>

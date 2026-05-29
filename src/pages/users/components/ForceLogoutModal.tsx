@@ -5,7 +5,6 @@ import type { UserInfo } from "#/entity";
 import sessionService from "@/api/services/sessionService";
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -13,6 +12,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "@/ui/alert-dialog";
+import { Button } from "@/ui/button";
 
 interface ForceLogoutModalProps {
 	user: UserInfo | null;
@@ -31,17 +31,17 @@ export function ForceLogoutModal({ user, open, onClose, onSuccess }: ForceLogout
 		try {
 			await sessionService.terminateAllUserSessions(user.id);
 			toast.success(`All sessions for ${user.name} have been terminated`);
+			setIsLoading(false);
 			onSuccess();
 			onClose();
 		} catch {
 			// Error toast is handled by apiClient;
-		} finally {
 			setIsLoading(false);
 		}
 	};
 
 	return (
-		<AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+		<AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && !isLoading && onClose()}>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function ForceLogoutModal({ user, open, onClose, onSuccess }: ForceLogout
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-					<AlertDialogAction
+					<Button
 						onClick={handleForceLogout}
 						disabled={isLoading}
 						className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -71,7 +71,7 @@ export function ForceLogoutModal({ user, open, onClose, onSuccess }: ForceLogout
 								Force Logout
 							</>
 						)}
-					</AlertDialogAction>
+					</Button>
 				</AlertDialogFooter>
 			</AlertDialogContent>
 		</AlertDialog>

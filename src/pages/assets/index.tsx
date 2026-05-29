@@ -269,6 +269,7 @@ export default function AssetsPage() {
 			siteNameId: asset.siteNameId ?? "",
 			client: asset.client ?? "",
 			categoryId: asset.category?.id ?? "",
+			locationDescription: asset.locationDescription ?? "",
 		});
 		setEditModalOpen(true);
 	};
@@ -306,6 +307,7 @@ export default function AssetsPage() {
 			verificationFrequency: editForm.verificationFrequency,
 			client: editForm.client || "",
 			channel: editForm.channel || "",
+			locationDescription: editForm.locationDescription || "",
 		};
 
 		// Send siteNameId if selected
@@ -593,13 +595,14 @@ export default function AssetsPage() {
 							<TableHeader className="sticky top-0 bg-background z-10">
 								<TableRow>
 									<TableHead>Serial Number</TableHead>
-									<TableHead>Make / Model</TableHead>
+									<TableHead className="max-w-[130px]">Make / Model</TableHead>
 									<TableHead>Category</TableHead>
 									<TableHead>QR Code</TableHead>
 									<TableHead>Registered GPS</TableHead>
-									<TableHead>Site Name</TableHead>
-									<TableHead>Channel</TableHead>
-									<TableHead>Client</TableHead>
+									<TableHead className="max-w-[100px]">Site Name</TableHead>
+									<TableHead className="max-w-[110px]">Address</TableHead>
+									<TableHead className="max-w-[80px]">Channel</TableHead>
+									<TableHead className="max-w-[80px]">Client</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Verification</TableHead>
 									<TableHead>Registration</TableHead>
@@ -629,6 +632,9 @@ export default function AssetsPage() {
 												<Skeleton className="h-4 w-20" />
 											</TableCell>
 											<TableCell>
+												<Skeleton className="h-4 w-20" />
+											</TableCell>
+											<TableCell>
 												<Skeleton className="h-4 w-16" />
 											</TableCell>
 											<TableCell>
@@ -647,7 +653,7 @@ export default function AssetsPage() {
 									))
 								) : filteredAssets.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={12} className="text-center py-12 text-muted-foreground">
+										<TableCell colSpan={13} className="text-center py-12 text-muted-foreground">
 											No assets found
 										</TableCell>
 									</TableRow>
@@ -663,8 +669,10 @@ export default function AssetsPage() {
 											}}
 										>
 											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
-											<TableCell>
-												{asset.make} {asset.model}
+											<TableCell className="max-w-[130px]">
+												<span className="block truncate" title={`${asset.make} ${asset.model}`}>
+													{asset.make} {asset.model}
+												</span>
 											</TableCell>
 											<TableCell className="text-muted-foreground">{asset.category?.name || "Not assigned"}</TableCell>
 											<TableCell className="font-mono text-xs">{asset.qrCode?.code || "Not linked"}</TableCell>
@@ -683,9 +691,26 @@ export default function AssetsPage() {
 													<span className="text-muted-foreground text-sm">No GPS</span>
 												)}
 											</TableCell>
-											<TableCell className="text-muted-foreground">{asset.siteName || "—"}</TableCell>
-											<TableCell className="text-muted-foreground">{asset.channel || "—"}</TableCell>
-											<TableCell className="text-muted-foreground">{asset.client || "—"}</TableCell>
+											<TableCell className="text-muted-foreground max-w-[100px]">
+												<span className="block truncate" title={asset.siteName || ""}>
+													{asset.siteName || "—"}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground max-w-[110px]">
+												<span className="block truncate" title={asset.locationDescription || ""}>
+													{asset.locationDescription || "—"}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground max-w-[80px]">
+												<span className="block truncate" title={asset.channel || ""}>
+													{asset.channel || "—"}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground max-w-[80px]">
+												<span className="block truncate" title={asset.client || ""}>
+													{asset.client || "—"}
+												</span>
+											</TableCell>
 											<TableCell>{getStatusBadge(asset.status)}</TableCell>
 											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
 											<TableCell>
@@ -877,6 +902,14 @@ export default function AssetsPage() {
 								placeholder="Enter client"
 								value={editForm.client || ""}
 								onChange={(e) => setEditForm({ ...editForm, client: e.target.value })}
+							/>
+						</div>
+						<div className="space-y-2">
+							<Label>Address / Location</Label>
+							<Input
+								placeholder="e.g., Main Building - Floor 2"
+								value={editForm.locationDescription || ""}
+								onChange={(e) => setEditForm({ ...editForm, locationDescription: e.target.value })}
 							/>
 						</div>
 						<div className="space-y-2">

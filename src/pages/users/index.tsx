@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
 import sessionService from "@/api/services/sessionService";
 import userService from "@/api/services/userService";
-import { useCanWrite } from "@/store/userStore";
+import { useCanWrite, useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
@@ -22,6 +22,7 @@ export default function UsersPage() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const canWrite = useCanWrite();
+	const currentUser = useUserInfo();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Filter states
@@ -36,6 +37,7 @@ export default function UsersPage() {
 	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
 	const [viewSessionsUser, setViewSessionsUser] = useState<UserInfo | null>(null);
 	const [forceLogoutUser, setForceLogoutUser] = useState<UserInfo | null>(null);
+	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
 	const [passwordResetResult, setPasswordResetResult] = useState<{
 		userName: string;
 		temporaryPassword: string;
@@ -113,29 +115,26 @@ export default function UsersPage() {
 
 	const handleResetPassword = async () => {
 		if (!resetPasswordUser?.id) return;
-		try {
-			const result = await userService.resetUserPassword(resetPasswordUser.id);
-			setPasswordResetResult({
-				userName: resetPasswordUser.name || "",
-				temporaryPassword: result.temporaryPassword,
-			});
-			setResetPasswordUser(null);
-			handleRefresh();
-		} catch {
-			// Error toast is handled by apiClient;
-		}
+		const result = await userService.resetUserPassword(resetPasswordUser.id);
+		setPasswordResetResult({
+			userName: resetPasswordUser.name || "",
+			temporaryPassword: result.temporaryPassword,
+		});
+		handleRefresh();
 	};
 
 	const handleDeactivate = async () => {
 		if (!deactivateUser?.id) return;
-		try {
-			await userService.deactivateUser(deactivateUser.id);
-			toast.success("User deactivated successfully");
-			setDeactivateUser(null);
-			handleRefresh();
-		} catch {
-			// Error toast is handled by apiClient;
-		}
+		await userService.deactivateUser(deactivateUser.id);
+		toast.success("User deactivated successfully");
+		handleRefresh();
+	};
+
+	const handleDelete = async () => {
+		if (!deleteUser?.id) return;
+		await userService.deleteUser(deleteUser.id);
+		toast.success("User deleted successfully");
+		handleRefresh();
 	};
 
 	// Stats - use totalResults from API for accurate count
@@ -244,9 +243,11 @@ export default function UsersPage() {
 				<UserTable
 					users={filteredUsers || []}
 					isLoading={isLoading}
+					currentUserId={currentUser.id}
 					onEdit={setEditUser}
 					onResetPassword={setResetPasswordUser}
 					onDeactivate={setDeactivateUser}
+					onDelete={setDeleteUser}
 					onViewSessions={setViewSessionsUser}
 					onForceLogout={setForceLogoutUser}
 					onRowClick={(user) => navigate(`/customer-portal/users/${user.id}`)}
@@ -275,6 +276,16 @@ export default function UsersPage() {
 				title="Deactivate User"
 				description={`Are you sure you want to deactivate ${deactivateUser?.name}? They will no longer be able to access the system.`}
 				confirmText="Deactivate"
+				variant="destructive"
+			/>
+
+			<ConfirmModal
+				open={!!deleteUser}
+				onClose={() => setDeleteUser(null)}
+				onConfirm={handleDelete}
+				title="Delete User"
+				description={`Are you sure you want to delete ${deleteUser?.name}? This action cannot be undone.`}
+				confirmText="Delete"
 				variant="destructive"
 			/>
 

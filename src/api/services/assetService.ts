@@ -43,6 +43,7 @@ export interface UpdateAssetReq {
 	siteName?: string;
 	siteNameId?: string;
 	categoryId?: string;
+	locationDescription?: string;
 }
 
 export interface ExportAssetsParams {
