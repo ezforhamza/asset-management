@@ -132,7 +132,7 @@ export function AdminUserTable({
 							</TableCell>
 							<TableCell>{getUserStatusBadge(user.status !== "inactive" ? "active" : "inactive")}</TableCell>
 							<TableCell>
-								<DropdownMenu>
+								<DropdownMenu modal={false}>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" size="icon" className="h-8 w-8">
 											<MoreHorizontal className="h-4 w-4" />
