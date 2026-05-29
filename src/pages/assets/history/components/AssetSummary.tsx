@@ -113,7 +113,7 @@ export function AssetSummary({ asset }: AssetSummaryProps) {
 					<div className="space-y-1">
 						<div className="flex items-center gap-1.5 text-xs text-muted-foreground">
 							<MapPin className="h-3 w-3" />
-							Address
+							Location
 						</div>
 						<p className="text-sm">{asset.locationDescription || "—"}</p>
 					</div>

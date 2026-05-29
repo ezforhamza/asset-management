@@ -600,7 +600,7 @@ export default function AssetsPage() {
 									<TableHead>QR Code</TableHead>
 									<TableHead>Registered GPS</TableHead>
 									<TableHead className="max-w-[100px]">Site Name</TableHead>
-									<TableHead className="max-w-[110px]">Address</TableHead>
+									<TableHead className="max-w-[110px]">Location</TableHead>
 									<TableHead className="max-w-[80px]">Channel</TableHead>
 									<TableHead className="max-w-[80px]">Client</TableHead>
 									<TableHead>Status</TableHead>
@@ -905,7 +905,7 @@ export default function AssetsPage() {
 							/>
 						</div>
 						<div className="space-y-2">
-							<Label>Address / Location</Label>
+							<Label>Location</Label>
 							<Input
 								placeholder="e.g., Main Building - Floor 2"
 								value={editForm.locationDescription || ""}
