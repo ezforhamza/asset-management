@@ -19,6 +19,9 @@ export default function AdminUsersPage() {
 	const [companyFilter, setCompanyFilter] = useState("all");
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
+	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
+	const [activateUser, setActivateUser] = useState<UserInfo | null>(null);
+	const [isStatusLoading, setIsStatusLoading] = useState(false);
 
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
@@ -55,6 +58,36 @@ export default function AdminUsersPage() {
 			queryClient.invalidateQueries({ queryKey: ["admin", "users", companyFilter] });
 		} catch {
 			// Error toast is handled by apiClient
+		}
+	};
+
+	const handleDeactivate = async () => {
+		if (!deactivateUser?.id) return;
+		setIsStatusLoading(true);
+		try {
+			await adminService.deactivateUser(deactivateUser.id);
+			toast.success("User deactivated successfully");
+			setDeactivateUser(null);
+			queryClient.invalidateQueries({ queryKey: ["admin", "users", companyFilter] });
+		} catch {
+			// Error toast is handled by apiClient
+		} finally {
+			setIsStatusLoading(false);
+		}
+	};
+
+	const handleActivate = async () => {
+		if (!activateUser?.id) return;
+		setIsStatusLoading(true);
+		try {
+			await adminService.activateUser(activateUser.id);
+			toast.success("User activated successfully");
+			setActivateUser(null);
+			queryClient.invalidateQueries({ queryKey: ["admin", "users", companyFilter] });
+		} catch {
+			// Error toast is handled by apiClient
+		} finally {
+			setIsStatusLoading(false);
 		}
 	};
 
@@ -127,12 +160,35 @@ export default function AdminUsersPage() {
 					companies={companies}
 					isLoading={isLoading}
 					currentUserId={currentUser.id}
+					onDeactivate={setDeactivateUser}
+					onActivate={setActivateUser}
 					onDelete={setDeleteUser}
 				/>
 			</div>
 
 			{/* Modals */}
 			<CreateSuperuserModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} />
+
+			<ConfirmModal
+				open={!!deactivateUser}
+				onClose={() => setDeactivateUser(null)}
+				onConfirm={handleDeactivate}
+				isLoading={isStatusLoading}
+				title="Deactivate User"
+				description={`Are you sure you want to deactivate ${deactivateUser?.name}? They will no longer be able to access the system.`}
+				confirmText="Deactivate"
+				variant="destructive"
+			/>
+
+			<ConfirmModal
+				open={!!activateUser}
+				onClose={() => setActivateUser(null)}
+				onConfirm={handleActivate}
+				isLoading={isStatusLoading}
+				title="Activate User"
+				description={`Are you sure you want to activate ${activateUser?.name}? They will regain access to the system.`}
+				confirmText="Activate"
+			/>
 
 			<ConfirmModal
 				open={!!deleteUser}

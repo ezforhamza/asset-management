@@ -186,6 +186,9 @@ const updateUser = (userId: string, data: UpdateUserReq) =>
 const deactivateUser = (userId: string) =>
 	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data: { status: "inactive" } });
 
+const activateUser = (userId: string) =>
+	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data: { status: "active" } });
+
 const deleteUser = (userId: string) => apiClient.delete<void>({ url: `${UserApi.Users}/${userId}` });
 
 const resetUserPassword = (userId: string) =>
@@ -220,6 +223,7 @@ export default {
 	createFieldWorker: createUser, // Alias for backward compatibility
 	updateUser,
 	deactivateUser,
+	activateUser,
 	deleteUser,
 	resetUserPassword,
 	// MFA

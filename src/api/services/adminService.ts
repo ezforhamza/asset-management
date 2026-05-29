@@ -199,6 +199,9 @@ const deleteUser = (userId: string) => apiClient.delete<void>({ url: API_ENDPOIN
 const deactivateUser = (userId: string) =>
 	apiClient.patch<UserInfo>({ url: API_ENDPOINTS.USERS.BY_ID(userId), data: { status: "inactive" } });
 
+const activateUser = (userId: string) =>
+	apiClient.patch<UserInfo>({ url: API_ENDPOINTS.USERS.BY_ID(userId), data: { status: "active" } });
+
 const resetUserPassword = (userId: string) =>
 	apiClient.post<{ success: boolean; temporaryPassword?: string; message: string }>({
 		url: API_ENDPOINTS.USERS.RESET_PASSWORD(userId),
@@ -401,6 +404,7 @@ export default {
 	updateUser,
 	deleteUser,
 	deactivateUser,
+	activateUser,
 	resetUserPassword,
 	// QR Codes
 	getAdminQRCodes,

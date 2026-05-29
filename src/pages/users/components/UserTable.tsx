@@ -9,6 +9,7 @@ import {
 	Mail,
 	MoreHorizontal,
 	Trash2,
+	UserCheck,
 	UserX,
 	Wifi,
 	WifiOff,
@@ -27,7 +28,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { getUserStatusBadge, StyledBadge } from "@/utils/badge-styles";
+import { StyledBadge } from "@/utils/badge-styles";
 
 interface UserWithSessionData extends UserInfo {
 	hasActiveSession?: boolean;
@@ -42,6 +43,7 @@ interface UserTableProps {
 	onEdit: (user: UserInfo) => void;
 	onResetPassword: (user: UserInfo) => void;
 	onDeactivate: (user: UserInfo) => void;
+	onActivate: (user: UserInfo) => void;
 	onDelete: (user: UserInfo) => void;
 	onViewSessions: (user: UserInfo) => void;
 	onForceLogout: (user: UserInfo) => void;
@@ -78,6 +80,7 @@ export function UserTable({
 	onEdit,
 	onResetPassword,
 	onDeactivate,
+	onActivate,
 	onDelete,
 	onViewSessions,
 	onForceLogout,
@@ -105,6 +108,7 @@ export function UserTable({
 		return (
 			<div className="space-y-3">
 				{Array.from({ length: 5 }).map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton loader
 					<Skeleton key={i} className="h-16 w-full" />
 				))}
 			</div>
@@ -220,13 +224,22 @@ export function UserTable({
 														</DropdownMenuItem>
 													)}
 													<DropdownMenuSeparator />
-													{user.id !== currentUserId && (
+													{user.id !== currentUserId && user.status !== "inactive" && (
 														<DropdownMenuItem
 															onClick={() => onDeactivate(user)}
 															className="text-red-500 focus:text-red-500"
 														>
 															<UserX className="h-4 w-4 mr-2" />
 															Deactivate
+														</DropdownMenuItem>
+													)}
+													{user.id !== currentUserId && user.status === "inactive" && (
+														<DropdownMenuItem
+															onClick={() => onActivate(user)}
+															className="text-green-600 focus:text-green-600"
+														>
+															<UserCheck className="h-4 w-4 mr-2" />
+															Activate
 														</DropdownMenuItem>
 													)}
 													{user.id !== currentUserId && !user.isDefaultAdmin && (

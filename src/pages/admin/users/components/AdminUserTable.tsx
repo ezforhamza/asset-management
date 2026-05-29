@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { MoreHorizontal, Pencil, Shield, Trash2, User, UserX } from "lucide-react";
+import { MoreHorizontal, Pencil, Shield, Trash2, User, UserCheck, UserX } from "lucide-react";
 import type { Company, UserInfo } from "#/entity";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -21,6 +21,7 @@ interface AdminUserTableProps {
 	currentUserId?: string;
 	onEdit?: (user: UserInfo) => void;
 	onDeactivate?: (user: UserInfo) => void;
+	onActivate?: (user: UserInfo) => void;
 	onDelete?: (user: UserInfo) => void;
 }
 
@@ -31,6 +32,7 @@ export function AdminUserTable({
 	currentUserId,
 	onEdit,
 	onDeactivate,
+	onActivate,
 	onDelete,
 }: AdminUserTableProps) {
 	const getCompanyName = (companyId: string) => {
@@ -142,10 +144,21 @@ export function AdminUserTable({
 											Edit
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
-										<DropdownMenuItem onClick={() => onDeactivate?.(user)} className="text-destructive">
-											<UserX className="h-4 w-4 mr-2" />
-											Deactivate
-										</DropdownMenuItem>
+										{user.status !== "inactive" && (
+											<DropdownMenuItem onClick={() => onDeactivate?.(user)} className="text-destructive">
+												<UserX className="h-4 w-4 mr-2" />
+												Deactivate
+											</DropdownMenuItem>
+										)}
+										{user.status === "inactive" && (
+											<DropdownMenuItem
+												onClick={() => onActivate?.(user)}
+												className="text-green-600 focus:text-green-600"
+											>
+												<UserCheck className="h-4 w-4 mr-2" />
+												Activate
+											</DropdownMenuItem>
+										)}
 										{user.role !== "system_admin" && user.id !== currentUserId && (
 											<DropdownMenuItem onClick={() => onDelete?.(user)} className="text-red-500 focus:text-red-500">
 												<Trash2 className="h-4 w-4 mr-2" />

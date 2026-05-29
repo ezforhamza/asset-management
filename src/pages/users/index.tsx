@@ -35,6 +35,7 @@ export default function UsersPage() {
 	const [editUser, setEditUser] = useState<UserInfo | null>(null);
 	const [resetPasswordUser, setResetPasswordUser] = useState<UserInfo | null>(null);
 	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
+	const [activateUser, setActivateUser] = useState<UserInfo | null>(null);
 	const [viewSessionsUser, setViewSessionsUser] = useState<UserInfo | null>(null);
 	const [forceLogoutUser, setForceLogoutUser] = useState<UserInfo | null>(null);
 	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
@@ -127,6 +128,13 @@ export default function UsersPage() {
 		if (!deactivateUser?.id) return;
 		await userService.deactivateUser(deactivateUser.id);
 		toast.success("User deactivated successfully");
+		handleRefresh();
+	};
+
+	const handleActivate = async () => {
+		if (!activateUser?.id) return;
+		await userService.activateUser(activateUser.id);
+		toast.success("User activated successfully");
 		handleRefresh();
 	};
 
@@ -247,6 +255,7 @@ export default function UsersPage() {
 					onEdit={setEditUser}
 					onResetPassword={setResetPasswordUser}
 					onDeactivate={setDeactivateUser}
+					onActivate={setActivateUser}
 					onDelete={setDeleteUser}
 					onViewSessions={setViewSessionsUser}
 					onForceLogout={setForceLogoutUser}
@@ -277,6 +286,15 @@ export default function UsersPage() {
 				description={`Are you sure you want to deactivate ${deactivateUser?.name}? They will no longer be able to access the system.`}
 				confirmText="Deactivate"
 				variant="destructive"
+			/>
+
+			<ConfirmModal
+				open={!!activateUser}
+				onClose={() => setActivateUser(null)}
+				onConfirm={handleActivate}
+				title="Activate User"
+				description={`Are you sure you want to activate ${activateUser?.name}? They will regain access to the system.`}
+				confirmText="Activate"
 			/>
 
 			<ConfirmModal
