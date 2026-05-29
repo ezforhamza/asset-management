@@ -161,7 +161,9 @@ export function UserTable({
 								</TableCell>
 								<TableCell>{getRoleBadge(user.role, user.adminType)}</TableCell>
 								<TableCell>
-									{user.mustChangePassword ? (
+									{user.status === "inactive" ? (
+										<StyledBadge color="red">Inactive</StyledBadge>
+									) : user.mustChangePassword ? (
 										<StyledBadge color="orange">Pending Setup</StyledBadge>
 									) : (
 										<StyledBadge color="emerald">Active</StyledBadge>
