@@ -58,10 +58,13 @@ export function AddUserModal({ open, onClose, companyId }: AddUserModalProps) {
 	});
 
 	const handleSubmit = (values: AddUserForm) => {
-		const submitData = {
-			...values,
-			adminType: values.role === "customer_admin" ? values.adminType : null,
+		const submitData: Record<string, unknown> = {
+			name: values.name,
+			email: values.email,
+			role: values.role,
+			adminType: values.role === "customer_admin" ? values.adminType : undefined,
 		};
+		if (values.password) submitData.password = values.password;
 		createUserMutation.mutate(submitData as any);
 	};
 
