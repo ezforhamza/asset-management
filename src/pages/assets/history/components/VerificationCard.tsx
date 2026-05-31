@@ -25,9 +25,15 @@ interface VerificationCardProps {
 	verification: VerificationHistoryItem;
 	index: number;
 	isHighlighted?: boolean;
+	showMapLink?: boolean;
 }
 
-export function VerificationCard({ verification, index, isHighlighted = false }: VerificationCardProps) {
+export function VerificationCard({
+	verification,
+	index,
+	isHighlighted = false,
+	showMapLink = true,
+}: VerificationCardProps) {
 	const [isOpen, setIsOpen] = useState(isHighlighted); // Auto-expand if highlighted
 
 	const formatDate = (dateStr: string) => {
@@ -186,14 +192,16 @@ export function VerificationCard({ verification, index, isHighlighted = false }:
 													{verification.verifiedAtLocation.latitude.toFixed(6)},{" "}
 													{verification.verifiedAtLocation.longitude.toFixed(6)}
 												</p>
-												<Link
-													to={`/customer-portal/map?lat=${verification.verifiedAtLocation.latitude}&lng=${verification.verifiedAtLocation.longitude}&highlight=${verification.id}`}
-													state={{ fromVerification: true, assetId: verification.id }}
-													className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
-												>
-													<MapPin className="h-3 w-3" />
-													View on Map
-												</Link>
+												{showMapLink && (
+													<Link
+														to={`/customer-portal/map?lat=${verification.verifiedAtLocation.latitude}&lng=${verification.verifiedAtLocation.longitude}&highlight=${verification.id}`}
+														state={{ fromVerification: true, assetId: verification.id }}
+														className="text-primary hover:underline inline-flex items-center gap-1 text-xs"
+													>
+														<MapPin className="h-3 w-3" />
+														View on Map
+													</Link>
+												)}
 											</div>
 										) : (
 											<p className="text-sm text-muted-foreground">Location not available</p>

@@ -1,24 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { ArrowLeft, MapPin } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, Clock, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import type { Asset } from "#/entity";
 import assetService, { type RegistrationHistoryItem, type VerificationHistoryItem } from "@/api/services/assetService";
 import { CorrectGpsModal } from "@/components/correct-gps-modal";
+import { AssetSummary, RegistrationEvent, VerificationCard } from "@/pages/assets/history/components";
 import { Button } from "@/ui/button";
-import { Skeleton } from "@/ui/skeleton";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { getAssetStatusBadge, getVerificationStatusBadge, StyledBadge } from "@/utils/badge-styles";
-
-function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
-	return (
-		<div className="flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b last:border-0">
-			<span className="text-sm text-muted-foreground sm:w-48 shrink-0">{label}</span>
-			<span className="text-sm">{value ?? "—"}</span>
-		</div>
-	);
-}
 
 export default function SuperUserAssetDetailPage() {
 	const { companyId, assetId } = useParams<{ companyId: string; assetId: string }>();
@@ -31,18 +18,44 @@ export default function SuperUserAssetDetailPage() {
 		enabled: !!assetId,
 	});
 
-	const asset = historyData?.asset as Asset | undefined;
-	const registrations: RegistrationHistoryItem[] = historyData?.registrationHistory || [];
-	const verifications: VerificationHistoryItem[] = historyData?.verificationHistory || [];
+	const asset = historyData?.asset;
+	const companyName = (asset as (typeof asset & { companyName?: string }) | undefined)?.companyName;
 
-	const companyName = (asset as (Asset & { companyName?: string }) | undefined)?.companyName;
+	const currentRegistration = useMemo<RegistrationHistoryItem | null>(() => {
+		if (!historyData?.registrationHistory || !historyData.asset.qrCode) return null;
+		const currentQrCode =
+			typeof historyData.asset.qrCode === "string"
+				? historyData.asset.qrCode
+				: (historyData.asset.qrCode as { code: string })?.code;
+		if (!currentQrCode) return null;
+		const matching = historyData.registrationHistory.filter((reg) => reg.qrCode?.code === currentQrCode);
+		if (matching.length === 0) return null;
+		return matching.reduce((latest, current) =>
+			new Date(current.timestamp).getTime() > new Date(latest.timestamp).getTime() ? current : latest,
+		);
+	}, [historyData?.registrationHistory, historyData?.asset.qrCode]);
+
+	const filteredVerifications = useMemo<VerificationHistoryItem[]>(() => {
+		if (!historyData?.verificationHistory) return [];
+		const registrationTime = new Date(historyData.asset.registeredAt ?? 0).getTime();
+		const registrationTimeIsValid = !Number.isNaN(registrationTime) && registrationTime > 0;
+		return [...historyData.verificationHistory]
+			.filter((v) => {
+				if (!registrationTimeIsValid) return true;
+				const verifiedTime = new Date(v.verifiedAt).getTime();
+				if (Number.isNaN(verifiedTime) || verifiedTime === 0) return true;
+				return verifiedTime >= registrationTime;
+			})
+			.sort((a, b) => new Date(a.verifiedAt).getTime() - new Date(b.verifiedAt).getTime());
+	}, [historyData?.verificationHistory, historyData?.asset.registeredAt]);
 
 	if (isLoading) {
 		return (
-			<div className="p-6 space-y-4">
-				<Skeleton className="h-8 w-48" />
-				<Skeleton className="h-48 w-full" />
-				<Skeleton className="h-64 w-full" />
+			<div className="h-full flex items-center justify-center">
+				<div className="flex flex-col items-center gap-3">
+					<Loader2 className="h-8 w-8 animate-spin text-primary" />
+					<p className="text-sm text-muted-foreground">Loading asset history...</p>
+				</div>
 			</div>
 		);
 	}
@@ -55,15 +68,13 @@ export default function SuperUserAssetDetailPage() {
 		);
 	}
 
-	const allEvents = [
-		...registrations.map((r) => ({ ...r, _type: "registration" as const, _date: r.timestamp })),
-		...verifications.map((v) => ({ ...v, _type: "verification" as const, _date: v.verifiedAt })),
-	].sort((a, b) => new Date(b._date).getTime() - new Date(a._date).getTime());
+	const isRegistered =
+		asset.registrationState === "fully_registered" || asset.registrationState === "partially_registered";
 
 	return (
-		<div className="h-full flex flex-col overflow-hidden">
-			{/* Breadcrumb */}
-			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/50">
+		<div className="min-h-full flex flex-col">
+			{/* Header */}
+			<div className="flex-shrink-0 px-6 py-4 border-b bg-background sticky top-0 z-10">
 				<nav className="text-sm text-muted-foreground mb-1 flex items-center gap-1">
 					<button
 						type="button"
@@ -83,170 +94,95 @@ export default function SuperUserAssetDetailPage() {
 					{" > "}
 					<span className="text-foreground">{asset.serialNumber}</span>
 				</nav>
-				<div className="flex items-center gap-3">
-					<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-						<ArrowLeft className="h-4 w-4" />
-					</Button>
-					<h1 className="text-xl font-semibold">{asset.serialNumber}</h1>
-					{getAssetStatusBadge(asset.status)}
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-3">
+						<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+							<ArrowLeft className="h-5 w-5" />
+						</Button>
+						<div>
+							<h1 className="text-xl font-semibold">Asset Verification History</h1>
+							<p className="text-sm text-muted-foreground">
+								{asset.serialNumber} • {asset.make} {asset.model}
+								{asset.siteName ? ` • ${asset.siteName}` : ""}
+							</p>
+						</div>
+					</div>
+					{asset.location?.latitude != null && (
+						<Button variant="outline" size="sm" onClick={() => setGpsModalOpen(true)}>
+							<MapPin className="h-4 w-4 mr-2" />
+							Correct GPS
+						</Button>
+					)}
 				</div>
 			</div>
 
-			<div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
-				{/* Asset Info */}
-				<section>
-					<h2 className="text-base font-semibold mb-3">Asset Information</h2>
-					<div className="border rounded-lg px-4 divide-y">
-						<InfoRow label="Serial Number" value={<span className="font-mono">{asset.serialNumber}</span>} />
-						<InfoRow label="Make" value={asset.make} />
-						<InfoRow label="Model" value={asset.model} />
-						<InfoRow label="Category" value={asset.category?.name} />
-						<InfoRow label="Condition" value={asset.condition} />
-						<InfoRow label="Status" value={getAssetStatusBadge(asset.status)} />
-						<InfoRow label="Site Name" value={asset.siteName} />
-						<InfoRow label="Channel" value={asset.channel} />
-						<InfoRow label="Client" value={asset.client} />
-						<InfoRow label="Notes" value={asset.notes} />
-						<InfoRow
-							label="Registered GPS"
-							value={
-								asset.location?.latitude != null ? (
-									<div className="flex items-center gap-2">
-										<span className="font-mono text-sm">
-											{asset.location.latitude}, {asset.location.longitude}
-										</span>
-										<Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setGpsModalOpen(true)}>
-											<MapPin className="h-3 w-3 mr-1" />
-											Correct GPS
-										</Button>
-									</div>
-								) : (
-									"No GPS"
-								)
-							}
-						/>
-						<InfoRow
-							label="Location Accuracy"
-							value={asset.locationAccuracy != null ? `${asset.locationAccuracy} m` : undefined}
-						/>
-						<InfoRow
-							label="Geofence Threshold"
-							value={asset.geofenceThreshold != null ? `${asset.geofenceThreshold} m` : undefined}
-						/>
-						<InfoRow
-							label="Registered By"
-							value={
-								asset.registeredBy
-									? `${(asset.registeredBy as { name?: string }).name} — ${(asset.registeredBy as { email?: string }).email}`
-									: undefined
-							}
-						/>
-						<InfoRow
-							label="Registered At"
-							value={
-								asset.registeredAt ? format(new Date(asset.registeredAt as string), "MMM d, yyyy HH:mm") : undefined
-							}
-						/>
-						<InfoRow
-							label="Last Verified"
-							value={
-								asset.lastVerifiedAt ? format(new Date(asset.lastVerifiedAt as string), "MMM d, yyyy HH:mm") : "Never"
-							}
-						/>
-						<InfoRow
-							label="Next Verification Due"
-							value={
-								asset.nextVerificationDue
-									? format(new Date(asset.nextVerificationDue as string), "MMM d, yyyy")
-									: undefined
-							}
-						/>
-						<InfoRow
-							label="Verification Frequency"
-							value={asset.verificationFrequency ? `Every ${asset.verificationFrequency} days` : undefined}
-						/>
-						<InfoRow
-							label="QR Code"
-							value={asset.qrCode?.code ? <span className="font-mono">{asset.qrCode.code}</span> : undefined}
-						/>
-					</div>
-				</section>
+			{/* Asset Summary */}
+			<div className="flex-shrink-0 px-6 pt-4">
+				<AssetSummary asset={asset} />
+			</div>
 
-				{/* Verification History */}
-				<section>
-					<h2 className="text-base font-semibold mb-3">Verification History</h2>
-					{allEvents.length === 0 ? (
-						<p className="text-sm text-muted-foreground py-4 border rounded-lg text-center">No history yet.</p>
-					) : (
-						<div className="border rounded-lg overflow-auto">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Date & Time</TableHead>
-										<TableHead>Type</TableHead>
-										<TableHead>Submitted By</TableHead>
-										<TableHead>GPS Passed</TableHead>
-										<TableHead>Distance</TableHead>
-										<TableHead>Override</TableHead>
-										<TableHead>Status</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{allEvents.map((event) => {
-										if (event._type === "registration") {
-											const r = event as RegistrationHistoryItem & { _type: "registration"; _date: string };
-											return (
-												<TableRow key={`reg-${r.id}`}>
-													<TableCell className="text-sm">
-														{format(new Date(r.timestamp), "MMM d, yyyy HH:mm")}
-													</TableCell>
-													<TableCell>
-														<StyledBadge color="purple">Registration</StyledBadge>
-													</TableCell>
-													<TableCell className="text-sm">{r.performedBy?.name || "—"}</TableCell>
-													<TableCell>—</TableCell>
-													<TableCell>—</TableCell>
-													<TableCell>—</TableCell>
-													<TableCell>
-														<StyledBadge color="emerald">Completed</StyledBadge>
-													</TableCell>
-												</TableRow>
-											);
-										}
-										const v = event as VerificationHistoryItem & { _type: "verification"; _date: string };
-										return (
-											<TableRow key={`ver-${v.id}`}>
-												<TableCell className="text-sm">{format(new Date(v.verifiedAt), "MMM d, yyyy HH:mm")}</TableCell>
-												<TableCell>
-													<StyledBadge color="blue">Verification</StyledBadge>
-												</TableCell>
-												<TableCell className="text-sm">{v.verifiedBy?.name || "—"}</TableCell>
-												<TableCell>
-													{v.gpsCheckPassed ? (
-														<StyledBadge color="emerald">Yes</StyledBadge>
-													) : (
-														<StyledBadge color="red">No</StyledBadge>
-													)}
-												</TableCell>
-												<TableCell className="text-sm text-muted-foreground">
-													{v.distance != null ? `${v.distance} m` : "—"}
-												</TableCell>
-												<TableCell>
-													{(v as unknown as { gpsOverrideUsed?: boolean }).gpsOverrideUsed ? (
-														<StyledBadge color="orange">Yes</StyledBadge>
-													) : (
-														"No"
-													)}
-												</TableCell>
-												<TableCell>{getVerificationStatusBadge(v.verificationStatus || "")}</TableCell>
-											</TableRow>
-										);
-									})}
-								</TableBody>
-							</Table>
+			{/* Timeline */}
+			<div className="flex-1 px-6 py-6 space-y-6">
+				{isRegistered ? (
+					<>
+						<section>
+							<div className="flex items-center gap-2 mb-4">
+								<ShieldCheck
+									className={`h-5 w-5 ${currentRegistration ? "text-green-600" : "text-muted-foreground"}`}
+								/>
+								<h2 className={`font-semibold ${!currentRegistration ? "text-muted-foreground" : ""}`}>Registration</h2>
+							</div>
+							{currentRegistration ? (
+								<RegistrationEvent registration={currentRegistration} assetId={assetId} showMapLink={false} />
+							) : (
+								<div className="pl-8 py-4 text-sm text-muted-foreground border rounded-lg bg-muted/30">
+									No registration recorded for this asset.
+								</div>
+							)}
+						</section>
+
+						<section>
+							<div className="flex items-center gap-2 mb-4">
+								<Clock className="h-5 w-5 text-blue-600" />
+								<h2 className="font-semibold">Verification History</h2>
+								{filteredVerifications.length > 0 && (
+									<span className="text-sm text-muted-foreground">
+										({filteredVerifications.length} verification{filteredVerifications.length !== 1 ? "s" : ""})
+									</span>
+								)}
+							</div>
+							{filteredVerifications.length === 0 ? (
+								<div className="pl-8 py-8 text-center text-sm text-muted-foreground border rounded-lg bg-muted/30">
+									<ShieldCheck className="h-8 w-8 mx-auto mb-2 opacity-50" />
+									<p>No verifications recorded yet</p>
+									<p className="text-xs mt-1">Verifications will appear here once field workers verify this asset.</p>
+								</div>
+							) : (
+								<div className="space-y-4">
+									{filteredVerifications.map((verification, index) => (
+										<VerificationCard
+											key={verification.id}
+											verification={verification}
+											index={index}
+											showMapLink={false}
+										/>
+									))}
+								</div>
+							)}
+						</section>
+					</>
+				) : (
+					<section>
+						<div className="flex flex-col items-center justify-center py-12 px-6 border rounded-lg bg-muted/30">
+							<ShieldCheck className="h-12 w-12 text-muted-foreground/50 mb-4" />
+							<h3 className="font-semibold text-lg mb-2">Asset Not Registered</h3>
+							<p className="text-sm text-muted-foreground text-center max-w-md">
+								Registration and verification history will appear here once the asset is registered.
+							</p>
 						</div>
-					)}
-				</section>
+					</section>
+				)}
+				<div className="h-8" />
 			</div>
 
 			<CorrectGpsModal

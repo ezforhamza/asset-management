@@ -13,9 +13,15 @@ interface RegistrationEventProps {
 	registration: RegistrationHistoryItem;
 	assetId?: string;
 	isHighlighted?: boolean;
+	showMapLink?: boolean;
 }
 
-export function RegistrationEvent({ registration, assetId, isHighlighted = false }: RegistrationEventProps) {
+export function RegistrationEvent({
+	registration,
+	assetId,
+	isHighlighted = false,
+	showMapLink = true,
+}: RegistrationEventProps) {
 	const [isOpen, setIsOpen] = useState(isHighlighted); // Auto-expand if highlighted
 
 	const formatDate = (dateStr: string) => {
@@ -136,7 +142,7 @@ export function RegistrationEvent({ registration, assetId, isHighlighted = false
 												<p className="text-sm font-mono">
 													{registration.location?.latitude.toFixed(6)}, {registration.location?.longitude.toFixed(6)}
 												</p>
-												{registration.location && (
+												{showMapLink && registration.location && (
 													<Link
 														to={`/customer-portal/map?lat=${registration.location.latitude}&lng=${registration.location.longitude}&assetId=${assetId}`}
 														state={{ fromRegistration: true, assetId }}
