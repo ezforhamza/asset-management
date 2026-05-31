@@ -15,6 +15,7 @@ export enum UserRole {
 	FIELD_USER = "field_user",
 	CUSTOMER_ADMIN = "customer_admin",
 	SYSTEM_ADMIN = "system_admin",
+	SUPER_USER = "super_user",
 }
 
 // Asset Guard - Admin Types (for customer_admin role only)

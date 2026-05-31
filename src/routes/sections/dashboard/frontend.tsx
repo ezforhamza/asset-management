@@ -58,6 +58,23 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "audit-logs", element: Component("/pages/admin/audit-logs") },
 				{ path: "audit-logs/:id", element: Component("/pages/admin/audit-logs/detail") },
 				{ path: "settings", element: Component("/pages/admin/settings") },
+				{ path: "super-users", element: Component("/pages/admin/super-users") },
+				{ path: "change-password", element: Component("/pages/sys/change-password") },
+			],
+		},
+
+		// ============================================
+		// Super User Portal
+		// ============================================
+		{
+			path: "super-user",
+			element: <RoleGuard allowedRoles={[UserRole.SUPER_USER]} />,
+			children: [
+				{ index: true, element: <Navigate to="dashboard" replace /> },
+				{ path: "dashboard", element: Component("/pages/super-user/dashboard") },
+				{ path: "companies/:companyId/assets", element: Component("/pages/super-user/assets") },
+				{ path: "companies/:companyId/assets/:assetId", element: Component("/pages/super-user/assets/detail") },
+				{ path: "profile", element: Component("/pages/super-user/profile") },
 				{ path: "change-password", element: Component("/pages/sys/change-password") },
 			],
 		},

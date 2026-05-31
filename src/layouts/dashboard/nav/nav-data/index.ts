@@ -1,10 +1,10 @@
+import { useMemo } from "react";
+import { UserRole } from "#/enum";
 import type { NavItemDataProps } from "@/components/nav/types";
 import { GLOBAL_CONFIG } from "@/global-config";
 import { useUserInfo } from "@/store/userStore";
-import { UserRole } from "#/enum";
-import { useMemo } from "react";
 import { backendNavData } from "./nav-data-backend";
-import { clientNavData, adminNavData } from "./nav-data-frontend";
+import { adminNavData, clientNavData, superUserNavData } from "./nav-data-frontend";
 
 /**
  * Get nav data based on user role
@@ -16,12 +16,8 @@ const getNavDataForRole = (userRole: string | undefined) => {
 		return backendNavData;
 	}
 
-	// System admin gets admin panel navigation
-	if (userRole === UserRole.SYSTEM_ADMIN) {
-		return adminNavData;
-	}
-
-	// Customer admin and field user get client panel navigation
+	if (userRole === UserRole.SYSTEM_ADMIN) return adminNavData;
+	if (userRole === UserRole.SUPER_USER) return superUserNavData;
 	return clientNavData;
 };
 

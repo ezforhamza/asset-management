@@ -10,8 +10,6 @@ import type {
 	BulkImportQRRes,
 	CompaniesListRes,
 	CreateCompanyReq,
-	CreateCompanyRes,
-	CreateQRCodeReq,
 	CreateSuperuserReq,
 	SyncQueueListRes,
 	UpdateCompanyReq,
@@ -344,6 +342,63 @@ const createSuperuser = (data: CreateSuperuserReq) =>
 	});
 
 // ============================================
+// Super User Management (role=super_user)
+// ============================================
+
+const getSuperUsers = (params?: { search?: string; page?: number; limit?: number }) =>
+	apiClient.get<AdminUsersListRes>({ url: API_ENDPOINTS.USERS.BASE, params: { ...params, role: "super_user" } });
+
+const createSuperUserAccount = (data: { name: string; email: string; password?: string }) =>
+	apiClient.post<{ user: UserInfo; message: string; temporaryPassword?: string }>({
+		url: API_ENDPOINTS.USERS.BASE,
+		data: { ...data, role: "super_user" },
+	});
+
+// ============================================
+// Notification Assignments
+// ============================================
+
+export interface NotificationAssignment {
+	companyId: string;
+	companyName: string;
+	isActive: boolean;
+	notificationTypes: string[];
+	receiveAll: boolean;
+}
+
+export interface NotificationAssignmentsRes {
+	assignments: NotificationAssignment[];
+	availableTypes: string[];
+}
+
+const getNotificationAssignments = (userId: string) =>
+	apiClient.get<NotificationAssignmentsRes>({ url: API_ENDPOINTS.NOTIFICATION_ASSIGNMENTS.BY_USER(userId) });
+
+const addNotificationAssignment = (
+	userId: string,
+	data: { companyId: string; notificationTypes?: string[]; receiveAll?: boolean },
+) =>
+	apiClient.post<{ success: boolean; message: string }>({
+		url: API_ENDPOINTS.NOTIFICATION_ASSIGNMENTS.BY_USER(userId),
+		data,
+	});
+
+const updateNotificationAssignment = (
+	userId: string,
+	data: { companyId: string; notificationTypes?: string[]; receiveAll?: boolean },
+) =>
+	apiClient.patch<{ success: boolean; message: string }>({
+		url: API_ENDPOINTS.NOTIFICATION_ASSIGNMENTS.BY_USER(userId),
+		data,
+	});
+
+const removeNotificationAssignment = (userId: string, companyId: string) =>
+	apiClient.delete<{ success: boolean; message: string }>({
+		url: API_ENDPOINTS.NOTIFICATION_ASSIGNMENTS.BY_USER(userId),
+		data: { companyId },
+	});
+
+// ============================================
 // Company Export
 // ============================================
 
@@ -430,4 +485,12 @@ export default {
 	updateGlobalSettings,
 	// Company Export
 	exportCompanyData,
+	// Super Users
+	getSuperUsers,
+	createSuperUserAccount,
+	// Notification Assignments
+	getNotificationAssignments,
+	addNotificationAssignment,
+	updateNotificationAssignment,
+	removeNotificationAssignment,
 };

@@ -4,6 +4,7 @@ import type { RouteObject } from "react-router";
 
 const AdminLoginPage = lazy(() => import("@/pages/sys/login/admin-login"));
 const CustomerLoginPage = lazy(() => import("@/pages/sys/login/customer-login"));
+const SuperUserLoginPage = lazy(() => import("@/pages/sys/login/super-user-login"));
 
 export const authRoutes: RouteObject[] = [
 	{
@@ -35,5 +36,15 @@ export const authRoutes: RouteObject[] = [
 			</Suspense>
 		),
 		children: [{ path: "login", element: <CustomerLoginPage /> }],
+	},
+	{
+		// Super User (Support Team) login at /super-user/login
+		path: "super-user",
+		element: (
+			<Suspense fallback={null}>
+				<Outlet />
+			</Suspense>
+		),
+		children: [{ path: "login", element: <SuperUserLoginPage /> }],
 	},
 ];

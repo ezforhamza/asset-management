@@ -162,7 +162,6 @@ export const useSignOut = () => {
 	const userInfo = useUserInfo();
 
 	const signOut = async () => {
-		// Determine login page before clearing user data
 		const loginPath = userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/login" : "/customer-portal/login";
 
 		try {

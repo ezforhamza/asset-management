@@ -15,11 +15,12 @@ import { cn } from "@/utils";
 import { LoginStateEnum, useLoginStateContext } from "./providers/login-provider";
 
 interface LoginFormProps extends React.ComponentPropsWithoutRef<"form"> {
-	expectedRole: UserRole.SYSTEM_ADMIN | UserRole.CUSTOMER_ADMIN;
+	expectedRole: UserRole.SYSTEM_ADMIN | UserRole.CUSTOMER_ADMIN | UserRole.SUPER_USER;
 	redirectTo: string;
+	changePasswordPath?: string;
 }
 
-export function LoginForm({ className, expectedRole, redirectTo, ...props }: LoginFormProps) {
+export function LoginForm({ className, expectedRole, redirectTo, changePasswordPath, ...props }: LoginFormProps) {
 	const [loading, setLoading] = useState(false);
 	const [remember, setRemember] = useState(true);
 	const navigate = useNavigate();
@@ -54,11 +55,14 @@ export function LoginForm({ className, expectedRole, redirectTo, ...props }: Log
 				return;
 			}
 
-			// Validate role matches this login portal
 			if (result.role !== expectedRole) {
 				clearUserInfoAndToken();
-				const portalName = expectedRole === UserRole.SYSTEM_ADMIN ? "System Admin" : "Customer Admin";
-				toast.error(`Access denied. This login is for ${portalName} accounts only.`, {
+				const portalNames: Record<string, string> = {
+					[UserRole.SYSTEM_ADMIN]: "System Admin",
+					[UserRole.CUSTOMER_ADMIN]: "Customer Admin",
+					[UserRole.SUPER_USER]: "Support Team",
+				};
+				toast.error(`Access denied. This login is for ${portalNames[expectedRole] ?? "this"} accounts only.`, {
 					position: "top-center",
 					duration: 5000,
 				});
@@ -66,8 +70,12 @@ export function LoginForm({ className, expectedRole, redirectTo, ...props }: Log
 			}
 
 			if (result.mustChangePassword) {
+				const defaultChangePwPaths: Record<string, string> = {
+					[UserRole.SYSTEM_ADMIN]: "/admin/change-password",
+					[UserRole.SUPER_USER]: "/super-user/change-password",
+				};
 				const changePwPath =
-					expectedRole === UserRole.SYSTEM_ADMIN ? "/admin/change-password" : "/customer-portal/change-password";
+					changePasswordPath ?? defaultChangePwPaths[expectedRole] ?? "/customer-portal/change-password";
 				navigate(changePwPath, { replace: true });
 				return;
 			}

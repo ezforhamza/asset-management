@@ -14,17 +14,20 @@ export function MustChangePasswordGuard({ children }: MustChangePasswordGuardPro
 	const userInfo = useUserInfo();
 	const location = useLocation();
 
-	const changePasswordPaths = ["/admin/change-password", "/customer-portal/change-password"];
+	const changePasswordPaths = [
+		"/admin/change-password",
+		"/customer-portal/change-password",
+		"/super-user/change-password",
+	];
 
-	// Allow access to change-password pages
 	if (changePasswordPaths.includes(location.pathname)) {
 		return <>{children}</>;
 	}
 
-	// If user must change password, redirect to role-specific page
 	if (userInfo.mustChangePassword === true) {
-		const changePwPath =
-			userInfo.role === UserRole.SYSTEM_ADMIN ? "/admin/change-password" : "/customer-portal/change-password";
+		let changePwPath = "/customer-portal/change-password";
+		if (userInfo.role === UserRole.SYSTEM_ADMIN) changePwPath = "/admin/change-password";
+		else if (userInfo.role === UserRole.SUPER_USER) changePwPath = "/super-user/change-password";
 		return <Navigate to={changePwPath} replace />;
 	}
 

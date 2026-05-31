@@ -14,6 +14,7 @@ export interface AssetsListParams {
 	model?: string;
 	status?: string;
 	verificationStatus?: string;
+	registrationState?: string;
 	categoryId?: string;
 	client?: string;
 	siteName?: string;
@@ -249,6 +250,15 @@ const detachQrCode = (assetId: string) =>
 		url: `${AssetApi.Assets}/${assetId}/detach-qr`,
 	});
 
+const correctGps = (
+	assetId: string,
+	data: { location: { latitude: number; longitude: number }; locationAccuracy?: number },
+) =>
+	apiClient.patch<{ message: string; asset: Asset }>({
+		url: `${AssetApi.Assets}/${assetId}/location`,
+		data,
+	});
+
 // ============================================
 // Verification Service
 // ============================================
@@ -315,6 +325,7 @@ export default {
 	updateAsset,
 	deleteAsset,
 	detachQrCode,
+	correctGps,
 	bulkImportAssets,
 	downloadImportTemplate,
 	transferAsset,

@@ -44,6 +44,7 @@ import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
+import { CorrectGpsModal } from "@/components/correct-gps-modal";
 import { StyledBadge } from "@/utils/badge-styles";
 import { formatLabel } from "@/utils/formatLabel";
 import { CategoriesModal } from "./components/CategoriesModal";
@@ -125,6 +126,9 @@ export default function AssetsPage() {
 
 	// Detach QR confirmation state
 	const [detachQrModalOpen, setDetachQrModalOpen] = useState(false);
+
+	// GPS correction modal state
+	const [gpsModalAsset, setGpsModalAsset] = useState<Asset | null>(null);
 
 	// Export state
 	const [exporting, setExporting] = useState(false);
@@ -612,6 +616,7 @@ export default function AssetsPage() {
 							<TableBody>
 								{isLoading ? (
 									Array.from({ length: 9 }).map((_, i) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: skeleton rows have no stable id
 										<TableRow key={`skeleton-${i}`}>
 											<TableCell>
 												<Skeleton className="h-4 w-24" />
@@ -733,6 +738,11 @@ export default function AssetsPage() {
 													<DropdownMenuContent align="end">
 														{canWrite ? (
 															<>
+																<DropdownMenuItem onClick={() => setGpsModalAsset(asset)}>
+																	<MapPin className="h-4 w-4 mr-2" />
+																	Correct GPS
+																</DropdownMenuItem>
+																<DropdownMenuSeparator />
 																<DropdownMenuItem onClick={() => handleEditClick(asset)}>
 																	<Pencil className="h-4 w-4 mr-2" />
 																	Edit
@@ -1095,6 +1105,14 @@ export default function AssetsPage() {
 
 			{/* Request Repair Modal */}
 			<RequestRepairModal open={repairModalOpen} onOpenChange={setRepairModalOpen} asset={repairAsset} />
+
+			{/* Correct GPS Modal */}
+			<CorrectGpsModal
+				asset={gpsModalAsset}
+				open={!!gpsModalAsset}
+				onClose={() => setGpsModalAsset(null)}
+				queryKeysToInvalidate={[["assets"], ["assets-all-for-filters"]]}
+			/>
 		</div>
 	);
 }

@@ -100,6 +100,14 @@ export const API_ENDPOINTS = {
 		TERMINATE: (sessionId: string) => `/sessions/${sessionId}`,
 		TERMINATE_ALL: (userId: string) => `/sessions/user/${userId}/all`,
 	},
+
+	// Notification Assignments (super user → company)
+	NOTIFICATION_ASSIGNMENTS: {
+		BY_USER: (userId: string) => `/users/${userId}/notification-assignments`,
+	},
+
+	// User image uploads
+	USER_IMAGE: "/uploads/user-image",
 } as const;
 
 export default API_ENDPOINTS;

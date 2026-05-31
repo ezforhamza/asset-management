@@ -92,6 +92,12 @@ export const adminNavData: NavProps["data"] = [
 		name: "System",
 		items: [
 			{
+				title: "Support Team",
+				path: "/admin/super-users",
+				icon: <Icon icon="solar:headphones-round-bold-duotone" size="24" />,
+				roles: [UserRole.SYSTEM_ADMIN],
+			},
+			{
 				title: "Audit Logs",
 				path: "/admin/audit-logs",
 				icon: <Icon icon="solar:clipboard-list-bold-duotone" size="24" />,
@@ -102,6 +108,32 @@ export const adminNavData: NavProps["data"] = [
 				path: "/admin/settings",
 				icon: <Icon icon="solar:settings-bold-duotone" size="24" />,
 				roles: [UserRole.SYSTEM_ADMIN],
+			},
+		],
+	},
+];
+
+// Super User Portal Navigation
+export const superUserNavData: NavProps["data"] = [
+	{
+		name: "Support",
+		items: [
+			{
+				title: "Companies",
+				path: "/super-user/dashboard",
+				icon: <Icon icon="solar:buildings-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
+		],
+	},
+	{
+		name: "Account",
+		items: [
+			{
+				title: "Profile",
+				path: "/super-user/profile",
+				icon: <Icon icon="solar:user-circle-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
 			},
 		],
 	},
