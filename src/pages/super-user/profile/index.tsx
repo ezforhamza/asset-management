@@ -78,7 +78,7 @@ export default function SuperUserProfilePage() {
 	};
 
 	return (
-		<div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+		<div className="px-6 py-8 space-y-6 max-w-3xl">
 			{/* Personal Info */}
 			<Card>
 				<CardHeader>
