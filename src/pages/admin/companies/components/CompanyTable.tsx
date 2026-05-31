@@ -21,6 +21,7 @@ interface CompanyTableProps {
 	isLoading: boolean;
 	onEdit?: (company: Company) => void;
 	onToggleStatus?: (company: Company) => void;
+	onRowClick?: (companyId: string) => void;
 }
 
 const ROWS_PER_PAGE = 9;
@@ -31,9 +32,16 @@ interface CompanyRowProps {
 	onRowClick: (companyId: string) => void;
 	onEdit?: (company: Company) => void;
 	onToggleStatus?: (company: Company) => void;
+	showActions?: boolean;
 }
 
-const CompanyRow = memo(function CompanyRow({ company, onRowClick, onEdit, onToggleStatus }: CompanyRowProps) {
+const CompanyRow = memo(function CompanyRow({
+	company,
+	onRowClick,
+	onEdit,
+	onToggleStatus,
+	showActions = true,
+}: CompanyRowProps) {
 	return (
 		<TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => onRowClick(company._id)}>
 			<TableCell>
@@ -71,35 +79,43 @@ const CompanyRow = memo(function CompanyRow({ company, onRowClick, onEdit, onTog
 			<TableCell className="text-sm text-muted-foreground">
 				{company.createdAt ? format(new Date(company.createdAt), "MMM d, yyyy") : "N/A"}
 			</TableCell>
-			<TableCell onClick={(e) => e.stopPropagation()}>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size="icon" className="h-8 w-8">
-							<MoreHorizontal className="h-4 w-4" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						<DropdownMenuItem onClick={() => onRowClick(company._id)}>
-							<Eye className="h-4 w-4 mr-2" />
-							View Details
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => onEdit?.(company)}>
-							<Pencil className="h-4 w-4 mr-2" />
-							Edit
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => onToggleStatus?.(company)}>
-							<Power className="h-4 w-4 mr-2" />
-							{company.isActive ? "Deactivate" : "Activate"}
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			</TableCell>
+			{showActions && (
+				<TableCell onClick={(e) => e.stopPropagation()}>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="ghost" size="icon" className="h-8 w-8">
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end">
+							<DropdownMenuItem onClick={() => onRowClick(company._id)}>
+								<Eye className="h-4 w-4 mr-2" />
+								View Details
+							</DropdownMenuItem>
+							{onEdit && (
+								<DropdownMenuItem onClick={() => onEdit(company)}>
+									<Pencil className="h-4 w-4 mr-2" />
+									Edit
+								</DropdownMenuItem>
+							)}
+							{onToggleStatus && (
+								<>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem onClick={() => onToggleStatus(company)}>
+										<Power className="h-4 w-4 mr-2" />
+										{company.isActive ? "Deactivate" : "Activate"}
+									</DropdownMenuItem>
+								</>
+							)}
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</TableCell>
+			)}
 		</TableRow>
 	);
 });
 
-function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }: CompanyTableProps) {
+function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus, onRowClick }: CompanyTableProps) {
 	const navigate = useNavigate();
 	const [currentPage, setCurrentPage] = useState(1);
 
@@ -110,12 +126,18 @@ function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }:
 	const endIndex = startIndex + ROWS_PER_PAGE;
 	const paginatedCompanies = companies.slice(startIndex, endIndex);
 
+	const showActions = !!(onEdit || onToggleStatus);
+
 	// Memoize callback to prevent re-renders of memoized rows
 	const handleRowClick = useCallback(
 		(companyId: string) => {
-			navigate(`/admin/companies/${companyId}`);
+			if (onRowClick) {
+				onRowClick(companyId);
+			} else {
+				navigate(`/admin/companies/${companyId}`);
+			}
 		},
-		[navigate],
+		[navigate, onRowClick],
 	);
 
 	if (isLoading) {
@@ -131,11 +153,12 @@ function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }:
 								<TableHead className="text-center">Users</TableHead>
 								<TableHead>Status</TableHead>
 								<TableHead>Created</TableHead>
-								<TableHead className="w-[50px]" />
+								{showActions && <TableHead className="w-[50px]" />}
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{Array.from({ length: 5 }).map((_, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 								<TableRow key={i}>
 									<TableCell>
 										<Skeleton className="h-5 w-40" />
@@ -155,9 +178,11 @@ function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }:
 									<TableCell>
 										<Skeleton className="h-5 w-24" />
 									</TableCell>
-									<TableCell>
-										<Skeleton className="h-8 w-8" />
-									</TableCell>
+									{showActions && (
+										<TableCell>
+											<Skeleton className="h-8 w-8" />
+										</TableCell>
+									)}
 								</TableRow>
 							))}
 						</TableBody>
@@ -189,13 +214,14 @@ function CompanyTableComponent({ companies, isLoading, onEdit, onToggleStatus }:
 							<TableHead className="text-center">Users</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Created</TableHead>
-							<TableHead className="w-[50px]" />
+							{showActions && <TableHead className="w-[50px]" />}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{paginatedCompanies.map((company) => (
 							<CompanyRow
 								key={company._id}
+								showActions={showActions}
 								company={company}
 								onRowClick={handleRowClick}
 								onEdit={onEdit}

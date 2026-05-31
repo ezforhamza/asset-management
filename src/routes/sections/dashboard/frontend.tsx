@@ -72,6 +72,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 			children: [
 				{ index: true, element: <Navigate to="dashboard" replace /> },
 				{ path: "dashboard", element: Component("/pages/super-user/dashboard") },
+				{ path: "companies", element: Component("/pages/super-user/companies") },
 				{ path: "companies/:companyId/assets", element: Component("/pages/super-user/assets") },
 				{ path: "companies/:companyId/assets/:assetId", element: Component("/pages/super-user/assets/detail") },
 				{ path: "profile", element: Component("/pages/super-user/profile") },

@@ -119,8 +119,14 @@ export const superUserNavData: NavProps["data"] = [
 		name: "Support",
 		items: [
 			{
-				title: "Companies",
+				title: "Dashboard",
 				path: "/super-user/dashboard",
+				icon: <Icon icon="solar:home-2-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
+			{
+				title: "Companies",
+				path: "/super-user/companies",
 				icon: <Icon icon="solar:buildings-bold-duotone" size="24" />,
 				roles: [UserRole.SUPER_USER],
 			},
