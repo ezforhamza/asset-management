@@ -1,20 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import type { RepairRequest } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
-import { Button } from "@/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
-
-function OperationalBadge({ status }: { status?: string | null }) {
-	if (status === "needs_repair") return <StyledBadge color="yellow">Needs Repair</StyledBadge>;
-	if (status === "non_operational") return <StyledBadge color="red">Non-Operational</StyledBadge>;
-	return <span className="text-muted-foreground text-sm">—</span>;
-}
 
 function SourceBadge({ source }: { source: string }) {
 	if (source === "field_worker") return <StyledBadge color="blue">Field Worker</StyledBadge>;
@@ -61,6 +53,8 @@ function StatusSelect({ request }: { request: RepairRequest }) {
 	);
 }
 
+const COLS = 8;
+
 interface RepairRequestTableProps {
 	requests: RepairRequest[];
 	isLoading: boolean;
@@ -73,19 +67,7 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 			<Table>
 				<TableHeader>
 					<TableRow>
-						{[
-							"Date",
-							"Serial #",
-							"Make / Model",
-							"Category",
-							"Site",
-							"Operational",
-							"Source",
-							"Notes",
-							"Status",
-							"Requested By",
-							"",
-						].map((h) => (
+						{["Date", "Serial #", "Make / Model", "Category", "Site", "Source", "Notes", "Status"].map((h) => (
 							<TableHead key={h}>{h}</TableHead>
 						))}
 					</TableRow>
@@ -94,7 +76,7 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 					{Array.from({ length: 6 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 						<TableRow key={i}>
-							{Array.from({ length: 11 }).map((_, j) => (
+							{Array.from({ length: COLS }).map((_, j) => (
 								// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 								<TableCell key={j}>
 									<Skeleton className="h-4 w-20" />
@@ -127,17 +109,21 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 					<TableHead>Make / Model</TableHead>
 					<TableHead>Category</TableHead>
 					<TableHead>Site</TableHead>
-					<TableHead>Operational</TableHead>
 					<TableHead>Source</TableHead>
 					<TableHead>Notes</TableHead>
 					<TableHead>Status</TableHead>
-					<TableHead>Requested By</TableHead>
-					<TableHead className="w-[60px]" />
 				</TableRow>
 			</TableHeader>
 			<TableBody>
 				{requests.map((req) => (
-					<TableRow key={req.id}>
+					<TableRow
+						key={req.id}
+						className="cursor-pointer hover:bg-muted/50"
+						onClick={(e) => {
+							if ((e.target as HTMLElement).closest("[role='combobox'], [role='option'], [role='listbox']")) return;
+							onView(req);
+						}}
+					>
 						<TableCell className="text-sm text-muted-foreground whitespace-nowrap">
 							{format(new Date(req.createdAt), "MMM d, yyyy HH:mm")}
 						</TableCell>
@@ -148,26 +134,15 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 						<TableCell className="text-sm text-muted-foreground">{req.assetSnapshot.categoryName || "—"}</TableCell>
 						<TableCell className="text-sm text-muted-foreground">{req.assetSnapshot.siteName || "—"}</TableCell>
 						<TableCell>
-							<OperationalBadge status={req.operationalStatus} />
-						</TableCell>
-						<TableCell>
 							<SourceBadge source={req.source} />
 						</TableCell>
-						<TableCell className="max-w-[180px]">
+						<TableCell className="max-w-[200px]">
 							<p className="text-sm text-muted-foreground truncate" title={req.notes}>
 								{req.notes || "—"}
 							</p>
 						</TableCell>
-						<TableCell>
+						<TableCell onClick={(e) => e.stopPropagation()}>
 							<StatusSelect request={req} />
-						</TableCell>
-						<TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-							{req.requestedBy?.name || "—"}
-						</TableCell>
-						<TableCell>
-							<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
-								<Eye className="h-4 w-4" />
-							</Button>
 						</TableCell>
 					</TableRow>
 				))}
