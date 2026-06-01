@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, MoreHorizontal, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -16,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { getAssetStatusBadge, getVerificationStatusBadge, StyledBadge } from "@/utils/badge-styles";
-import { format } from "date-fns";
 
 export default function SuperUserAssetsPage() {
 	const { companyId } = useParams<{ companyId: string }>();
@@ -44,11 +44,14 @@ export default function SuperUserAssetsPage() {
 		return () => clearTimeout(t);
 	}, [searchQuery]);
 
-	const { data: companyData } = useQuery({
-		queryKey: ["super-user", "company", companyId],
-		queryFn: () => adminService.getCompany(companyId ?? ""),
-		enabled: !!companyId,
+	// Use the companies list (super-user scoped) instead of getCompany (admin-only)
+	const { data: companiesData } = useQuery({
+		queryKey: ["super-user", "companies-list"],
+		queryFn: () => adminService.getCompanies({ limit: 100 }),
 	});
+	const companyData = companiesData?.results?.find(
+		(c) => (c as typeof c & { _id?: string }).id === companyId || (c as typeof c & { _id?: string })._id === companyId,
+	);
 
 	const { data: categoriesData } = useQuery({
 		queryKey: ["super-user", "categories", companyId],
