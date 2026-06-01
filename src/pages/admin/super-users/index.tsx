@@ -29,6 +29,25 @@ export default function AdminSuperUsersPage() {
 	const [resetPassword, setResetPassword] = useState<string | null>(null);
 	const [isResettingPassword, setIsResettingPassword] = useState(false);
 
+	// Derive user (Create Counterpart)
+	const [deriveFrom, setDeriveFrom] = useState<
+		{ type: "read_only" | "read_write"; preSelectedCompanyIds: string[] } | undefined
+	>();
+
+	const handleDeriveUser = async (user: UserInfo) => {
+		try {
+			const res = await adminService.getCompanyAssignments(user.id);
+			const companyIds = res.assignments.map((a) => a.companyId);
+			setDeriveFrom({
+				type: (user.superUserType ?? "read_only") as "read_only" | "read_write",
+				preSelectedCompanyIds: companyIds,
+			});
+			setCreateModalOpen(true);
+		} catch {
+			toast.error("Could not load company assignments");
+		}
+	};
+
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "super-users"],
 		queryFn: () => adminService.getSuperUsers({ limit: 100 }),
@@ -136,11 +155,19 @@ export default function AdminSuperUsersPage() {
 					onNotifications={setNotifUser}
 					onManageCompanies={setManageCompaniesUser}
 					onDelete={setDeleteUser}
+					onDeriveUser={handleDeriveUser}
 				/>
 			</div>
 
 			{/* Modals */}
-			<CreateSuperUserModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} />
+			<CreateSuperUserModal
+				open={createModalOpen}
+				onClose={() => {
+					setCreateModalOpen(false);
+					setDeriveFrom(undefined);
+				}}
+				deriveFrom={deriveFrom}
+			/>
 
 			<NotificationAssignmentModal user={notifUser} open={!!notifUser} onClose={() => setNotifUser(null)} />
 

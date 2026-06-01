@@ -25,6 +25,12 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "reports", element: Component("/pages/reports") },
 				{ path: "map", element: Component("/pages/map") },
 				{ path: "change-password", element: Component("/pages/sys/change-password") },
+				{
+					path: "repair-requests",
+					element: (
+						<RoleGuard allowedRoles={[UserRole.CUSTOMER_ADMIN]}>{Component("/pages/repair-requests")}</RoleGuard>
+					),
+				},
 
 				// Management pages (Customer Admin only)
 				{

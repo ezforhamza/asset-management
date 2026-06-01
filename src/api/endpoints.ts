@@ -117,6 +117,15 @@ export const API_ENDPOINTS = {
 
 	// User image uploads
 	USER_IMAGE: "/uploads/user-image",
+
+	// Repair Requests
+	REPAIR_REQUESTS: {
+		BASE: "/repair-requests",
+		BY_ASSET: (assetId: string) => `/repair-requests/assets/${assetId}`,
+		BY_ID: (id: string) => `/repair-requests/${id}`,
+		UPDATE_STATUS: (id: string) => `/repair-requests/${id}/status`,
+		EXPORT: "/repair-requests/export",
+	},
 } as const;
 
 export default API_ENDPOINTS;

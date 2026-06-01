@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import adminService from "@/api/services/adminService";
@@ -13,9 +13,15 @@ import { Label } from "@/ui/label";
 import { PasswordInput } from "@/ui/password-input";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 
+interface DeriveFrom {
+	type: "read_only" | "read_write";
+	preSelectedCompanyIds: string[];
+}
+
 interface CreateSuperUserModalProps {
 	open: boolean;
 	onClose: () => void;
+	deriveFrom?: DeriveFrom;
 }
 
 interface FormValues {
@@ -51,7 +57,7 @@ function CopyButton({ text }: { text: string }) {
 	);
 }
 
-export function CreateSuperUserModal({ open, onClose }: CreateSuperUserModalProps) {
+export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperUserModalProps) {
 	const queryClient = useQueryClient();
 	const [step, setStep] = useState<Step>("form");
 	const [createdUserId, setCreatedUserId] = useState<string | null>(null);
@@ -60,8 +66,15 @@ export function CreateSuperUserModal({ open, onClose }: CreateSuperUserModalProp
 	const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
 	const [isAssigning, setIsAssigning] = useState(false);
 
+	// When deriving, pre-select opposite type
+	const defaultType: "read_only" | "read_write" = deriveFrom
+		? deriveFrom.type === "read_only"
+			? "read_write"
+			: "read_only"
+		: "read_only";
+
 	const form = useForm<FormValues>({
-		defaultValues: { name: "", email: "", password: "", superUserType: "read_only" },
+		defaultValues: { name: "", email: "", password: "", superUserType: defaultType },
 	});
 
 	const { data: availableData, isLoading: isLoadingCompanies } = useQuery({
@@ -70,6 +83,15 @@ export function CreateSuperUserModal({ open, onClose }: CreateSuperUserModalProp
 		enabled: step === "assign",
 	});
 	const availableCompanies = availableData?.companies || [];
+
+	// Pre-check source user's companies when deriving (filter to only available ones)
+	useEffect(() => {
+		if (step === "assign" && deriveFrom && availableCompanies.length > 0 && selectedCompanyIds.length === 0) {
+			const availableIds = new Set(availableCompanies.map((c) => c._id));
+			const preChecked = deriveFrom.preSelectedCompanyIds.filter((id) => availableIds.has(id));
+			if (preChecked.length > 0) setSelectedCompanyIds(preChecked);
+		}
+	}, [step, deriveFrom, availableCompanies, selectedCompanyIds.length]);
 
 	const mutation = useMutation({
 		mutationFn: (data: FormValues) =>
@@ -115,7 +137,12 @@ export function CreateSuperUserModal({ open, onClose }: CreateSuperUserModalProp
 	};
 
 	const handleClose = () => {
-		form.reset();
+		const resetType: "read_only" | "read_write" = deriveFrom
+			? deriveFrom.type === "read_only"
+				? "read_write"
+				: "read_only"
+			: "read_only";
+		form.reset({ name: "", email: "", password: "", superUserType: resetType });
 		setStep("form");
 		setCredentials(null);
 		setCreatedUserId(null);
@@ -187,7 +214,9 @@ export function CreateSuperUserModal({ open, onClose }: CreateSuperUserModalProp
 					<DialogHeader>
 						<DialogTitle>Assign Companies</DialogTitle>
 						<DialogDescription>
-							Select which companies this support user can access. You can change this later.
+							{deriveFrom
+								? "Pre-selected from source user. Adjust as needed — unavailable companies are filtered out."
+								: "Select which companies this support user can access. You can change this later."}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="max-h-[340px] overflow-y-auto space-y-1 py-1">

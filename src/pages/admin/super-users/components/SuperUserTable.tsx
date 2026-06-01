@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Bell, Building2, KeyRound, MoreHorizontal, Trash2, UserCheck, UserX } from "lucide-react";
+import { Bell, Building2, KeyRound, MoreHorizontal, Trash2, UserCheck, UserPlus, UserX } from "lucide-react";
 import type { UserInfo } from "#/entity";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -23,6 +23,7 @@ interface SuperUserTableProps {
 	onNotifications: (user: UserInfo) => void;
 	onManageCompanies: (user: UserInfo) => void;
 	onDelete: (user: UserInfo) => void;
+	onDeriveUser?: (user: UserInfo) => void;
 }
 
 function SuperUserTypeBadge({ type }: { type?: string | null }) {
@@ -39,6 +40,7 @@ export function SuperUserTable({
 	onNotifications,
 	onManageCompanies,
 	onDelete,
+	onDeriveUser,
 }: SuperUserTableProps) {
 	if (isLoading) {
 		return (
@@ -155,6 +157,12 @@ export function SuperUserTable({
 											<Building2 className="h-4 w-4 mr-2" />
 											Manage Companies
 										</DropdownMenuItem>
+										{onDeriveUser && (
+											<DropdownMenuItem onClick={() => onDeriveUser(user)}>
+												<UserPlus className="h-4 w-4 mr-2" />
+												Create Counterpart
+											</DropdownMenuItem>
+										)}
 										<DropdownMenuItem onClick={() => onNotifications(user)}>
 											<Bell className="h-4 w-4 mr-2" />
 											Notifications

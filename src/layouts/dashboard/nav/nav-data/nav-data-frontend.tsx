@@ -37,6 +37,12 @@ export const clientNavData: NavProps["data"] = [
 				icon: <Icon icon="solar:map-point-bold-duotone" size="24" />,
 				roles: [UserRole.FIELD_USER, UserRole.CUSTOMER_ADMIN],
 			},
+			{
+				title: "Repair Requests",
+				path: "/customer-portal/repair-requests",
+				icon: <Icon icon="solar:wrench-bold-duotone" size="24" />,
+				roles: [UserRole.CUSTOMER_ADMIN],
+			},
 		],
 	},
 	{
