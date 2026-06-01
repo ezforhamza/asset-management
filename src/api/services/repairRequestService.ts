@@ -75,6 +75,8 @@ const exportRepairRequests = (params: {
 	startDate?: string;
 	endDate?: string;
 	status?: string;
+	source?: string;
+	categoryName?: string;
 }) => {
 	const { userToken } = userStore.getState();
 	const token = userToken?.accessToken || "";
@@ -84,6 +86,8 @@ const exportRepairRequests = (params: {
 	if (params.startDate) queryParams.append("startDate", params.startDate);
 	if (params.endDate) queryParams.append("endDate", params.endDate);
 	if (params.status) queryParams.append("status", params.status);
+	if (params.source) queryParams.append("source", params.source);
+	if (params.categoryName) queryParams.append("categoryName", params.categoryName);
 
 	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
 	const ext = params.format === "pdf" ? "pdf" : "xlsx";

@@ -1,12 +1,15 @@
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import assetCategoryService from "@/api/services/assetCategoryService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 
 interface ExportModalProps {
 	open: boolean;
@@ -19,13 +22,30 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 
 	const [startDate, setStartDate] = useState(firstOfMonth);
 	const [endDate, setEndDate] = useState(today);
+	const [status, setStatus] = useState("");
+	const [source, setSource] = useState("");
+	const [categoryName, setCategoryName] = useState("");
 	const [format, setFormat] = useState<"xlsx" | "pdf">("xlsx");
 	const [isExporting, setIsExporting] = useState(false);
+
+	const { data: categoriesData } = useQuery({
+		queryKey: ["export-categories"],
+		queryFn: () => assetCategoryService.getCategories({ page: 1, limit: 100 }),
+		enabled: open,
+	});
+	const categories = categoriesData?.results?.filter((c) => c.status === "active") || [];
 
 	const handleExport = async () => {
 		setIsExporting(true);
 		try {
-			await repairRequestService.exportRepairRequests({ format, startDate, endDate });
+			await repairRequestService.exportRepairRequests({
+				format,
+				startDate,
+				endDate,
+				status: status || undefined,
+				source: source || undefined,
+				categoryName: categoryName || undefined,
+			});
 			toast.success(`Exported as ${format.toUpperCase()}`);
 			onClose();
 		} catch {
@@ -37,24 +57,82 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 
 	return (
 		<Dialog open={open} onOpenChange={onClose}>
-			<DialogContent className="sm:max-w-[380px]">
+			<DialogContent className="sm:max-w-[420px]">
 				<DialogHeader>
 					<DialogTitle>Export Repair Requests</DialogTitle>
-					<DialogDescription>Choose a date range and file format to export.</DialogDescription>
+					<DialogDescription>All filters are optional — leaving them blank exports everything.</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 py-1">
-					<div className="grid grid-cols-2 gap-3">
-						<div className="space-y-1.5">
-							<Label htmlFor="export-start">Start Date</Label>
-							<Input id="export-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-						</div>
-						<div className="space-y-1.5">
-							<Label htmlFor="export-end">End Date</Label>
-							<Input id="export-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+					{/* Date Range */}
+					<div>
+						<Label className="mb-2 block">Date Range</Label>
+						<div className="grid grid-cols-2 gap-3">
+							<div className="space-y-1.5">
+								<Label htmlFor="export-start" className="text-xs text-muted-foreground">
+									Start Date
+								</Label>
+								<Input id="export-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+							</div>
+							<div className="space-y-1.5">
+								<Label htmlFor="export-end" className="text-xs text-muted-foreground">
+									End Date
+								</Label>
+								<Input id="export-end" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+							</div>
 						</div>
 					</div>
 
+					{/* Status */}
+					<div className="space-y-1.5">
+						<Label>Status</Label>
+						<Select value={status} onValueChange={setStatus}>
+							<SelectTrigger>
+								<SelectValue placeholder="All statuses" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="">All</SelectItem>
+								<SelectItem value="open">Open</SelectItem>
+								<SelectItem value="acknowledged">Acknowledged</SelectItem>
+								<SelectItem value="resolved">Resolved</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Source */}
+					<div className="space-y-1.5">
+						<Label>Source</Label>
+						<Select value={source} onValueChange={setSource}>
+							<SelectTrigger>
+								<SelectValue placeholder="All sources" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="">All</SelectItem>
+								<SelectItem value="field_worker">Field Worker</SelectItem>
+								<SelectItem value="customer_admin">Customer Admin</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Category */}
+					<div className="space-y-1.5">
+						<Label>Category</Label>
+						<Select value={categoryName} onValueChange={setCategoryName}>
+							<SelectTrigger>
+								<SelectValue placeholder="All categories" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="">All</SelectItem>
+								{categories.map((c) => (
+									<SelectItem key={c.id} value={c.name}>
+										{c.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Format */}
 					<div className="space-y-2">
 						<Label>Format</Label>
 						<RadioGroup value={format} onValueChange={(v) => setFormat(v as "xlsx" | "pdf")} className="flex gap-6">
@@ -78,7 +156,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 					<Button variant="outline" onClick={onClose} disabled={isExporting}>
 						Cancel
 					</Button>
-					<Button onClick={handleExport} disabled={isExporting || !startDate || !endDate}>
+					<Button onClick={handleExport} disabled={isExporting}>
 						{isExporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 						Export
 					</Button>
