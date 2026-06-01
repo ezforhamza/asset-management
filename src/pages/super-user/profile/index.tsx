@@ -78,169 +78,171 @@ export default function SuperUserProfilePage() {
 	};
 
 	return (
-		<div className="px-6 py-8 space-y-6 max-w-3xl">
-			{/* Personal Info */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<User className="h-5 w-5" />
-						Personal Information
-					</CardTitle>
-					<CardDescription>Update your display name and profile picture.</CardDescription>
-				</CardHeader>
-				<CardContent className="space-y-5">
-					{/* Avatar */}
-					<div className="flex items-center gap-4">
-						<Avatar className="h-16 w-16">
-							<AvatarImage src={userInfo.profilePic || undefined} alt={userInfo.name} />
-							<AvatarFallback className="bg-primary/10 text-primary text-xl">
-								{userInfo.name?.slice(0, 2).toUpperCase()}
-							</AvatarFallback>
-						</Avatar>
-						<div>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => fileInputRef.current?.click()}
-								disabled={uploadMutation.isPending}
-							>
-								{uploadMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-								Change Photo
-							</Button>
-							<input
-								ref={fileInputRef}
-								type="file"
-								accept="image/*"
-								className="hidden"
-								onChange={(e) => {
-									const file = e.target.files?.[0];
-									if (file) uploadMutation.mutate(file);
-								}}
+		<div className="px-6 py-8 max-w-5xl">
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+				{/* Personal Info */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<User className="h-5 w-5" />
+							Personal Information
+						</CardTitle>
+						<CardDescription>Update your display name and profile picture.</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-5">
+						{/* Avatar */}
+						<div className="flex items-center gap-4">
+							<Avatar className="h-16 w-16">
+								<AvatarImage src={userInfo.profilePic || undefined} alt={userInfo.name} />
+								<AvatarFallback className="bg-primary/10 text-primary text-xl">
+									{userInfo.name?.slice(0, 2).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+							<div>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => fileInputRef.current?.click()}
+									disabled={uploadMutation.isPending}
+								>
+									{uploadMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+									Change Photo
+								</Button>
+								<input
+									ref={fileInputRef}
+									type="file"
+									accept="image/*"
+									className="hidden"
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) uploadMutation.mutate(file);
+									}}
+								/>
+							</div>
+						</div>
+
+						{/* Name */}
+						<div className="space-y-2">
+							<label htmlFor="profile-name" className="text-sm font-medium">
+								Name
+							</label>
+							<Input
+								id="profile-name"
+								value={nameValue}
+								onChange={(e) => setNameValue(e.target.value)}
+								placeholder="Your name"
 							/>
 						</div>
-					</div>
 
-					{/* Name */}
-					<div className="space-y-2">
-						<label htmlFor="profile-name" className="text-sm font-medium">
-							Name
-						</label>
-						<Input
-							id="profile-name"
-							value={nameValue}
-							onChange={(e) => setNameValue(e.target.value)}
-							placeholder="Your name"
-						/>
-					</div>
-
-					{/* Read-only fields */}
-					<div className="space-y-2">
-						<label htmlFor="profile-email" className="text-sm font-medium">
-							Email
-						</label>
-						<Input
-							id="profile-email"
-							value={userInfo.email || ""}
-							readOnly
-							className="bg-muted/40 cursor-not-allowed"
-						/>
-						<p className="text-xs text-muted-foreground">Email cannot be changed from your profile.</p>
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="profile-role" className="text-sm font-medium">
-							Role
-						</label>
-						<Input id="profile-role" value="Support Team" readOnly className="bg-muted/40 cursor-not-allowed" />
-					</div>
-
-					<div className="space-y-2">
-						<label htmlFor="profile-type" className="text-sm font-medium">
-							Type
-						</label>
-						<Input
-							id="profile-type"
-							value={userInfo.superUserType === "read_write" ? "Read-Write" : "Read-Only"}
-							readOnly
-							className="bg-muted/40 cursor-not-allowed"
-						/>
-					</div>
-
-					<Button onClick={handleSaveProfile} disabled={isSavingProfile || !nameValue.trim()}>
-						{isSavingProfile && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-						Save Profile
-					</Button>
-				</CardContent>
-			</Card>
-
-			{/* Change Password */}
-			<Card>
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<Lock className="h-5 w-5" />
-						Change Password
-					</CardTitle>
-					<CardDescription>
-						Choose a strong password with at least 8 characters including a letter and a number.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<Form {...pwForm}>
-						<form onSubmit={pwForm.handleSubmit(handleChangePassword)} className="space-y-4">
-							<FormField
-								control={pwForm.control}
-								name="currentPassword"
-								rules={{ required: "Current password is required" }}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Current Password</FormLabel>
-										<FormControl>
-											<PasswordInput placeholder="Enter current password" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
+						{/* Read-only fields */}
+						<div className="space-y-2">
+							<label htmlFor="profile-email" className="text-sm font-medium">
+								Email
+							</label>
+							<Input
+								id="profile-email"
+								value={userInfo.email || ""}
+								readOnly
+								className="bg-muted/40 cursor-not-allowed"
 							/>
-							<FormField
-								control={pwForm.control}
-								name="newPassword"
-								rules={{
-									required: "New password is required",
-									minLength: { value: 8, message: "At least 8 characters" },
-									pattern: { value: /^(?=.*[a-zA-Z])(?=.*\d)/, message: "Must contain a letter and a number" },
-								}}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>New Password</FormLabel>
-										<FormControl>
-											<PasswordInput placeholder="Enter new password" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
+							<p className="text-xs text-muted-foreground">Email cannot be changed from your profile.</p>
+						</div>
+
+						<div className="space-y-2">
+							<label htmlFor="profile-role" className="text-sm font-medium">
+								Role
+							</label>
+							<Input id="profile-role" value="Support Team" readOnly className="bg-muted/40 cursor-not-allowed" />
+						</div>
+
+						<div className="space-y-2">
+							<label htmlFor="profile-type" className="text-sm font-medium">
+								Type
+							</label>
+							<Input
+								id="profile-type"
+								value={userInfo.superUserType === "read_write" ? "Read-Write" : "Read-Only"}
+								readOnly
+								className="bg-muted/40 cursor-not-allowed"
 							/>
-							<FormField
-								control={pwForm.control}
-								name="confirmPassword"
-								rules={{ required: "Please confirm your password" }}
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Confirm New Password</FormLabel>
-										<FormControl>
-											<PasswordInput placeholder="Repeat new password" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<Button type="submit" disabled={isChangingPw}>
-								{isChangingPw && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-								Change Password
-							</Button>
-						</form>
-					</Form>
-				</CardContent>
-			</Card>
+						</div>
+
+						<Button onClick={handleSaveProfile} disabled={isSavingProfile || !nameValue.trim()}>
+							{isSavingProfile && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Save Profile
+						</Button>
+					</CardContent>
+				</Card>
+
+				{/* Change Password */}
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Lock className="h-5 w-5" />
+							Change Password
+						</CardTitle>
+						<CardDescription>
+							Choose a strong password with at least 8 characters including a letter and a number.
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<Form {...pwForm}>
+							<form onSubmit={pwForm.handleSubmit(handleChangePassword)} className="space-y-4">
+								<FormField
+									control={pwForm.control}
+									name="currentPassword"
+									rules={{ required: "Current password is required" }}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Current Password</FormLabel>
+											<FormControl>
+												<PasswordInput placeholder="Enter current password" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={pwForm.control}
+									name="newPassword"
+									rules={{
+										required: "New password is required",
+										minLength: { value: 8, message: "At least 8 characters" },
+										pattern: { value: /^(?=.*[a-zA-Z])(?=.*\d)/, message: "Must contain a letter and a number" },
+									}}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>New Password</FormLabel>
+											<FormControl>
+												<PasswordInput placeholder="Enter new password" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={pwForm.control}
+									name="confirmPassword"
+									rules={{ required: "Please confirm your password" }}
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Confirm New Password</FormLabel>
+											<FormControl>
+												<PasswordInput placeholder="Repeat new password" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<Button type="submit" disabled={isChangingPw}>
+									{isChangingPw && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+									Change Password
+								</Button>
+							</form>
+						</Form>
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }
