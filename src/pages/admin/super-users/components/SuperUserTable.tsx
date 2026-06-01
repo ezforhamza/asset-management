@@ -115,7 +115,14 @@ export function SuperUserTable({
 				</TableHeader>
 				<TableBody>
 					{users.map((user) => (
-						<TableRow key={user.id}>
+						<TableRow
+							key={user.id}
+							className="cursor-pointer hover:bg-muted/50"
+							onClick={(e) => {
+								if ((e.target as HTMLElement).closest("button, [role='menuitem']")) return;
+								onManageCompanies(user);
+							}}
+						>
 							<TableCell>
 								<div className="flex items-center gap-3">
 									<Avatar className="h-8 w-8">
@@ -141,7 +148,7 @@ export function SuperUserTable({
 							<TableCell className="text-sm text-muted-foreground">
 								{user.lastLogin ? format(new Date(user.lastLogin), "MMM d, yyyy HH:mm") : "Never"}
 							</TableCell>
-							<TableCell>
+							<TableCell onClick={(e) => e.stopPropagation()}>
 								<DropdownMenu modal={false}>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" size="icon" className="h-8 w-8">
