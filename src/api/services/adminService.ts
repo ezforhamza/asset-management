@@ -399,6 +399,51 @@ const removeNotificationAssignment = (userId: string, companyId: string) =>
 	});
 
 // ============================================
+// Company Assignments (super user access control)
+// ============================================
+
+export interface CompanyAssignment {
+	assignmentId: string;
+	companyId: string;
+	companyName: string;
+	isActive: boolean;
+	contactEmail: string;
+	assignedAt: string;
+}
+
+export interface CompanyAssignmentsRes {
+	assignments: CompanyAssignment[];
+}
+
+export interface AvailableCompanyForAssignment {
+	_id: string;
+	companyName: string;
+	isActive: boolean;
+	contactEmail: string;
+	createdAt: string;
+}
+
+const getCompanyAssignments = (userId: string) =>
+	apiClient.get<CompanyAssignmentsRes>({ url: API_ENDPOINTS.COMPANY_ASSIGNMENTS.BY_USER(userId) });
+
+const addCompanyAssignment = (userId: string, data: { companyId?: string; companyIds?: string[] }) =>
+	apiClient.post<{ assigned: CompanyAssignment[]; errors: unknown[] }>({
+		url: API_ENDPOINTS.COMPANY_ASSIGNMENTS.BY_USER(userId),
+		data,
+	});
+
+const removeCompanyAssignment = (userId: string, companyId: string) =>
+	apiClient.delete<{ success: boolean; message: string }>({
+		url: API_ENDPOINTS.COMPANY_ASSIGNMENTS.BY_COMPANY(userId, companyId),
+	});
+
+const getAvailableCompaniesForSuperUser = (superUserType: string, excludeSuperUserId?: string) =>
+	apiClient.get<{ companies: AvailableCompanyForAssignment[]; total: number }>({
+		url: API_ENDPOINTS.AVAILABLE_FOR_SUPER_USER,
+		params: { superUserType, ...(excludeSuperUserId ? { excludeSuperUserId } : {}) },
+	});
+
+// ============================================
 // Company Export
 // ============================================
 
@@ -493,4 +538,9 @@ export default {
 	addNotificationAssignment,
 	updateNotificationAssignment,
 	removeNotificationAssignment,
+	// Company Assignments
+	getCompanyAssignments,
+	addCompanyAssignment,
+	removeCompanyAssignment,
+	getAvailableCompaniesForSuperUser,
 };

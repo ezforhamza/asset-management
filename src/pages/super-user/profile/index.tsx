@@ -154,6 +154,18 @@ export default function SuperUserProfilePage() {
 						<Input id="profile-role" value="Support Team" readOnly className="bg-muted/40 cursor-not-allowed" />
 					</div>
 
+					<div className="space-y-2">
+						<label htmlFor="profile-type" className="text-sm font-medium">
+							Type
+						</label>
+						<Input
+							id="profile-type"
+							value={userInfo.superUserType === "read_write" ? "Read-Write" : "Read-Only"}
+							readOnly
+							className="bg-muted/40 cursor-not-allowed"
+						/>
+					</div>
+
 					<Button onClick={handleSaveProfile} disabled={isSavingProfile || !nameValue.trim()}>
 						{isSavingProfile && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 						Save Profile

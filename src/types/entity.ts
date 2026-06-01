@@ -26,6 +26,7 @@ export interface UserInfo {
 	profilePic?: string | null;
 	role: UserRole;
 	adminType?: AdminType | null;
+	superUserType?: "read_only" | "read_write" | null;
 	companyId?: string;
 	status?: "active" | "inactive";
 	isEmailVerified?: boolean;

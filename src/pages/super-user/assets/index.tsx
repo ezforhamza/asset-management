@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, Search, X } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import type { Asset } from "#/entity";
@@ -7,6 +7,8 @@ import adminService from "@/api/services/adminService";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams } from "@/api/services/assetService";
 import { CorrectGpsModal } from "@/components/correct-gps-modal";
+import { EditAssetModal } from "@/components/edit-asset-modal";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
@@ -27,7 +29,11 @@ export default function SuperUserAssetsPage() {
 	const [registrationFilter, setRegistrationFilter] = useState("");
 	const [categoryFilter, setCategoryFilter] = useState("");
 	const [gpsModalAsset, setGpsModalAsset] = useState<Asset | null>(null);
+	const [editModalAsset, setEditModalAsset] = useState<Asset | null>(null);
 	const limit = 20;
+
+	const userInfo = useUserInfo();
+	const isReadWrite = userInfo.superUserType === "read_write";
 
 	useEffect(() => {
 		const t = setTimeout(() => {
@@ -219,6 +225,7 @@ export default function SuperUserAssetsPage() {
 									<TableHead>Verification</TableHead>
 									<TableHead>Last Verified</TableHead>
 									<TableHead>GPS</TableHead>
+									{isReadWrite && <TableHead className="w-[80px]" />}
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -226,7 +233,7 @@ export default function SuperUserAssetsPage() {
 									Array.from({ length: 10 }).map((_, i) => (
 										// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 										<TableRow key={i}>
-											{Array.from({ length: 9 }).map((_, j) => (
+											{Array.from({ length: isReadWrite ? 10 : 9 }).map((_, j) => (
 												// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 												<TableCell key={j}>
 													<Skeleton className="h-4 w-20" />
@@ -236,7 +243,7 @@ export default function SuperUserAssetsPage() {
 									))
 								) : assets.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+										<TableCell colSpan={isReadWrite ? 10 : 9} className="text-center py-12 text-muted-foreground">
 											No assets found
 										</TableCell>
 									</TableRow>
@@ -279,22 +286,37 @@ export default function SuperUserAssetsPage() {
 														<span className="text-xs font-mono text-muted-foreground">
 															{asset.location.latitude.toFixed(4)}, {asset.location.longitude?.toFixed(4)}
 														</span>
-														<Button
-															variant="ghost"
-															size="icon"
-															className="h-6 w-6"
-															onClick={(e) => {
-																e.stopPropagation();
-																setGpsModalAsset(asset);
-															}}
-														>
-															<MapPin className="h-3.5 w-3.5 text-primary" />
-														</Button>
+														{isReadWrite && (
+															<Button
+																variant="ghost"
+																size="icon"
+																className="h-6 w-6"
+																onClick={(e) => {
+																	e.stopPropagation();
+																	setGpsModalAsset(asset);
+																}}
+															>
+																<MapPin className="h-3.5 w-3.5 text-primary" />
+															</Button>
+														)}
 													</div>
 												) : (
 													<span className="text-muted-foreground text-sm">No GPS</span>
 												)}
 											</TableCell>
+											{isReadWrite && (
+												<TableCell onClick={(e) => e.stopPropagation()}>
+													<Button
+														variant="ghost"
+														size="sm"
+														className="h-7 text-xs"
+														onClick={() => setEditModalAsset(asset)}
+													>
+														<Pencil className="h-3 w-3 mr-1" />
+														Edit
+													</Button>
+												</TableCell>
+											)}
 										</TableRow>
 									))
 								)}
@@ -335,6 +357,13 @@ export default function SuperUserAssetsPage() {
 				asset={gpsModalAsset}
 				open={!!gpsModalAsset}
 				onClose={() => setGpsModalAsset(null)}
+				queryKeysToInvalidate={[["super-user", "assets"]]}
+			/>
+
+			<EditAssetModal
+				asset={editModalAsset}
+				open={!!editModalAsset}
+				onClose={() => setEditModalAsset(null)}
 				queryKeysToInvalidate={[["super-user", "assets"]]}
 			/>
 		</div>

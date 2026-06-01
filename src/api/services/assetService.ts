@@ -36,6 +36,8 @@ export interface UpdateAssetReq {
 	serialNumber?: string;
 	make?: string;
 	model?: string;
+	condition?: string;
+	notes?: string;
 	status?: string;
 	verificationFrequency?: number;
 	geofenceThreshold?: number | null;

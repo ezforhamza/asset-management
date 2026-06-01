@@ -106,6 +106,15 @@ export const API_ENDPOINTS = {
 		BY_USER: (userId: string) => `/users/${userId}/notification-assignments`,
 	},
 
+	// Company Assignments (super user → company access)
+	COMPANY_ASSIGNMENTS: {
+		BY_USER: (userId: string) => `/users/${userId}/company-assignments`,
+		BY_COMPANY: (userId: string, companyId: string) => `/users/${userId}/company-assignments/${companyId}`,
+	},
+
+	// Available companies for super user assignment
+	AVAILABLE_FOR_SUPER_USER: "/companies/available-for-super-user",
+
 	// User image uploads
 	USER_IMAGE: "/uploads/user-image",
 } as const;

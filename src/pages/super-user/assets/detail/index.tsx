@@ -1,16 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Clock, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Clock, Loader2, MapPin, Pencil, ShieldCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import assetService, { type RegistrationHistoryItem, type VerificationHistoryItem } from "@/api/services/assetService";
 import { CorrectGpsModal } from "@/components/correct-gps-modal";
+import { EditAssetModal } from "@/components/edit-asset-modal";
 import { AssetSummary, RegistrationEvent, VerificationCard } from "@/pages/assets/history/components";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 
 export default function SuperUserAssetDetailPage() {
 	const { companyId, assetId } = useParams<{ companyId: string; assetId: string }>();
 	const navigate = useNavigate();
 	const [gpsModalOpen, setGpsModalOpen] = useState(false);
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	const userInfo = useUserInfo();
+	const isReadWrite = userInfo.superUserType === "read_write";
 
 	const { data: historyData, isLoading } = useQuery({
 		queryKey: ["super-user", "asset-history", assetId],
@@ -107,11 +112,19 @@ export default function SuperUserAssetDetailPage() {
 							</p>
 						</div>
 					</div>
-					{asset.location?.latitude != null && (
-						<Button variant="outline" size="sm" onClick={() => setGpsModalOpen(true)}>
-							<MapPin className="h-4 w-4 mr-2" />
-							Correct GPS
-						</Button>
+					{isReadWrite && (
+						<div className="flex items-center gap-2">
+							<Button variant="outline" size="sm" onClick={() => setEditModalOpen(true)}>
+								<Pencil className="h-4 w-4 mr-2" />
+								Edit Asset
+							</Button>
+							{asset.location?.latitude != null && (
+								<Button variant="outline" size="sm" onClick={() => setGpsModalOpen(true)}>
+									<MapPin className="h-4 w-4 mr-2" />
+									Correct GPS
+								</Button>
+							)}
+						</div>
 					)}
 				</div>
 			</div>
@@ -189,6 +202,13 @@ export default function SuperUserAssetDetailPage() {
 				asset={asset}
 				open={gpsModalOpen}
 				onClose={() => setGpsModalOpen(false)}
+				queryKeysToInvalidate={[["super-user", "asset-history", assetId]]}
+			/>
+
+			<EditAssetModal
+				asset={asset}
+				open={editModalOpen}
+				onClose={() => setEditModalOpen(false)}
 				queryKeysToInvalidate={[["super-user", "asset-history", assetId]]}
 			/>
 		</div>

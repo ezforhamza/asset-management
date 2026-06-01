@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Bell, KeyRound, MoreHorizontal, Trash2, UserCheck, UserX } from "lucide-react";
+import { Bell, Building2, KeyRound, MoreHorizontal, Trash2, UserCheck, UserX } from "lucide-react";
 import type { UserInfo } from "#/entity";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -12,7 +12,7 @@ import {
 } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { getUserStatusBadge } from "@/utils/badge-styles";
+import { getUserStatusBadge, StyledBadge } from "@/utils/badge-styles";
 
 interface SuperUserTableProps {
 	users: UserInfo[];
@@ -21,7 +21,13 @@ interface SuperUserTableProps {
 	onDeactivate: (user: UserInfo) => void;
 	onActivate: (user: UserInfo) => void;
 	onNotifications: (user: UserInfo) => void;
+	onManageCompanies: (user: UserInfo) => void;
 	onDelete: (user: UserInfo) => void;
+}
+
+function SuperUserTypeBadge({ type }: { type?: string | null }) {
+	if (type === "read_write") return <StyledBadge color="blue">Read-Write</StyledBadge>;
+	return <StyledBadge color="gray">Read-Only</StyledBadge>;
 }
 
 export function SuperUserTable({
@@ -31,6 +37,7 @@ export function SuperUserTable({
 	onDeactivate,
 	onActivate,
 	onNotifications,
+	onManageCompanies,
 	onDelete,
 }: SuperUserTableProps) {
 	if (isLoading) {
@@ -41,6 +48,7 @@ export function SuperUserTable({
 						<TableRow>
 							<TableHead>Name</TableHead>
 							<TableHead>Email</TableHead>
+							<TableHead>Type</TableHead>
 							<TableHead>Status</TableHead>
 							<TableHead>Created At</TableHead>
 							<TableHead>Last Login</TableHead>
@@ -56,6 +64,9 @@ export function SuperUserTable({
 								</TableCell>
 								<TableCell>
 									<Skeleton className="h-5 w-44" />
+								</TableCell>
+								<TableCell>
+									<Skeleton className="h-5 w-20" />
 								</TableCell>
 								<TableCell>
 									<Skeleton className="h-5 w-16" />
@@ -93,6 +104,7 @@ export function SuperUserTable({
 					<TableRow>
 						<TableHead>Name</TableHead>
 						<TableHead>Email</TableHead>
+						<TableHead>Type</TableHead>
 						<TableHead>Status</TableHead>
 						<TableHead>Created At</TableHead>
 						<TableHead>Last Login</TableHead>
@@ -114,6 +126,9 @@ export function SuperUserTable({
 								</div>
 							</TableCell>
 							<TableCell className="text-muted-foreground">{user.email}</TableCell>
+							<TableCell>
+								<SuperUserTypeBadge type={user.superUserType} />
+							</TableCell>
 							<TableCell>{getUserStatusBadge(user.status !== "inactive" ? "active" : "inactive")}</TableCell>
 							<TableCell className="text-sm text-muted-foreground">
 								{(() => {
@@ -135,6 +150,10 @@ export function SuperUserTable({
 										<DropdownMenuItem onClick={() => onChangePassword(user)}>
 											<KeyRound className="h-4 w-4 mr-2" />
 											Change Password
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={() => onManageCompanies(user)}>
+											<Building2 className="h-4 w-4 mr-2" />
+											Manage Companies
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => onNotifications(user)}>
 											<Bell className="h-4 w-4 mr-2" />

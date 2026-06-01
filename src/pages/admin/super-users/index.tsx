@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/ui/input";
 import { ConfirmModal } from "../companies/components/ConfirmModal";
 import { CreateSuperUserModal } from "./components/CreateSuperUserModal";
+import { ManageCompaniesModal } from "./components/ManageCompaniesModal";
 import { NotificationAssignmentModal } from "./components/NotificationAssignmentModal";
 import { SuperUserTable } from "./components/SuperUserTable";
 
@@ -17,6 +18,7 @@ export default function AdminSuperUsersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [createModalOpen, setCreateModalOpen] = useState(false);
 	const [notifUser, setNotifUser] = useState<UserInfo | null>(null);
+	const [manageCompaniesUser, setManageCompaniesUser] = useState<UserInfo | null>(null);
 	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
 	const [deactivateUser, setDeactivateUser] = useState<UserInfo | null>(null);
 	const [activateUser, setActivateUser] = useState<UserInfo | null>(null);
@@ -132,6 +134,7 @@ export default function AdminSuperUsersPage() {
 					onDeactivate={setDeactivateUser}
 					onActivate={setActivateUser}
 					onNotifications={setNotifUser}
+					onManageCompanies={setManageCompaniesUser}
 					onDelete={setDeleteUser}
 				/>
 			</div>
@@ -140,6 +143,12 @@ export default function AdminSuperUsersPage() {
 			<CreateSuperUserModal open={createModalOpen} onClose={() => setCreateModalOpen(false)} />
 
 			<NotificationAssignmentModal user={notifUser} open={!!notifUser} onClose={() => setNotifUser(null)} />
+
+			<ManageCompaniesModal
+				user={manageCompaniesUser}
+				open={!!manageCompaniesUser}
+				onClose={() => setManageCompaniesUser(null)}
+			/>
 
 			{/* Change password result modal */}
 			<Dialog
