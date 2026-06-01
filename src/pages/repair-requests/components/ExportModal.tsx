@@ -22,9 +22,9 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 
 	const [startDate, setStartDate] = useState(firstOfMonth);
 	const [endDate, setEndDate] = useState(today);
-	const [status, setStatus] = useState("");
-	const [source, setSource] = useState("");
-	const [categoryName, setCategoryName] = useState("");
+	const [status, setStatus] = useState("all");
+	const [source, setSource] = useState("all");
+	const [categoryName, setCategoryName] = useState("all");
 	const [format, setFormat] = useState<"xlsx" | "pdf">("xlsx");
 	const [isExporting, setIsExporting] = useState(false);
 
@@ -42,9 +42,9 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 				format,
 				startDate,
 				endDate,
-				status: status || undefined,
-				source: source || undefined,
-				categoryName: categoryName || undefined,
+				status: status === "all" ? undefined : status || undefined,
+				source: source === "all" ? undefined : source || undefined,
+				categoryName: categoryName === "all" ? undefined : categoryName || undefined,
 			});
 			toast.success(`Exported as ${format.toUpperCase()}`);
 			onClose();
@@ -91,7 +91,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 								<SelectValue placeholder="All statuses" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="">All</SelectItem>
+								<SelectItem value="all">All</SelectItem>
 								<SelectItem value="open">Open</SelectItem>
 								<SelectItem value="acknowledged">Acknowledged</SelectItem>
 								<SelectItem value="resolved">Resolved</SelectItem>
@@ -107,7 +107,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 								<SelectValue placeholder="All sources" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="">All</SelectItem>
+								<SelectItem value="all">All</SelectItem>
 								<SelectItem value="field_worker">Field Worker</SelectItem>
 								<SelectItem value="customer_admin">Customer Admin</SelectItem>
 							</SelectContent>
@@ -122,7 +122,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 								<SelectValue placeholder="All categories" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="">All</SelectItem>
+								<SelectItem value="all">All</SelectItem>
 								{categories.map((c) => (
 									<SelectItem key={c.id} value={c.name}>
 										{c.name}
