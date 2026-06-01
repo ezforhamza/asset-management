@@ -1,9 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { ChevronDown, Eye } from "lucide-react";
 import { toast } from "sonner";
 import type { RepairRequest } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+import { Button } from "@/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
@@ -13,7 +15,7 @@ function SourceBadge({ source }: { source: string }) {
 	return <StyledBadge color="purple">Customer Admin</StyledBadge>;
 }
 
-function StatusSelect({ request }: { request: RepairRequest }) {
+function StatusDropdown({ request }: { request: RepairRequest }) {
 	const queryClient = useQueryClient();
 	const mutation = useMutation({
 		mutationFn: (status: string) => repairRequestService.updateRepairRequestStatus(request.id, status),
@@ -28,32 +30,36 @@ function StatusSelect({ request }: { request: RepairRequest }) {
 		acknowledged: "yellow",
 		resolved: "emerald",
 	};
+	const label = request.status.charAt(0).toUpperCase() + request.status.slice(1);
 
 	return (
-		<Select value={request.status} onValueChange={(v) => mutation.mutate(v)} disabled={mutation.isPending}>
-			<SelectTrigger className="h-7 w-[140px] text-xs border-0 p-0 shadow-none focus:ring-0">
-				<SelectValue>
-					<StyledBadge color={colorMap[request.status] ?? "blue"}>
-						{request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-					</StyledBadge>
-				</SelectValue>
-			</SelectTrigger>
-			<SelectContent>
-				<SelectItem value="open">
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<button
+					type="button"
+					className="flex items-center gap-1 outline-none focus:outline-none disabled:opacity-50"
+					disabled={mutation.isPending}
+				>
+					<StyledBadge color={colorMap[request.status] ?? "blue"}>{label}</StyledBadge>
+					<ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+				</button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align="start">
+				<DropdownMenuItem onClick={() => mutation.mutate("open")}>
 					<StyledBadge color="blue">Open</StyledBadge>
-				</SelectItem>
-				<SelectItem value="acknowledged">
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => mutation.mutate("acknowledged")}>
 					<StyledBadge color="yellow">Acknowledged</StyledBadge>
-				</SelectItem>
-				<SelectItem value="resolved">
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => mutation.mutate("resolved")}>
 					<StyledBadge color="emerald">Resolved</StyledBadge>
-				</SelectItem>
-			</SelectContent>
-		</Select>
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 }
 
-const COLS = 8;
+const COLS = 9;
 
 interface RepairRequestTableProps {
 	requests: RepairRequest[];
@@ -67,7 +73,7 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 			<Table>
 				<TableHeader>
 					<TableRow>
-						{["Date", "Serial #", "Make / Model", "Category", "Site", "Source", "Notes", "Status"].map((h) => (
+						{["Serial #", "Make / Model", "Category", "Site", "Source", "Notes", "Date", "Status", ""].map((h) => (
 							<TableHead key={h}>{h}</TableHead>
 						))}
 					</TableRow>
@@ -104,14 +110,15 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 		<Table>
 			<TableHeader className="sticky top-0 bg-background z-10">
 				<TableRow>
-					<TableHead>Date</TableHead>
 					<TableHead>Serial #</TableHead>
 					<TableHead>Make / Model</TableHead>
 					<TableHead>Category</TableHead>
 					<TableHead>Site</TableHead>
 					<TableHead>Source</TableHead>
 					<TableHead>Notes</TableHead>
+					<TableHead>Date</TableHead>
 					<TableHead>Status</TableHead>
+					<TableHead className="w-[50px]" />
 				</TableRow>
 			</TableHeader>
 			<TableBody>
@@ -120,13 +127,10 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 						key={req.id}
 						className="cursor-pointer hover:bg-muted/50"
 						onClick={(e) => {
-							if ((e.target as HTMLElement).closest("[role='combobox'], [role='option'], [role='listbox']")) return;
+							if ((e.target as HTMLElement).closest("button, [role='menuitem'], [role='menu']")) return;
 							onView(req);
 						}}
 					>
-						<TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-							{format(new Date(req.createdAt), "MMM d, yyyy HH:mm")}
-						</TableCell>
 						<TableCell className="font-mono text-sm">{req.assetSnapshot.serialNumber}</TableCell>
 						<TableCell className="text-sm">
 							{req.assetSnapshot.make} {req.assetSnapshot.model}
@@ -141,8 +145,16 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 								{req.notes || "—"}
 							</p>
 						</TableCell>
+						<TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+							{format(new Date(req.createdAt), "MMM d, yyyy HH:mm")}
+						</TableCell>
 						<TableCell onClick={(e) => e.stopPropagation()}>
-							<StatusSelect request={req} />
+							<StatusDropdown request={req} />
+						</TableCell>
+						<TableCell onClick={(e) => e.stopPropagation()}>
+							<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
+								<Eye className="h-4 w-4" />
+							</Button>
 						</TableCell>
 					</TableRow>
 				))}
