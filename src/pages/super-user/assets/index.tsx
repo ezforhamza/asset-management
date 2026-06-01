@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, Pencil, Search, X } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, MoreHorizontal, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import type { Asset } from "#/entity";
@@ -10,6 +10,7 @@ import { CorrectGpsModal } from "@/components/correct-gps-modal";
 import { EditAssetModal } from "@/components/edit-asset-modal";
 import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
@@ -225,7 +226,7 @@ export default function SuperUserAssetsPage() {
 									<TableHead>Verification</TableHead>
 									<TableHead>Last Verified</TableHead>
 									<TableHead>GPS</TableHead>
-									{isReadWrite && <TableHead className="w-[80px]" />}
+									{isReadWrite && <TableHead className="w-[50px]" />}
 								</TableRow>
 							</TableHeader>
 							<TableBody>
@@ -282,39 +283,35 @@ export default function SuperUserAssetsPage() {
 											</TableCell>
 											<TableCell>
 												{asset.location?.latitude != null ? (
-													<div className="flex items-center gap-1">
-														<span className="text-xs font-mono text-muted-foreground">
-															{asset.location.latitude.toFixed(4)}, {asset.location.longitude?.toFixed(4)}
-														</span>
-														{isReadWrite && (
-															<Button
-																variant="ghost"
-																size="icon"
-																className="h-6 w-6"
-																onClick={(e) => {
-																	e.stopPropagation();
-																	setGpsModalAsset(asset);
-																}}
-															>
-																<MapPin className="h-3.5 w-3.5 text-primary" />
-															</Button>
-														)}
-													</div>
+													<span className="text-xs font-mono text-muted-foreground">
+														{asset.location.latitude.toFixed(4)}, {asset.location.longitude?.toFixed(4)}
+													</span>
 												) : (
 													<span className="text-muted-foreground text-sm">No GPS</span>
 												)}
 											</TableCell>
 											{isReadWrite && (
 												<TableCell onClick={(e) => e.stopPropagation()}>
-													<Button
-														variant="ghost"
-														size="sm"
-														className="h-7 text-xs"
-														onClick={() => setEditModalAsset(asset)}
-													>
-														<Pencil className="h-3 w-3 mr-1" />
-														Edit
-													</Button>
+													<DropdownMenu modal={false}>
+														<DropdownMenuTrigger asChild>
+															<Button variant="ghost" size="icon" className="h-8 w-8">
+																<MoreHorizontal className="h-4 w-4" />
+															</Button>
+														</DropdownMenuTrigger>
+														<DropdownMenuContent align="end">
+															<DropdownMenuItem onClick={() => setEditModalAsset(asset)}>
+																<Pencil className="h-4 w-4 mr-2" />
+																Edit Asset
+															</DropdownMenuItem>
+															<DropdownMenuItem
+																onClick={() => setGpsModalAsset(asset)}
+																disabled={asset.location?.latitude == null}
+															>
+																<MapPin className="h-4 w-4 mr-2" />
+																GPS Correction
+															</DropdownMenuItem>
+														</DropdownMenuContent>
+													</DropdownMenu>
 												</TableCell>
 											)}
 										</TableRow>
