@@ -26,13 +26,13 @@ export function ManageCompaniesModal({ user, open, onClose }: ManageCompaniesMod
 
 	const { data: assignmentsData, isLoading: isLoadingAssignments } = useQuery({
 		queryKey: ["company-assignments", user?.id],
-		queryFn: () => adminService.getCompanyAssignments(user!.id),
+		queryFn: () => adminService.getCompanyAssignments(user?.id ?? ""),
 		enabled: !!user?.id && open,
 	});
 
 	const { data: availableData, isLoading: isLoadingAvailable } = useQuery({
 		queryKey: ["available-companies", superUserType, user?.id],
-		queryFn: () => adminService.getAvailableCompaniesForSuperUser(superUserType, user!.id),
+		queryFn: () => adminService.getAvailableCompaniesForSuperUser(superUserType, user?.id ?? ""),
 		enabled: !!user?.id && open,
 	});
 
@@ -41,7 +41,7 @@ export function ManageCompaniesModal({ user, open, onClose }: ManageCompaniesMod
 	const availableCompanies = (availableData?.companies || []).filter((c) => !assignedIds.has(c._id));
 
 	const addMutation = useMutation({
-		mutationFn: () => adminService.addCompanyAssignment(user!.id, { companyId: selectedCompanyId }),
+		mutationFn: () => adminService.addCompanyAssignment(user?.id ?? "", { companyId: selectedCompanyId }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["company-assignments", user?.id] });
 			queryClient.invalidateQueries({ queryKey: ["available-companies"] });
@@ -52,7 +52,7 @@ export function ManageCompaniesModal({ user, open, onClose }: ManageCompaniesMod
 	});
 
 	const removeMutation = useMutation({
-		mutationFn: (companyId: string) => adminService.removeCompanyAssignment(user!.id, companyId),
+		mutationFn: (companyId: string) => adminService.removeCompanyAssignment(user?.id ?? "", companyId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["company-assignments", user?.id] });
 			queryClient.invalidateQueries({ queryKey: ["available-companies"] });
