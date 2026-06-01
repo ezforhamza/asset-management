@@ -45,8 +45,8 @@ export default function SuperUserProfilePage() {
 			return data.imageUrl as string;
 		},
 		onSuccess: async (imageUrl) => {
-			await adminService.updateUser(userInfo.id ?? "", { profilePic: imageUrl } as never);
-			setUserInfo({ ...userInfo, profilePic: imageUrl } as never);
+			const updated = await adminService.updateUser(userInfo.id ?? "", { profilePic: imageUrl } as never);
+			setUserInfo({ ...userInfo, ...updated, profilePic: imageUrl } as never);
 			toast.success("Profile picture updated");
 		},
 		onError: () => toast.error("Failed to upload image"),
@@ -56,8 +56,8 @@ export default function SuperUserProfilePage() {
 		if (!nameValue.trim()) return;
 		setIsSavingProfile(true);
 		try {
-			await adminService.updateUser(userInfo.id ?? "", { name: nameValue } as never);
-			setUserInfo({ ...userInfo, name: nameValue } as never);
+			const updated = await adminService.updateUser(userInfo.id ?? "", { name: nameValue } as never);
+			setUserInfo({ ...userInfo, ...updated, name: nameValue } as never);
 			toast.success("Profile updated");
 		} catch {}
 		setIsSavingProfile(false);

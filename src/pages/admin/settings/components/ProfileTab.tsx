@@ -3,6 +3,7 @@ import { Camera, Save, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import type { UserInfo } from "#/entity";
 import uploadService from "@/api/services/uploadService";
 import userService from "@/api/services/userService";
 import { useUserActions, useUserInfo } from "@/store/userStore";
@@ -49,36 +50,32 @@ export function ProfileTab() {
 		},
 		onSuccess: (data) => {
 			toast.success("Profile updated successfully");
-			setUserInfo(data);
+			setUserInfo({ ...userInfo, ...data } as UserInfo);
 			setProfileImage(data.profilePic || null);
 			setSelectedFile(null);
 			setPreviewUrl(null);
 			queryClient.invalidateQueries({ queryKey: ["user"] });
 		},
-		onError: (error: any) => {
-			// Error toast is handled by apiClient;
-		},
+		onError: () => {},
 	});
 
 	const handleSubmit = async (values: ProfileForm) => {
 		try {
 			let imageUrl = profileImage;
 
-			// If a new file was selected, upload it first
 			if (selectedFile) {
 				const uploadResponse = await uploadService.uploadUserImage(selectedFile);
 				imageUrl = uploadResponse.images[0]?.url;
 			}
 
-			// Update profile with form data and image URL (only if changed)
 			const updateData: ProfileForm & { profilePic?: string } = { ...values };
 			if (imageUrl !== userInfo?.profilePic) {
 				updateData.profilePic = imageUrl || undefined;
 			}
 
 			updateProfileMutation.mutate(updateData);
-		} catch (error: any) {
-			// Error toast is handled by apiClient;
+		} catch {
+			// handled by apiClient
 		}
 	};
 

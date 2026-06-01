@@ -16,8 +16,8 @@ import {
  */
 export default function AccountDropdown() {
 	const userInfo = useUserInfo();
-	const { username, email, avatar } = userInfo;
-	const profilePic = userInfo.profilePic || avatar;
+	const displayName = userInfo.name || userInfo.username;
+	const profilePic = userInfo.profilePic || userInfo.avatar;
 	const signOut = useSignOut();
 	const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -32,21 +32,21 @@ export default function AccountDropdown() {
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" size="sm" className="rounded-full gap-2 pl-1 pr-3">
 					<Avatar className="h-7 w-7">
-						<AvatarImage src={profilePic || undefined} alt={username} />
-						<AvatarFallback className="text-xs">{username?.charAt(0).toUpperCase()}</AvatarFallback>
+						<AvatarImage src={profilePic || undefined} alt={displayName} />
+						<AvatarFallback className="text-xs">{displayName?.charAt(0).toUpperCase()}</AvatarFallback>
 					</Avatar>
-					<span className="hidden sm:inline text-sm font-medium">{username}</span>
+					<span className="hidden sm:inline text-sm font-medium">{displayName}</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end" className="w-56">
 				<div className="flex items-center gap-3 p-3">
 					<Avatar className="h-10 w-10">
-						<AvatarImage src={profilePic || undefined} alt={username} />
-						<AvatarFallback>{username?.charAt(0).toUpperCase()}</AvatarFallback>
+						<AvatarImage src={profilePic || undefined} alt={displayName} />
+						<AvatarFallback>{displayName?.charAt(0).toUpperCase()}</AvatarFallback>
 					</Avatar>
 					<div className="flex flex-col">
-						<span className="text-sm font-medium">{username}</span>
-						<span className="text-xs text-muted-foreground">{email}</span>
+						<span className="text-sm font-medium">{displayName}</span>
+						<span className="text-xs text-muted-foreground">{userInfo.email}</span>
 					</div>
 				</div>
 				<DropdownMenuSeparator />
