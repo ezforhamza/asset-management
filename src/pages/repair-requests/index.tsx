@@ -39,8 +39,8 @@ export default function RepairRequestsPage() {
 		if (debouncedSearch) params.search = debouncedSearch;
 		if (sourceFilter) params.source = sourceFilter;
 		if (statusFilter) params.status = statusFilter;
-		if (startDate) params.startDate = startDate;
-		if (endDate) params.endDate = endDate;
+		if (startDate) params.startDate = `${startDate}T00:00:00`;
+		if (endDate) params.endDate = `${endDate}T23:59:59`;
 		return params;
 	}, [page, debouncedSearch, sourceFilter, statusFilter, startDate, endDate]);
 
