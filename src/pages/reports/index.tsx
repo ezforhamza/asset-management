@@ -139,76 +139,57 @@ export default function ReportsPage() {
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
-			{/* Header */}
-			<div className="flex-shrink-0 px-6 py-4 border-b bg-card/50">
-				<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+			{/* Header: title + stats + export — all one compact row */}
+			<div className="flex-shrink-0 px-6 py-3 border-b bg-card/50">
+				<div className="flex items-center justify-between gap-4 flex-wrap">
 					<div>
 						<h1 className="text-xl font-semibold">Reports</h1>
-						<p className="text-sm text-muted-foreground">View and export verification reports</p>
+						<p className="text-xs text-muted-foreground">View and export verification reports</p>
 					</div>
+
+					{/* Fleet Summary inline */}
+					{fleetSummary && (
+						<div className="flex items-center gap-4 flex-wrap text-sm">
+							<span className="text-xs font-medium text-muted-foreground">Condition:</span>
+							<span className="flex items-center gap-1">
+								<ThumbsUp className="h-3.5 w-3.5 text-emerald-500" />
+								<strong>{fleetSummary.condition.good}</strong> Good
+							</span>
+							<span className="flex items-center gap-1">
+								<CircleDot className="h-3.5 w-3.5 text-orange-500" />
+								<strong>{fleetSummary.condition.fair}</strong> Fair
+							</span>
+							<span className="flex items-center gap-1">
+								<AlertCircle className="h-3.5 w-3.5 text-red-500" />
+								<strong>{fleetSummary.condition.poor}</strong> Poor
+							</span>
+							<span className="w-px h-4 bg-border" />
+							<span className="text-xs font-medium text-muted-foreground">Operational:</span>
+							<span className="flex items-center gap-1">
+								<CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+								<strong>{fleetSummary.operationalStatus.operational}</strong> Operational
+							</span>
+							<span className="flex items-center gap-1">
+								<Wrench className="h-3.5 w-3.5 text-orange-500" />
+								<strong>{fleetSummary.operationalStatus.needsRepair}</strong> Needs Repair
+							</span>
+							<span className="flex items-center gap-1">
+								<Settings className="h-3.5 w-3.5 text-red-500" />
+								<strong>{fleetSummary.operationalStatus.nonOperational}</strong> Non-Op
+							</span>
+						</div>
+					)}
+
 					<ExportButtons
 						startDate={dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : undefined}
 						endDate={dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined}
 						status={status}
 					/>
 				</div>
-
-				{/* Fleet Summary */}
-				{fleetSummary && (
-					<div className="mt-4 flex flex-wrap items-center gap-6">
-						{/* Condition Summary */}
-						<div className="flex items-center gap-4">
-							<span className="text-sm font-medium text-muted-foreground">Condition:</span>
-							<div className="flex items-center gap-2">
-								<ThumbsUp className="h-4 w-4 text-emerald-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.condition.good}</strong> Good
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<CircleDot className="h-4 w-4 text-orange-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.condition.fair}</strong> Fair
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<AlertCircle className="h-4 w-4 text-red-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.condition.poor}</strong> Poor
-								</span>
-							</div>
-						</div>
-
-						<div className="h-4 w-px bg-border" />
-
-						{/* Operational Status Summary */}
-						<div className="flex items-center gap-4">
-							<span className="text-sm font-medium text-muted-foreground">Operational:</span>
-							<div className="flex items-center gap-2">
-								<CheckCircle className="h-4 w-4 text-emerald-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.operationalStatus.operational}</strong> Operational
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<Wrench className="h-4 w-4 text-orange-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.operationalStatus.needsRepair}</strong> Needs Repair
-								</span>
-							</div>
-							<div className="flex items-center gap-2">
-								<Settings className="h-4 w-4 text-red-500" />
-								<span className="text-sm">
-									<strong>{fleetSummary.operationalStatus.nonOperational}</strong> Non-Operational
-								</span>
-							</div>
-						</div>
-					</div>
-				)}
 			</div>
 
-			{/* Filters */}
-			<div className="flex-shrink-0 px-6 py-4 border-b">
+			{/* Filters — compact single row, no labels */}
+			<div className="flex-shrink-0 px-6 py-2 border-b">
 				<ReportFilters
 					dateRange={dateRange}
 					setDateRange={setDateRange}
@@ -226,20 +207,27 @@ export default function ReportsPage() {
 					setCategoryFilter={setCategoryFilter}
 					categories={categoriesData?.results || []}
 					onClearFilters={handleClearFilters}
+					compact
 				/>
 			</div>
 
-			{/* Results count & Pagination */}
-			<div className="flex-shrink-0 flex items-center justify-between px-6 py-2 bg-muted/30">
-				<p className="text-sm text-muted-foreground">
+			{/* Count + Pagination */}
+			<div className="flex-shrink-0 flex items-center justify-between px-6 py-1.5 bg-muted/30">
+				<p className="text-xs text-muted-foreground">
 					{isLoading ? "Loading..." : `Showing ${filteredData.length} of ${data?.totalResults || 0} verifications`}
 				</p>
 				{totalPages > 1 && (
-					<div className="flex items-center gap-2">
-						<Button variant="ghost" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+					<div className="flex items-center gap-1">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+							disabled={page === 1}
+							className="h-7 w-7 p-0"
+						>
 							<ChevronLeft className="h-4 w-4" />
 						</Button>
-						<span className="text-sm text-muted-foreground">
+						<span className="text-xs text-muted-foreground px-1">
 							{page} / {totalPages}
 						</span>
 						<Button
@@ -247,6 +235,7 @@ export default function ReportsPage() {
 							size="sm"
 							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
 							disabled={page === totalPages}
+							className="h-7 w-7 p-0"
 						>
 							<ChevronRight className="h-4 w-4" />
 						</Button>
@@ -254,8 +243,8 @@ export default function ReportsPage() {
 				)}
 			</div>
 
-			{/* Table - Scrollable area with max height */}
-			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
+			{/* Table */}
+			<div className="flex-1 min-h-0 overflow-hidden px-6 py-3">
 				<ReportTable
 					data={filteredData}
 					isLoading={isLoading}

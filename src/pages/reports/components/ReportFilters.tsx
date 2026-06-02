@@ -27,6 +27,7 @@ interface ReportFiltersProps {
 	setCategoryFilter: (value: string) => void;
 	categories: AssetCategory[];
 	onClearFilters: () => void;
+	compact?: boolean;
 }
 
 export function ReportFilters({
@@ -46,6 +47,7 @@ export function ReportFilters({
 	setCategoryFilter,
 	categories,
 	onClearFilters,
+	compact = false,
 }: ReportFiltersProps) {
 	const hasFilters =
 		dateRange?.from ||
@@ -57,13 +59,13 @@ export function ReportFilters({
 		operationalFilter !== "all" ||
 		categoryFilter !== "all";
 
+	const lbl = (text: string) => (!compact ? <Label className="text-sm font-medium mb-2 block">{text}</Label> : null);
+
 	return (
-		<div className="flex flex-wrap gap-3 items-end">
+		<div className={cn("flex flex-wrap gap-3", compact ? "items-center" : "items-end")}>
 			{/* Search */}
-			<div className="flex-1 min-w-[180px] max-w-[260px]">
-				<Label htmlFor="search" className="text-sm font-medium mb-2 block">
-					Search
-				</Label>
+			<div className="flex-1 min-w-[180px] max-w-[240px]">
+				{lbl("Search")}
 				<div className="relative">
 					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 					<Input
@@ -76,15 +78,15 @@ export function ReportFilters({
 				</div>
 			</div>
 
-			{/* Date Range - filters by Next Due Date */}
+			{/* Date Range */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Due Date</Label>
+				{lbl("Due Date")}
 				<Popover>
 					<PopoverTrigger asChild>
 						<Button
 							variant="outline"
 							className={cn(
-								"w-[160px] justify-start text-left font-normal text-xs",
+								"w-[150px] justify-start text-left font-normal text-xs",
 								!dateRange && "text-muted-foreground",
 							)}
 						>
@@ -98,7 +100,7 @@ export function ReportFilters({
 									format(dateRange.from, "MM/dd/yy")
 								)
 							) : (
-								<span>Select dates</span>
+								<span>Due date</span>
 							)}
 						</Button>
 					</PopoverTrigger>
@@ -115,12 +117,12 @@ export function ReportFilters({
 				</Popover>
 			</div>
 
-			{/* Status Filter */}
+			{/* Status */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Status</Label>
+				{lbl("Status")}
 				<Select value={status} onValueChange={setStatus}>
 					<SelectTrigger className="w-[110px]">
-						<SelectValue placeholder="All Status" />
+						<SelectValue placeholder="Status" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Status</SelectItem>
@@ -131,30 +133,30 @@ export function ReportFilters({
 				</Select>
 			</div>
 
-			{/* GPS Filter */}
+			{/* GPS */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">GPS</Label>
+				{lbl("GPS")}
 				<Select value={gpsFilter} onValueChange={setGpsFilter}>
-					<SelectTrigger className="w-[120px]">
-						<SelectValue placeholder="All" />
+					<SelectTrigger className="w-[105px]">
+						<SelectValue placeholder="GPS" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
+						<SelectItem value="all">All GPS</SelectItem>
 						<SelectItem value="true">Passed</SelectItem>
 						<SelectItem value="false">Failed</SelectItem>
 					</SelectContent>
 				</Select>
 			</div>
 
-			{/* Condition Filter */}
+			{/* Condition */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Condition</Label>
+				{lbl("Condition")}
 				<Select value={conditionFilter} onValueChange={setConditionFilter}>
-					<SelectTrigger className="w-[120px]">
-						<SelectValue placeholder="All" />
+					<SelectTrigger className="w-[115px]">
+						<SelectValue placeholder="Condition" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
+						<SelectItem value="all">All Condition</SelectItem>
 						<SelectItem value="good">Good</SelectItem>
 						<SelectItem value="fair">Fair</SelectItem>
 						<SelectItem value="poor">Poor</SelectItem>
@@ -162,12 +164,12 @@ export function ReportFilters({
 				</Select>
 			</div>
 
-			{/* Operational Filter */}
+			{/* Operational */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Operational</Label>
+				{lbl("Operational")}
 				<Select value={operationalFilter} onValueChange={setOperationalFilter}>
-					<SelectTrigger className="w-[130px]">
-						<SelectValue placeholder="All" />
+					<SelectTrigger className="w-[125px]">
+						<SelectValue placeholder="Operational" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All</SelectItem>
@@ -178,12 +180,12 @@ export function ReportFilters({
 				</Select>
 			</div>
 
-			{/* Category Filter */}
+			{/* Category */}
 			<div>
-				<Label className="text-sm font-medium mb-2 block">Category</Label>
+				{lbl("Category")}
 				<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-					<SelectTrigger className="w-[130px]">
-						<SelectValue placeholder="All" />
+					<SelectTrigger className="w-[125px]">
+						<SelectValue placeholder="Category" />
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Categories</SelectItem>
@@ -196,9 +198,9 @@ export function ReportFilters({
 				</Select>
 			</div>
 
-			{/* Clear Filters */}
+			{/* Clear */}
 			{hasFilters && (
-				<Button variant="ghost" size="sm" onClick={onClearFilters} className="h-10">
+				<Button variant="ghost" size="sm" onClick={onClearFilters} className="h-9">
 					<X className="h-4 w-4 mr-1" />
 					Clear
 				</Button>
