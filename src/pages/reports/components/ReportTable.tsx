@@ -85,7 +85,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						className="grid w-full text-left py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
 						style={{
 							gridTemplateColumns:
-								"minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+								"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
 						}}
 						onClick={() => onViewDetails(item)}
 					>
