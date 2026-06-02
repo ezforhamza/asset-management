@@ -437,10 +437,10 @@ const removeCompanyAssignment = (userId: string, companyId: string) =>
 		url: API_ENDPOINTS.COMPANY_ASSIGNMENTS.BY_COMPANY(userId, companyId),
 	});
 
-const getAvailableCompaniesForSuperUser = (superUserType: string, excludeSuperUserId?: string) =>
+const getAvailableCompaniesForSuperUser = (excludeSuperUserId?: string) =>
 	apiClient.get<{ companies: AvailableCompanyForAssignment[]; total: number }>({
 		url: API_ENDPOINTS.AVAILABLE_FOR_SUPER_USER,
-		params: { superUserType, ...(excludeSuperUserId ? { excludeSuperUserId } : {}) },
+		params: { ...(excludeSuperUserId ? { excludeSuperUserId } : {}) },
 	});
 
 // ============================================

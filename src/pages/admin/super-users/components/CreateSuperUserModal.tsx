@@ -61,7 +61,6 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 	const queryClient = useQueryClient();
 	const [step, setStep] = useState<Step>("form");
 	const [createdUserId, setCreatedUserId] = useState<string | null>(null);
-	const [createdType, setCreatedType] = useState<"read_only" | "read_write">("read_only");
 	const [credentials, setCredentials] = useState<CreatedCredentials | null>(null);
 	const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
 	const [isAssigning, setIsAssigning] = useState(false);
@@ -78,8 +77,8 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 	});
 
 	const { data: availableData, isLoading: isLoadingCompanies } = useQuery({
-		queryKey: ["available-companies-create", createdType],
-		queryFn: () => adminService.getAvailableCompaniesForSuperUser(createdType),
+		queryKey: ["available-companies-create"],
+		queryFn: () => adminService.getAvailableCompaniesForSuperUser(),
 		enabled: step === "assign",
 	});
 	const availableCompanies = availableData?.companies || [];
@@ -106,7 +105,6 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 			const res = response as { user?: { id?: string; _id?: string }; temporaryPassword?: string };
 			const userId = res.user?.id || res.user?._id || "";
 			setCreatedUserId(userId);
-			setCreatedType(variables.superUserType);
 			if (res.temporaryPassword) {
 				setCredentials({ name: variables.name, email: variables.email, password: res.temporaryPassword });
 				setStep("credentials");
@@ -215,7 +213,7 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 						<DialogTitle>Assign Companies</DialogTitle>
 						<DialogDescription>
 							{deriveFrom
-								? "Pre-selected from source user. Adjust as needed — unavailable companies are filtered out."
+								? "Pre-selected from source user. Adjust as needed."
 								: "Select which companies this support user can access. You can change this later."}
 						</DialogDescription>
 					</DialogHeader>

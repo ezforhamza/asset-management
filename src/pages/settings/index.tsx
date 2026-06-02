@@ -1,8 +1,9 @@
-import { Bell, Building2, Clock, Shield } from "lucide-react";
+import { Bell, Building2, Clock, Shield, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
 
 import { CompanyProfile } from "./components/CompanyProfile";
 import { NotificationSettings } from "./components/NotificationSettings";
+import { ProfileSettings } from "./components/ProfileSettings";
 import { SecuritySettings } from "./components/SecuritySettings";
 import { VerificationSettings } from "./components/VerificationSettings";
 
@@ -16,9 +17,13 @@ export default function SettingsPage() {
 			</div>
 
 			{/* Settings Tabs */}
-			<Tabs defaultValue="company" className="flex-1 flex flex-col overflow-hidden">
+			<Tabs defaultValue="profile" className="flex-1 flex flex-col overflow-hidden">
 				<div className="flex-shrink-0 px-6 py-4 border-b flex items-center justify-center">
-					<TabsList className="grid w-full max-w-2xl grid-cols-4 h-11">
+					<TabsList className="grid w-full max-w-2xl grid-cols-5 h-11">
+						<TabsTrigger value="profile" className="gap-2">
+							<User className="h-4 w-4 hidden sm:block" />
+							Profile
+						</TabsTrigger>
 						<TabsTrigger value="company" className="gap-2">
 							<Building2 className="h-4 w-4 hidden sm:block" />
 							Company
@@ -40,6 +45,10 @@ export default function SettingsPage() {
 
 				<div className="flex-1 overflow-y-auto p-6">
 					<div className="max-w-4xl mx-auto space-y-6">
+						<TabsContent value="profile" className="mt-0 space-y-6">
+							<ProfileSettings />
+						</TabsContent>
+
 						<TabsContent value="company" className="mt-0 space-y-6">
 							<CompanyProfile />
 						</TabsContent>

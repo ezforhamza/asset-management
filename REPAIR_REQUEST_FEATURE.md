@@ -11,7 +11,7 @@ This feature adds:
 1. **Automatic DB logging** — every time a field worker marks an asset as needing repair during a verification, a repair request record is created automatically in the background.
 2. **Admin-initiated repair requests** — a customer admin can also log a repair request directly from the portal (e.g. a client called in to report a problem with their asset).
 3. **Repair Requests Page** — a new page in the customer admin portal listing all repair requests for the company, filterable by date, category, source, and status.
-4. **Export** — the admin can export the repair request list as PDF or XLSX, choosing a date range.
+4. **Export** — the admin can export the repair request list as PDF or XLSX, filtered by date range, status, source, and/or category.
 
 **Business value:** Over time, this data reveals which assets — or which asset types/categories — require repairs most frequently. For example, a refrigerator company providing lifetime maintenance can see that a specific model's compressor unit keeps failing, and proactively address it.
 
@@ -116,21 +116,34 @@ On submit, call `POST /api/v1/repair-requests/assets/:assetId` with the notes. S
 
 ## Export
 
-When admin clicks **Export**, show a small popover or modal:
+When admin clicks **Export**, show a modal or slide-over panel with the following options. All filters are optional — leaving them blank exports everything:
 
 ```
 Export Repair Requests
 
-Start Date: [date picker]
-End Date:   [date picker]
-Format:     ⦿ XLSX   ○ PDF
+Date Range
+  Start Date: [date picker]
+  End Date:   [date picker]
+
+Status        [Dropdown: All / Open / Acknowledged / Resolved]
+Source        [Dropdown: All / Field Worker / Customer Admin]
+Category      [Dropdown: All / <list from asset categories>]
+
+Format        ⦿ XLSX   ○ PDF
 
 [Cancel]  [Export]
 ```
 
-On confirm, call `GET /api/v1/repair-requests/export` with the query params. The browser downloads the file directly (set the anchor's `download` attribute or use `window.open`).
+**Category dropdown:** populate from `GET /api/v1/asset-categories` (the same endpoint used elsewhere in the portal). Send the selected category's `name` string as `categoryName` in the query param — the backend does a case-insensitive match against the asset snapshot.
 
-The XLSX includes all columns. The PDF is a landscape-oriented table, suitable for printing or sharing.
+On confirm, call `GET /api/v1/repair-requests/export` with the chosen query params. The browser downloads the file directly.
+
+**Filename:** the backend automatically names the file based on the active filters, e.g.:
+- `repair-requests_2026-01-01_to_2026-06-30_resolved_field_worker_refrigerator.xlsx`
+- `repair-requests_open.pdf`
+- `repair-requests.xlsx` (no filters)
+
+The XLSX includes all columns. The PDF is landscape-oriented, suitable for printing or sharing.
 
 ---
 
@@ -261,9 +274,11 @@ GET /api/v1/repair-requests/export
 | Param | Required | Description |
 |-------|----------|-------------|
 | `format` | No | `xlsx` (default) or `pdf` |
-| `startDate` | No | ISO date string |
-| `endDate` | No | ISO date string |
-| `status` | No | Filter by status |
+| `startDate` | No | ISO date string — filter `createdAt >= startDate` |
+| `endDate` | No | ISO date string — filter `createdAt <= endDate` (inclusive, end of day) |
+| `status` | No | `open` \| `acknowledged` \| `resolved` |
+| `source` | No | `field_worker` \| `customer_admin` |
+| `categoryName` | No | Case-insensitive match against asset snapshot category name (e.g. `Refrigerator`) |
 | `companyId` | System admin only | Required for system_admin; customer_admin's company is auto-applied |
 
 **Response:** Binary file stream.

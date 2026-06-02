@@ -22,8 +22,6 @@ export function ManageCompaniesModal({ user, open, onClose }: ManageCompaniesMod
 	const queryClient = useQueryClient();
 	const [selectedCompanyId, setSelectedCompanyId] = useState("");
 
-	const superUserType = (user as (UserInfo & { superUserType?: string }) | null)?.superUserType || "read_only";
-
 	const { data: assignmentsData, isLoading: isLoadingAssignments } = useQuery({
 		queryKey: ["company-assignments", user?.id],
 		queryFn: () => adminService.getCompanyAssignments(user?.id ?? ""),
@@ -31,8 +29,8 @@ export function ManageCompaniesModal({ user, open, onClose }: ManageCompaniesMod
 	});
 
 	const { data: availableData, isLoading: isLoadingAvailable } = useQuery({
-		queryKey: ["available-companies", superUserType, user?.id],
-		queryFn: () => adminService.getAvailableCompaniesForSuperUser(superUserType, user?.id ?? ""),
+		queryKey: ["available-companies", user?.id],
+		queryFn: () => adminService.getAvailableCompaniesForSuperUser(user?.id ?? ""),
 		enabled: !!user?.id && open,
 	});
 
