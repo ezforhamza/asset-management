@@ -1,10 +1,9 @@
-import { Download, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
-import reportService from "@/api/services/reportService";
 import { Button } from "@/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
+import { ReportExportModal } from "./ReportExportModal";
 
+// companyId prop kept for API compatibility but modal handles it internally via role detection
 interface ExportButtonsProps {
 	startDate?: string;
 	endDate?: string;
@@ -12,51 +11,17 @@ interface ExportButtonsProps {
 	companyId?: string;
 }
 
-export function ExportButtons({ startDate, endDate, status, companyId }: ExportButtonsProps) {
-	const [exporting, setExporting] = useState(false);
-
-	const handleExport = async (format: "xlsx" | "pdf") => {
-		setExporting(true);
-		try {
-			const params: any = {
-				format,
-				reportType: "verifications",
-			};
-
-			if (startDate) params.startDate = startDate;
-			if (endDate) params.endDate = endDate;
-			if (status && status !== "all") params.status = status;
-			if (companyId) params.companyId = companyId;
-
-			await reportService.exportReport(params);
-			toast.success(`Report exported as ${format.toUpperCase()}`);
-		} catch (error) {
-			console.error("Export error:", error);
-			// Error toast is handled by apiClient;
-		} finally {
-			setTimeout(() => setExporting(false), 1000);
-		}
-	};
+export function ExportButtons(_props: ExportButtonsProps) {
+	const [open, setOpen] = useState(false);
 
 	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button variant="outline" disabled={exporting}>
-					{exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-					Export
-				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent align="end">
-				<DropdownMenuItem onClick={() => handleExport("xlsx")}>
-					<FileSpreadsheet className="h-4 w-4 mr-2" />
-					Export as Excel
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => handleExport("pdf")}>
-					<FileText className="h-4 w-4 mr-2" />
-					Export as PDF
-				</DropdownMenuItem>
-			</DropdownMenuContent>
-		</DropdownMenu>
+		<>
+			<Button variant="outline" onClick={() => setOpen(true)}>
+				<Download className="h-4 w-4 mr-2" />
+				Export
+			</Button>
+			<ReportExportModal open={open} onClose={() => setOpen(false)} />
+		</>
 	);
 }
 

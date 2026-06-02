@@ -165,4 +165,9 @@ export interface ExportReportParams {
 	startDate?: string;
 	endDate?: string;
 	status?: "on_time" | "due_soon" | "overdue";
+	condition?: "good" | "fair" | "poor";
+	gpsCheckPassed?: boolean;
+	categoryId?: string;
+	operationalStatus?: "operational" | "needsRepair" | "nonOperational";
+	companyId?: string;
 }
