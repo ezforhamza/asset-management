@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import adminService from "@/api/services/adminService";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import repairRequestService from "@/api/services/repairRequestService";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
@@ -17,10 +19,14 @@ interface ExportModalProps {
 	companyId?: string;
 }
 
-export function ExportModal({ open, onClose, companyId }: ExportModalProps) {
+export function ExportModal({ open, onClose, companyId: preselectedCompanyId }: ExportModalProps) {
+	const userInfo = useUserInfo();
+	const isSuperUser = userInfo.role === "super_user";
+
 	const today = new Date().toISOString().slice(0, 10);
 	const firstOfMonth = `${today.slice(0, 7)}-01`;
 
+	const [selectedCompanyId, setSelectedCompanyId] = useState(preselectedCompanyId || "all");
 	const [startDate, setStartDate] = useState(firstOfMonth);
 	const [endDate, setEndDate] = useState(today);
 	const [status, setStatus] = useState("all");
@@ -34,7 +40,15 @@ export function ExportModal({ open, onClose, companyId }: ExportModalProps) {
 		queryFn: () => assetCategoryService.getCategories({ page: 1, limit: 100 }),
 		enabled: open,
 	});
+
+	const { data: companiesData } = useQuery({
+		queryKey: ["super-user", "companies-for-export"],
+		queryFn: () => adminService.getCompanies({ limit: 100 }),
+		enabled: open && isSuperUser,
+	});
+
 	const categories = categoriesData?.results?.filter((c) => c.status === "active") || [];
+	const companies = companiesData?.results || [];
 
 	const handleExport = async () => {
 		setIsExporting(true);
@@ -46,7 +60,7 @@ export function ExportModal({ open, onClose, companyId }: ExportModalProps) {
 				status: status === "all" ? undefined : status || undefined,
 				source: source === "all" ? undefined : source || undefined,
 				categoryName: categoryName === "all" ? undefined : categoryName || undefined,
-				companyId: companyId || undefined,
+				companyId: isSuperUser && selectedCompanyId !== "all" ? selectedCompanyId : undefined,
 			});
 			toast.success(`Exported as ${format.toUpperCase()}`);
 			onClose();
@@ -66,6 +80,26 @@ export function ExportModal({ open, onClose, companyId }: ExportModalProps) {
 				</DialogHeader>
 
 				<div className="space-y-4 py-1">
+					{/* Company selector — super-user only */}
+					{isSuperUser && (
+						<div className="space-y-1.5">
+							<Label>Company</Label>
+							<Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
+								<SelectTrigger>
+									<SelectValue placeholder="All assigned companies" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="all">All assigned companies</SelectItem>
+									{companies.map((c) => (
+										<SelectItem key={c._id} value={c._id}>
+											{c.companyName}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+
 					{/* Date Range */}
 					<div>
 						<Label className="mb-2 block">Date Range</Label>
