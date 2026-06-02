@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Loader2, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -64,6 +64,7 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 	const [credentials, setCredentials] = useState<CreatedCredentials | null>(null);
 	const [selectedCompanyIds, setSelectedCompanyIds] = useState<string[]>([]);
 	const [isAssigning, setIsAssigning] = useState(false);
+	const [companySearch, setCompanySearch] = useState("");
 
 	// When deriving, pre-select opposite type
 	const defaultType: "read_only" | "read_write" = deriveFrom
@@ -145,6 +146,7 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 		setCredentials(null);
 		setCreatedUserId(null);
 		setSelectedCompanyIds([]);
+		setCompanySearch("");
 		onClose();
 	};
 
@@ -217,27 +219,41 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 								: "Select which companies this support user can access. You can change this later."}
 						</DialogDescription>
 					</DialogHeader>
-					<div className="max-h-[340px] overflow-y-auto space-y-1 py-1">
+					<div className="relative">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+						<Input
+							placeholder="Search companies..."
+							value={companySearch}
+							onChange={(e) => setCompanySearch(e.target.value)}
+							className="pl-9"
+						/>
+					</div>
+					<div className="max-h-[300px] overflow-y-auto space-y-1 py-1">
 						{isLoadingCompanies ? (
 							<div className="flex justify-center py-8">
 								<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 							</div>
 						) : availableCompanies.length === 0 ? (
 							<p className="text-sm text-muted-foreground text-center py-8">No available companies to assign.</p>
+						) : availableCompanies.filter((c) => c.companyName.toLowerCase().includes(companySearch.toLowerCase()))
+								.length === 0 ? (
+							<p className="text-sm text-muted-foreground text-center py-8">No companies match your search.</p>
 						) : (
-							availableCompanies.map((c) => (
-								<div
-									key={c._id}
-									className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 cursor-pointer"
-									onClick={() => toggleCompany(c._id)}
-								>
-									<Checkbox id={c._id} checked={selectedCompanyIds.includes(c._id)} />
-									<Label className="flex-1 cursor-pointer">
-										<span className="font-medium">{c.companyName}</span>
-										<span className="text-xs text-muted-foreground ml-2">{c.contactEmail}</span>
-									</Label>
-								</div>
-							))
+							availableCompanies
+								.filter((c) => c.companyName.toLowerCase().includes(companySearch.toLowerCase()))
+								.map((c) => (
+									<div
+										key={c._id}
+										className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 cursor-pointer"
+										onClick={() => toggleCompany(c._id)}
+									>
+										<Checkbox id={c._id} checked={selectedCompanyIds.includes(c._id)} />
+										<Label className="flex-1 cursor-pointer">
+											<span className="font-medium">{c.companyName}</span>
+											<span className="text-xs text-muted-foreground ml-2">{c.contactEmail}</span>
+										</Label>
+									</div>
+								))
 						)}
 					</div>
 					<DialogFooter className="gap-2">
