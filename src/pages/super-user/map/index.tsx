@@ -199,6 +199,7 @@ export default function SuperUserMapPage() {
 			{/* Top Bar */}
 			<div className="flex-shrink-0 px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
 				<div className="flex items-center justify-between flex-wrap gap-3">
+					{/* Left: title + company filter */}
 					<div className="flex items-center gap-3">
 						<div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
 							<MapPin className="h-4 w-4 text-primary" />
@@ -209,9 +210,6 @@ export default function SuperUserMapPage() {
 								{isLoading ? "Loading..." : `${filteredAssets.length} of ${counts.total} assets`}
 							</p>
 						</div>
-					</div>
-
-					<div className="flex items-center gap-3 flex-wrap">
 						<CompanyFilter
 							value={companyId}
 							onChange={(v) => {
@@ -220,32 +218,36 @@ export default function SuperUserMapPage() {
 								initialFitDone.current = false;
 							}}
 						/>
+					</div>
 
-						{/* Status Filter Pills */}
-						<div className="flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
-							{[
-								{ value: "all", label: `All (${counts.total})` },
-								{ value: "on_time", label: `On Time (${counts.onTime})`, bg: "bg-emerald-500" },
-								{ value: "due_soon", label: `Due Soon (${counts.dueSoon})`, bg: "bg-orange-500" },
-								{ value: "overdue", label: `Overdue (${counts.overdue})`, bg: "bg-red-500" },
-								{ value: "never_verified", label: `Registered (${counts.registered})`, bg: "bg-blue-500" },
-							].map(({ value, label, bg }) => (
-								<button
-									key={value}
-									type="button"
-									onClick={() => setSelectedStatus(value as AssetStatus)}
-									className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
-										selectedStatus === value
-											? bg
-												? `${bg} text-white shadow-sm`
-												: "bg-background text-foreground shadow-sm"
-											: "text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									{label}
-								</button>
-							))}
-						</div>
+					{/* Right: Status Filter Pills */}
+					<div className="flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto">
+						{[
+							{ value: "all", label: `All (${counts.total})` },
+							{ value: "on_time", label: `On Time (${counts.onTime})`, bg: "bg-emerald-500" },
+							{ value: "due_soon", label: `Due Soon (${counts.dueSoon})`, bg: "bg-orange-500" },
+							{ value: "overdue", label: `Overdue (${counts.overdue})`, bg: "bg-red-500" },
+							{ value: "never_verified", label: `Registered (${counts.registered})`, bg: "bg-blue-500" },
+						].map(({ value, label, bg }) => (
+							<button
+								key={value}
+								type="button"
+								onClick={() => {
+									setSelectedStatus(value as AssetStatus);
+									initialFitDone.current = false;
+									setSelectedCluster(null);
+								}}
+								className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+									selectedStatus === value
+										? bg
+											? `${bg} text-white shadow-sm`
+											: "bg-background text-foreground shadow-sm"
+										: "text-muted-foreground hover:text-foreground"
+								}`}
+							>
+								{label}
+							</button>
+						))}
 					</div>
 				</div>
 			</div>
