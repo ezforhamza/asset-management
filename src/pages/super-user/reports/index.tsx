@@ -153,7 +153,7 @@ export default function SuperUserReportsPage() {
 							</span>
 							<span className="flex items-center gap-1">
 								<Settings className="h-3.5 w-3.5 text-red-500" />
-								<strong>{fleetSummary.operationalStatus.nonOperational}</strong> Non-Op
+								<strong>{fleetSummary.operationalStatus.nonOperational}</strong> Non-Operational
 							</span>
 						</div>
 					)}

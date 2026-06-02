@@ -152,7 +152,7 @@ export function ReportFilters({
 			<div>
 				{lbl("Condition")}
 				<Select value={conditionFilter} onValueChange={setConditionFilter}>
-					<SelectTrigger className="w-[115px]">
+					<SelectTrigger className="w-[132px]">
 						<SelectValue placeholder="Condition" />
 					</SelectTrigger>
 					<SelectContent>
@@ -168,11 +168,11 @@ export function ReportFilters({
 			<div>
 				{lbl("Operational")}
 				<Select value={operationalFilter} onValueChange={setOperationalFilter}>
-					<SelectTrigger className="w-[125px]">
+					<SelectTrigger className="w-[152px]">
 						<SelectValue placeholder="Operational" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
+						<SelectItem value="all">All Operational</SelectItem>
 						<SelectItem value="operational">Operational</SelectItem>
 						<SelectItem value="needs_repair">Needs Repair</SelectItem>
 						<SelectItem value="non_operational">Non-Operational</SelectItem>
