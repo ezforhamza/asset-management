@@ -58,7 +58,7 @@ export default function SuperUserDashboardPage() {
 										) : (
 											<>
 												<h3 className="text-3xl font-bold tracking-tight">{stats?.totalCompanies ?? 0}</h3>
-												<p className="text-xs text-muted-foreground mt-1">Registered companies</p>
+												<p className="text-xs text-muted-foreground mt-1">Assigned to you</p>
 											</>
 										)}
 									</div>
@@ -80,7 +80,7 @@ export default function SuperUserDashboardPage() {
 										) : (
 											<>
 												<h3 className="text-3xl font-bold tracking-tight">{stats?.totalUsers ?? 0}</h3>
-												<p className="text-xs text-muted-foreground mt-1">Across all companies</p>
+												<p className="text-xs text-muted-foreground mt-1">Across assigned companies</p>
 											</>
 										)}
 									</div>
@@ -102,7 +102,7 @@ export default function SuperUserDashboardPage() {
 										) : (
 											<>
 												<h3 className="text-3xl font-bold tracking-tight">{stats?.totalAssets ?? 0}</h3>
-												<p className="text-xs text-muted-foreground mt-1">Registered assets</p>
+												<p className="text-xs text-muted-foreground mt-1">Across assigned companies</p>
 											</>
 										)}
 									</div>
@@ -117,7 +117,9 @@ export default function SuperUserDashboardPage() {
 
 				{/* Recent Companies */}
 				<section>
-					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Recent Companies</h2>
+					<h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
+						Assigned Companies
+					</h2>
 					<Card className="border shadow-sm">
 						<CardContent className="p-0">
 							<div className="max-h-[380px] overflow-y-auto">
