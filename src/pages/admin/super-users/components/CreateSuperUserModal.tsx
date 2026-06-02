@@ -231,12 +231,8 @@ export function CreateSuperUserModal({ open, onClose, deriveFrom }: CreateSuperU
 									className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-muted/50 cursor-pointer"
 									onClick={() => toggleCompany(c._id)}
 								>
-									<Checkbox
-										id={c._id}
-										checked={selectedCompanyIds.includes(c._id)}
-										onCheckedChange={() => toggleCompany(c._id)}
-									/>
-									<Label htmlFor={c._id} className="flex-1 cursor-pointer">
+									<Checkbox id={c._id} checked={selectedCompanyIds.includes(c._id)} />
+									<Label className="flex-1 cursor-pointer">
 										<span className="font-medium">{c.companyName}</span>
 										<span className="text-xs text-muted-foreground ml-2">{c.contactEmail}</span>
 									</Label>
