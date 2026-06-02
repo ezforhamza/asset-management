@@ -184,7 +184,7 @@ export function ReportFilters({
 			<div>
 				{lbl("Category")}
 				<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-					<SelectTrigger className="w-[125px]">
+					<SelectTrigger className="w-[148px]">
 						<SelectValue placeholder="Category" />
 					</SelectTrigger>
 					<SelectContent>
