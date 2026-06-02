@@ -59,7 +59,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 					className="grid py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
 					style={{
 						gridTemplateColumns:
-							"minmax(100px, 1fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 55px 50px",
+							"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
 					}}
 				>
 					<div className="text-center">Asset</div>
