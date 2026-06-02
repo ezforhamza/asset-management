@@ -136,6 +136,30 @@ export const superUserNavData: NavProps["data"] = [
 				icon: <Icon icon="solar:buildings-bold-duotone" size="24" />,
 				roles: [UserRole.SUPER_USER],
 			},
+			{
+				title: "Asset Movements",
+				path: "/super-user/asset-movements",
+				icon: <Icon icon="solar:transfer-horizontal-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
+			{
+				title: "Reports",
+				path: "/super-user/reports",
+				icon: <Icon icon="solar:document-text-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
+			{
+				title: "Map",
+				path: "/super-user/map",
+				icon: <Icon icon="solar:map-point-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
+			{
+				title: "Repair Requests",
+				path: "/super-user/repair-requests",
+				icon: <Icon icon="solar:bill-list-bold-duotone" size="24" />,
+				roles: [UserRole.SUPER_USER],
+			},
 		],
 	},
 	{

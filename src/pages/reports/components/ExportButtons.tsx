@@ -9,9 +9,10 @@ interface ExportButtonsProps {
 	startDate?: string;
 	endDate?: string;
 	status?: string;
+	companyId?: string;
 }
 
-export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps) {
+export function ExportButtons({ startDate, endDate, status, companyId }: ExportButtonsProps) {
 	const [exporting, setExporting] = useState(false);
 
 	const handleExport = async (format: "xlsx" | "pdf") => {
@@ -25,6 +26,7 @@ export function ExportButtons({ startDate, endDate, status }: ExportButtonsProps
 			if (startDate) params.startDate = startDate;
 			if (endDate) params.endDate = endDate;
 			if (status && status !== "all") params.status = status;
+			if (companyId) params.companyId = companyId;
 
 			await reportService.exportReport(params);
 			toast.success(`Report exported as ${format.toUpperCase()}`);

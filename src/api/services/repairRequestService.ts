@@ -5,6 +5,7 @@ import API_ENDPOINTS from "../endpoints";
 export interface RepairRequest {
 	id: string;
 	companyId: string;
+	companyName?: string;
 	assetId: {
 		id: string;
 		serialNumber: string;
@@ -45,6 +46,7 @@ export interface RepairRequestsListParams {
 	sortBy?: string;
 	limit?: number;
 	page?: number;
+	companyId?: string;
 }
 
 export interface RepairRequestsListRes {
@@ -77,6 +79,7 @@ const exportRepairRequests = (params: {
 	status?: string;
 	source?: string;
 	categoryName?: string;
+	companyId?: string;
 }) => {
 	const { userToken } = userStore.getState();
 	const token = userToken?.accessToken || "";
@@ -88,6 +91,7 @@ const exportRepairRequests = (params: {
 	if (params.status) queryParams.append("status", params.status);
 	if (params.source) queryParams.append("source", params.source);
 	if (params.categoryName) queryParams.append("categoryName", params.categoryName);
+	if (params.companyId) queryParams.append("companyId", params.companyId);
 
 	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
 	const ext = params.format === "pdf" ? "pdf" : "xlsx";

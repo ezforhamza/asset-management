@@ -14,9 +14,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface ExportModalProps {
 	open: boolean;
 	onClose: () => void;
+	companyId?: string;
 }
 
-export function ExportModal({ open, onClose }: ExportModalProps) {
+export function ExportModal({ open, onClose, companyId }: ExportModalProps) {
 	const today = new Date().toISOString().slice(0, 10);
 	const firstOfMonth = `${today.slice(0, 7)}-01`;
 
@@ -45,6 +46,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
 				status: status === "all" ? undefined : status || undefined,
 				source: source === "all" ? undefined : source || undefined,
 				categoryName: categoryName === "all" ? undefined : categoryName || undefined,
+				companyId: companyId || undefined,
 			});
 			toast.success(`Exported as ${format.toUpperCase()}`);
 			onClose();

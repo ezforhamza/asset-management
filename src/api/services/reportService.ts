@@ -28,6 +28,8 @@ export interface MapLocationItem {
 	model: string;
 	category: string;
 	siteName?: string | null;
+	companyId?: string;
+	companyName?: string;
 	location: {
 		longitude: number;
 		latitude: number;
@@ -150,8 +152,8 @@ const getMapAssets = (params?: MapAssetsParams) =>
 	apiClient.get<MapAssetsRes>({ url: API_ENDPOINTS.ASSETS_MAP, params });
 
 // New endpoint for map locations including registrations
-const getMapLocations = () =>
-	apiClient.get<{ results: MapLocationItem[] }>({ url: API_ENDPOINTS.ASSETS_MAP_LOCATIONS });
+const getMapLocations = (params?: { companyId?: string; status?: string }) =>
+	apiClient.get<{ results: MapLocationItem[] }>({ url: API_ENDPOINTS.ASSETS_MAP_LOCATIONS, params });
 
 const getDashboardStats = (params?: DashboardStatsParams) =>
 	apiClient.get<DashboardStatsRes>({ url: API_ENDPOINTS.REPORTS.DASHBOARD, params });

@@ -29,6 +29,7 @@ export interface AssetMovement {
 	id: string;
 	assetId: AssetMovementAsset;
 	companyId: string;
+	companyName?: string;
 	requestedBy: AssetMovementRequestedBy;
 	status: "pending" | "in_progress" | "completed" | "cancelled";
 	collectionDatetime: string;
@@ -54,6 +55,7 @@ export interface CreateAssetMovementReq {
 export interface AssetMovementListParams {
 	status?: "pending" | "in_progress" | "completed" | "cancelled";
 	assetId?: string;
+	companyId?: string;
 	destinationType?: "warehouse" | "client_location";
 	fromDate?: string;
 	toDate?: string;

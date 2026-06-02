@@ -7,6 +7,8 @@ import type { PaginatedResponse } from "./admin";
 export interface VerificationReportItem {
 	_id: string;
 	assetId: string;
+	companyId?: string;
+	companyName?: string;
 	serialNumber: string;
 	make: string;
 	model: string;
@@ -46,6 +48,7 @@ export interface VerificationReportParams {
 	condition?: "excellent" | "good" | "fair" | "poor";
 	operationalStatus?: "operational" | "needs_repair" | "non_operational";
 	categoryId?: string;
+	companyId?: string;
 	limit?: number;
 	page?: number;
 }
