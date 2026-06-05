@@ -22,6 +22,12 @@ export interface VerificationReportItem {
 		type: string;
 		coordinates: [number, number];
 	};
+	registeredAt?: string;
+	registeredBy?: {
+		_id: string;
+		name: string;
+		email: string;
+	};
 	lastVerifiedAt?: string;
 	lastGpsCheckPassed?: boolean;
 	lastCondition?: "excellent" | "good" | "fair" | "poor";

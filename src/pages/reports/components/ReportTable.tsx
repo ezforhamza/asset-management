@@ -103,7 +103,16 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						</div>
 						<div className="text-center">{getStatusBadge(item.verificationStatus)}</div>
 						<div className="text-center">
-							{item.lastGpsCheckPassed !== undefined ? (
+							{item.verificationStatus === "registered" ? (
+								item.registeredLocation ? (
+									<span className="text-xs text-muted-foreground">
+										{item.registeredLocation.coordinates[1].toFixed(4)},{" "}
+										{item.registeredLocation.coordinates[0].toFixed(4)}
+									</span>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)
+							) : item.lastGpsCheckPassed !== undefined ? (
 								<StyledBadge color={item.lastGpsCheckPassed ? "emerald" : "red"}>
 									{item.lastGpsCheckPassed ? "Passed" : "Failed"}
 								</StyledBadge>
@@ -112,7 +121,9 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							)}
 						</div>
 						<div className="text-center">
-							{item.lastCondition ? (
+							{item.verificationStatus === "registered" ? (
+								<span className="text-sm text-muted-foreground">—</span>
+							) : item.lastCondition ? (
 								<StyledBadge
 									color={
 										item.lastCondition === "good" || item.lastCondition === "excellent"
@@ -129,7 +140,9 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							)}
 						</div>
 						<div className="text-center">
-							{item.lastOperational ? (
+							{item.verificationStatus === "registered" ? (
+								<span className="text-sm text-muted-foreground">—</span>
+							) : item.lastOperational ? (
 								<StyledBadge
 									color={
 										item.lastOperational === "operational"
@@ -150,10 +163,23 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							)}
 						</div>
 						<div className="text-center">
-							<p className="text-sm">{item.verifiedBy?.name || "—"}</p>
+							<p className="text-sm">
+								{item.verificationStatus === "registered"
+									? (item.registeredBy?.name ?? "—")
+									: (item.verifiedBy?.name ?? "—")}
+							</p>
 						</div>
 						<div className="text-center">
-							{item.lastVerifiedAt ? (
+							{item.verificationStatus === "registered" ? (
+								item.registeredAt ? (
+									<>
+										<p className="text-sm">{format(new Date(item.registeredAt), "MMM dd, yyyy")}</p>
+										<p className="text-xs text-muted-foreground">{format(new Date(item.registeredAt), "hh:mm a")}</p>
+									</>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)
+							) : item.lastVerifiedAt ? (
 								<>
 									<p className="text-sm">{format(new Date(item.lastVerifiedAt), "MMM dd, yyyy")}</p>
 									<p className="text-xs text-muted-foreground">{format(new Date(item.lastVerifiedAt), "hh:mm a")}</p>
