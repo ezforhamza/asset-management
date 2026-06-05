@@ -171,14 +171,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						</div>
 						<div className="text-center">
 							{item.verificationStatus === "registered" ? (
-								item.registeredAt ? (
-									<>
-										<p className="text-sm">{format(new Date(item.registeredAt), "MMM dd, yyyy")}</p>
-										<p className="text-xs text-muted-foreground">{format(new Date(item.registeredAt), "hh:mm a")}</p>
-									</>
-								) : (
-									<span className="text-sm text-muted-foreground">—</span>
-								)
+								<span className="text-sm text-muted-foreground">Never</span>
 							) : item.lastVerifiedAt ? (
 								<>
 									<p className="text-sm">{format(new Date(item.lastVerifiedAt), "MMM dd, yyyy")}</p>
