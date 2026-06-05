@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
 import adminService, { type NotificationAssignment } from "@/api/services/adminService";
@@ -8,6 +8,7 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { Checkbox } from "@/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/ui/dialog";
+import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
@@ -33,6 +34,7 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 	const [newCompanyId, setNewCompanyId] = useState("");
 	const [newTypes, setNewTypes] = useState<string[]>([]);
 	const [receiveAll, setReceiveAll] = useState(false);
+	const [phone, setPhone] = useState("");
 
 	const { data: assignmentsData, isLoading } = useQuery({
 		queryKey: ["super-user-assignments", userId],
@@ -40,10 +42,23 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 		enabled: open && !!userId,
 	});
 
+	useEffect(() => {
+		setPhone(assignmentsData?.phone ?? "");
+	}, [assignmentsData?.phone]);
+
 	const { data: companiesData } = useQuery({
 		queryKey: ["admin", "companies"],
 		queryFn: () => adminService.getCompanies({ limit: 100 }),
 		enabled: open,
+	});
+
+	const phoneMutation = useMutation({
+		mutationFn: () => adminService.updateNotificationAssignment(userId, { phone }),
+		onSuccess: () => {
+			toast.success("Phone number saved");
+			queryClient.invalidateQueries({ queryKey: ["super-user-assignments", userId] });
+		},
+		onError: () => toast.error("Failed to save phone number"),
 	});
 
 	const addMutation = useMutation({
@@ -93,6 +108,37 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 				</DialogHeader>
 
 				<div className="flex-1 overflow-y-auto space-y-5 py-2">
+					{/* Contact Info */}
+					<div className="border rounded-lg p-4 space-y-3">
+						<h4 className="text-sm font-medium">Contact Info</h4>
+						<div className="space-y-1">
+							<Label className="text-xs text-muted-foreground">Name</Label>
+							<Input value={user?.name ?? ""} disabled />
+						</div>
+						<div className="space-y-1">
+							<Label className="text-xs text-muted-foreground">Email</Label>
+							<Input value={user?.email ?? ""} disabled />
+						</div>
+						<div className="space-y-1">
+							<Label className="text-xs text-muted-foreground">Phone Number</Label>
+							<div className="flex gap-2">
+								<Input
+									placeholder="+27821234567"
+									value={phone}
+									onChange={(e) => setPhone(e.target.value)}
+									maxLength={30}
+								/>
+								<Button size="sm" onClick={() => phoneMutation.mutate()} disabled={phoneMutation.isPending}>
+									{phoneMutation.isPending ? (
+										<Loader2 className="h-4 w-4 animate-spin" />
+									) : (
+										<Save className="h-4 w-4" />
+									)}
+								</Button>
+							</div>
+						</div>
+					</div>
+
 					{/* Current Assignments */}
 					<div>
 						<h4 className="text-sm font-medium mb-2">Current Assignments</h4>

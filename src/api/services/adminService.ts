@@ -369,6 +369,7 @@ export interface NotificationAssignment {
 export interface NotificationAssignmentsRes {
 	assignments: NotificationAssignment[];
 	availableTypes: string[];
+	phone: string | null;
 }
 
 const getNotificationAssignments = (userId: string) =>
@@ -385,7 +386,7 @@ const addNotificationAssignment = (
 
 const updateNotificationAssignment = (
 	userId: string,
-	data: { companyId: string; notificationTypes?: string[]; receiveAll?: boolean },
+	data: { companyId?: string; notificationTypes?: string[]; receiveAll?: boolean; phone?: string },
 ) =>
 	apiClient.patch<{ success: boolean; message: string }>({
 		url: API_ENDPOINTS.NOTIFICATION_ASSIGNMENTS.BY_USER(userId),
