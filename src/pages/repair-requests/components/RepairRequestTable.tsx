@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ChevronDown, Eye } from "lucide-react";
+import { ChevronDown, Eye, FileDown } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { RepairRequest } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
@@ -9,6 +10,35 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
+
+function DownloadPdfButton({ req }: { req: RepairRequest }) {
+	const [loading, setLoading] = useState(false);
+
+	const handleDownload = async () => {
+		if (!req.verificationId) return;
+		setLoading(true);
+		try {
+			await repairRequestService.downloadCoolingRepairPdf(req.verificationId, req.assetSnapshot.serialNumber);
+		} catch {
+			toast.error("Failed to download PDF");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Button
+			variant="ghost"
+			size="icon"
+			className="h-8 w-8"
+			onClick={handleDownload}
+			disabled={loading}
+			title="Download Cooling Repair PDF"
+		>
+			<FileDown className="h-4 w-4" />
+		</Button>
+	);
+}
 
 function SourceBadge({ source }: { source: string }) {
 	if (source === "field_worker") return <StyledBadge color="blue">Field Worker</StyledBadge>;
@@ -152,9 +182,12 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 							<StatusDropdown request={req} />
 						</TableCell>
 						<TableCell onClick={(e) => e.stopPropagation()}>
-							<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
-								<Eye className="h-4 w-4" />
-							</Button>
+							<div className="flex items-center gap-1">
+								{req.coolingRepairForm && req.verificationId && <DownloadPdfButton req={req} />}
+								<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
+									<Eye className="h-4 w-4" />
+								</Button>
+							</div>
 						</TableCell>
 					</TableRow>
 				))}

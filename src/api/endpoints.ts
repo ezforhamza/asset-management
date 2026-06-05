@@ -56,6 +56,7 @@ export const API_ENDPOINTS = {
 		BY_ASSET: (assetId: string) => `/verifications/asset/${assetId}`,
 		FLAGGED: "/verifications/flagged",
 		INVESTIGATE: (id: string) => `/verifications/${id}/investigate`,
+		COOLING_REPAIR_PDF: (id: string) => `/verifications/${id}/cooling-repair-pdf`,
 	},
 
 	// Dashboard

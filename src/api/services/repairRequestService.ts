@@ -33,6 +33,7 @@ export interface RepairRequest {
 		categoryName: string;
 		siteName: string;
 	};
+	coolingRepairForm?: Record<string, unknown> | null;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -117,9 +118,34 @@ const exportRepairRequests = (params: {
 		});
 };
 
+const downloadCoolingRepairPdf = (verificationId: string, serialNumber: string) => {
+	const { userToken } = userStore.getState();
+	const token = userToken?.accessToken || "";
+	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
+
+	return fetch(`${baseUrl}${API_ENDPOINTS.VERIFICATIONS.COOLING_REPAIR_PDF(verificationId)}`, {
+		headers: { Authorization: `Bearer ${token}` },
+	})
+		.then((res) => {
+			if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+			return res.blob();
+		})
+		.then((blob) => {
+			const url = window.URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = `cooling-repair-${serialNumber}.pdf`;
+			document.body.appendChild(a);
+			a.click();
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		});
+};
+
 export default {
 	getRepairRequests,
 	createRepairRequest,
 	updateRepairRequestStatus,
 	exportRepairRequests,
+	downloadCoolingRepairPdf,
 };
