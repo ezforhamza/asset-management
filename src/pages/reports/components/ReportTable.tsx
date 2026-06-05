@@ -46,6 +46,8 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 				return <StyledBadge color="orange">Due Soon</StyledBadge>;
 			case "overdue":
 				return <StyledBadge color="red">Overdue</StyledBadge>;
+			case "registered":
+				return <StyledBadge color="gray">Registered</StyledBadge>;
 			default:
 				return <StyledBadge color="gray">{formatLabel(status)}</StyledBadge>;
 		}
@@ -161,23 +163,35 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 							)}
 						</div>
 						<div className="text-center">
-							<p className="text-sm">{format(new Date(item.nextVerificationDue), "MMM dd, yyyy")}</p>
-							<p className="text-xs text-muted-foreground">{format(new Date(item.nextVerificationDue), "hh:mm a")}</p>
+							{item.nextVerificationDue ? (
+								<>
+									<p className="text-sm">{format(new Date(item.nextVerificationDue), "MMM dd, yyyy")}</p>
+									<p className="text-xs text-muted-foreground">
+										{format(new Date(item.nextVerificationDue), "hh:mm a")}
+									</p>
+								</>
+							) : (
+								<span className="text-sm text-muted-foreground">—</span>
+							)}
 						</div>
 						<div className="text-center">
-							<span
-								className={`text-sm font-medium ${
-									item.daysUntilDue < 0
-										? "text-red-500"
-										: item.daysUntilDue < 7
-											? "text-orange-500"
-											: "text-emerald-500"
-								}`}
-							>
-								{item.daysUntilDue < 0
-									? `${Math.abs(item.daysUntilDue).toFixed(0)}d overdue`
-									: `${item.daysUntilDue.toFixed(0)}d`}
-							</span>
+							{item.daysUntilDue != null ? (
+								<span
+									className={`text-sm font-medium ${
+										item.daysUntilDue < 0
+											? "text-red-500"
+											: item.daysUntilDue < 7
+												? "text-orange-500"
+												: "text-emerald-500"
+									}`}
+								>
+									{item.daysUntilDue < 0
+										? `${Math.abs(item.daysUntilDue).toFixed(0)}d overdue`
+										: `${item.daysUntilDue.toFixed(0)}d`}
+								</span>
+							) : (
+								<span className="text-sm text-muted-foreground">—</span>
+							)}
 						</div>
 						<div className="text-sm text-right">{item.totalVerifications}</div>
 					</button>

@@ -27,6 +27,8 @@ export function NotificationSettings() {
 	const [showForm, setShowForm] = useState(false);
 	const [editingEmail, setEditingEmail] = useState<string | null>(null);
 	const [formEmail, setFormEmail] = useState("");
+	const [formName, setFormName] = useState("");
+	const [formPhone, setFormPhone] = useState("");
 	const [formReceiveAll, setFormReceiveAll] = useState(false);
 	const [formTypes, setFormTypes] = useState<string[]>([]);
 
@@ -103,6 +105,8 @@ export function NotificationSettings() {
 		setShowForm(false);
 		setEditingEmail(null);
 		setFormEmail("");
+		setFormName("");
+		setFormPhone("");
 		setFormReceiveAll(false);
 		setFormTypes([]);
 	};
@@ -115,6 +119,8 @@ export function NotificationSettings() {
 	const openEditForm = (entry: NotificationEmail) => {
 		setEditingEmail(entry.email);
 		setFormEmail(entry.email);
+		setFormName(entry.name ?? "");
+		setFormPhone(entry.phone ?? "");
 		setFormReceiveAll(entry.receiveAll);
 		setFormTypes(entry.receiveAll ? [] : [...entry.notificationTypes]);
 		setShowForm(true);
@@ -135,26 +141,42 @@ export function NotificationSettings() {
 
 	const handleSubmitEmail = () => {
 		const trimmedEmail = formEmail.trim();
+		const trimmedName = formName.trim();
+		const trimmedPhone = formPhone.trim();
+
 		if (!trimmedEmail) {
 			toast.error("Please enter an email address");
 			return;
 		}
-
+		if (!trimmedName) {
+			toast.error("Please enter a name");
+			return;
+		}
+		if (!trimmedPhone) {
+			toast.error("Please enter a phone number");
+			return;
+		}
 		if (!formReceiveAll && formTypes.length === 0) {
 			toast.error("Select at least one notification type or enable 'Receive All'");
 			return;
 		}
 
-		const payload = {
-			email: trimmedEmail,
-			notificationTypes: formReceiveAll ? availableTypes : formTypes,
-			receiveAll: formReceiveAll,
-		};
-
 		if (editingEmail) {
-			updateMutation.mutate(payload);
+			updateMutation.mutate({
+				email: trimmedEmail,
+				name: trimmedName,
+				phone: trimmedPhone,
+				notificationTypes: formReceiveAll ? availableTypes : formTypes,
+				receiveAll: formReceiveAll,
+			});
 		} else {
-			addMutation.mutate(payload);
+			addMutation.mutate({
+				email: trimmedEmail,
+				name: trimmedName,
+				phone: trimmedPhone,
+				notificationTypes: formReceiveAll ? availableTypes : formTypes,
+				receiveAll: formReceiveAll,
+			});
 		}
 	};
 
@@ -284,6 +306,22 @@ export function NotificationSettings() {
 								disabled={!!editingEmail}
 							/>
 
+							<Input
+								type="text"
+								placeholder="Full name"
+								value={formName}
+								onChange={(e) => setFormName(e.target.value)}
+								maxLength={100}
+							/>
+
+							<Input
+								type="tel"
+								placeholder="Phone number (e.g. +27821234567)"
+								value={formPhone}
+								onChange={(e) => setFormPhone(e.target.value)}
+								maxLength={30}
+							/>
+
 							{/* Receive All toggle */}
 							<div className="flex items-center gap-3">
 								<Switch checked={formReceiveAll} onCheckedChange={setFormReceiveAll} />
@@ -343,7 +381,9 @@ export function NotificationSettings() {
 									className="flex items-center justify-between rounded-lg border p-3 bg-card"
 								>
 									<div className="space-y-1.5 min-w-0 flex-1">
-										<p className="text-sm font-medium truncate">{entry.email}</p>
+										{entry.name && <p className="text-sm font-medium truncate">{entry.name}</p>}
+										<p className="text-sm truncate text-muted-foreground">{entry.email}</p>
+										{entry.phone && <p className="text-xs text-muted-foreground">{entry.phone}</p>}
 										<div className="flex flex-wrap gap-1.5">
 											{entry.receiveAll ? (
 												<Badge variant="default">All Types</Badge>

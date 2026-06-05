@@ -14,9 +14,9 @@ export interface VerificationReportItem {
 	model: string;
 	makeModel: string;
 	siteName?: string;
-	verificationStatus: "on_time" | "due_soon" | "overdue";
-	nextVerificationDue: string;
-	daysUntilDue: number;
+	verificationStatus: "on_time" | "due_soon" | "overdue" | "registered";
+	nextVerificationDue?: string;
+	daysUntilDue?: number;
 	totalVerifications: number;
 	registeredLocation?: {
 		type: string;
@@ -41,7 +41,7 @@ export interface VerificationReportItem {
 export interface VerificationReportParams {
 	startDate?: string;
 	endDate?: string;
-	status?: "on_time" | "due_soon" | "overdue";
+	status?: "on_time" | "due_soon" | "overdue" | "registered";
 	assetId?: string;
 	verifiedBy?: string;
 	gpsCheckPassed?: boolean;
@@ -164,7 +164,7 @@ export interface ExportReportParams {
 	reportType: "verifications" | "overdue" | "assets";
 	startDate?: string;
 	endDate?: string;
-	status?: "on_time" | "due_soon" | "overdue";
+	status?: "on_time" | "due_soon" | "overdue" | "registered";
 	condition?: "good" | "fair" | "poor";
 	gpsCheckPassed?: boolean;
 	categoryId?: string;

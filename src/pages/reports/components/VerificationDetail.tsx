@@ -89,17 +89,21 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 							</div>
 							<div>
 								<p className="text-muted-foreground">Days Until Due</p>
-								<p
-									className={`font-medium ${
-										verification.daysUntilDue < 0
-											? "text-red-500"
-											: verification.daysUntilDue < 7
-												? "text-orange-500"
-												: "text-emerald-500"
-									}`}
-								>
-									{verification.daysUntilDue.toFixed(0)} days
-								</p>
+								{verification.daysUntilDue != null ? (
+									<p
+										className={`font-medium ${
+											verification.daysUntilDue < 0
+												? "text-red-500"
+												: verification.daysUntilDue < 7
+													? "text-orange-500"
+													: "text-emerald-500"
+										}`}
+									>
+										{verification.daysUntilDue.toFixed(0)} days
+									</p>
+								) : (
+									<p className="font-medium text-muted-foreground">—</p>
+								)}
 							</div>
 							{verification.lastGpsCheckPassed !== undefined && (
 								<div>

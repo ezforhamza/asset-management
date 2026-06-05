@@ -17,6 +17,8 @@ export interface NotificationPreferencesResponse {
 export interface NotificationEmail {
 	_id?: string;
 	email: string;
+	name?: string;
+	phone?: string;
 	notificationTypes: string[];
 	receiveAll: boolean;
 }
@@ -35,12 +37,16 @@ export interface NotificationEmailMutationResponse {
 
 export interface AddNotificationEmailPayload {
 	email: string;
+	name: string;
+	phone: string;
 	notificationTypes?: string[];
 	receiveAll?: boolean;
 }
 
 export interface UpdateNotificationEmailPayload {
 	email: string;
+	name?: string;
+	phone?: string;
 	notificationTypes?: string[];
 	receiveAll?: boolean;
 }
