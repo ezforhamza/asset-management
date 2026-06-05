@@ -46,10 +46,10 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 		setPhone(assignmentsData?.phone ?? "");
 	}, [assignmentsData?.phone]);
 
-	const { data: companiesData } = useQuery({
-		queryKey: ["admin", "companies"],
-		queryFn: () => adminService.getCompanies({ limit: 100 }),
-		enabled: open,
+	const { data: companyAssignmentsData } = useQuery({
+		queryKey: ["super-user-company-assignments", userId],
+		queryFn: () => adminService.getCompanyAssignments(userId),
+		enabled: open && !!userId,
 	});
 
 	const phoneMutation = useMutation({
@@ -89,9 +89,9 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 
 	const assignments: NotificationAssignment[] = assignmentsData?.assignments || [];
 	const availableTypes: string[] = assignmentsData?.availableTypes || ["repair", "movement", "overdue"];
-	const companies = companiesData?.results || [];
-	const assignedCompanyIds = new Set(assignments.map((a) => a.companyId));
-	const availableCompanies = companies.filter((c) => !assignedCompanyIds.has(c._id));
+	const userCompanies = companyAssignmentsData?.assignments || [];
+	const assignedNotifCompanyIds = new Set(assignments.map((a) => a.companyId));
+	const availableCompanies = userCompanies.filter((c) => !assignedNotifCompanyIds.has(c.companyId));
 
 	const toggleType = (type: string) => {
 		setNewTypes((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
@@ -202,7 +202,7 @@ export function NotificationAssignmentModal({ user, open, onClose }: Notificatio
 								</SelectTrigger>
 								<SelectContent>
 									{availableCompanies.map((c) => (
-										<SelectItem key={c._id} value={c._id}>
+										<SelectItem key={c.companyId} value={c.companyId}>
 											{c.companyName}
 										</SelectItem>
 									))}
