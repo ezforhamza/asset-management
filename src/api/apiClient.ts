@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { toast } from "sonner";
+import { StorageEnum } from "#/enum";
 import { GLOBAL_CONFIG } from "@/global-config";
 import { t } from "@/locales/i18n";
 import userStore from "@/store/userStore";
@@ -20,6 +21,18 @@ const getErrorMessage = (rawMessage: string): string => {
 
 	// Return the backend message as-is
 	return rawMessage;
+};
+
+let isRefreshing = false;
+
+const forceLogout = () => {
+	const { actions } = userStore.getState();
+	actions.clearUserInfoAndToken();
+	localStorage.removeItem("userStore");
+	localStorage.removeItem(StorageEnum.UserInfo);
+	localStorage.removeItem(StorageEnum.UserToken);
+	sessionStorage.clear();
+	window.location.href = "/auth/login";
 };
 
 const axiosInstance = axios.create({
@@ -86,48 +99,54 @@ axiosInstance.interceptors.response.use(
 
 			const { userToken, actions } = userStore.getState();
 
-			if (userToken?.refreshToken) {
-				try {
-					const refreshRes = await axios.post(`${GLOBAL_CONFIG.apiBaseUrl}/auth/refresh-tokens`, {
-						refreshToken: userToken.refreshToken,
-					});
-
-					if (refreshRes.data?.access?.token) {
-						actions.setUserToken({
-							accessToken: refreshRes.data.access.token,
-							refreshToken: refreshRes.data.refresh?.token || userToken.refreshToken,
-						});
-
-						// Retry original request with new token
-						if (originalRequest.headers) {
-							originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access.token}`;
-						}
-						return axiosInstance(originalRequest);
-					}
-				} catch (refreshError) {
-					// Check if refresh failed due to network error - don't logout
-					const isRefreshNetworkError =
-						!(refreshError as AxiosError).response &&
-						((refreshError as AxiosError).code === "ERR_NETWORK" ||
-							(refreshError as AxiosError).message === "Network Error");
-
-					if (isRefreshNetworkError) {
-						toast.error("Server unreachable. Please check your connection.", { position: "top-center" });
-						return Promise.reject(error);
-					}
-
-					// Refresh failed due to invalid token - clear tokens and redirect to login
-					actions.clearUserInfoAndToken();
-					toast.error("Session expired or terminated. Please log in again.", { position: "top-center" });
-					window.location.href = "/auth/login";
-					return Promise.reject(error);
-				}
+			if (!userToken?.refreshToken) {
+				forceLogout();
+				return Promise.reject(error);
 			}
 
-			// No refresh token - clear and redirect
-			actions.clearUserInfoAndToken();
-			toast.error("Session expired or terminated. Please log in again.", { position: "top-center" });
-			window.location.href = "/auth/login";
+			// Another request is already refreshing - reject and let that one handle cleanup
+			if (isRefreshing) {
+				return Promise.reject(error);
+			}
+
+			isRefreshing = true;
+			try {
+				const refreshRes = await axios.post(`${GLOBAL_CONFIG.apiBaseUrl}/auth/refresh-tokens`, {
+					refreshToken: userToken.refreshToken,
+				});
+
+				if (refreshRes.data?.access?.token) {
+					actions.setUserToken({
+						accessToken: refreshRes.data.access.token,
+						refreshToken: refreshRes.data.refresh?.token || userToken.refreshToken,
+					});
+					isRefreshing = false;
+					if (originalRequest.headers) {
+						originalRequest.headers.Authorization = `Bearer ${refreshRes.data.access.token}`;
+					}
+					return axiosInstance(originalRequest);
+				}
+
+				isRefreshing = false;
+				forceLogout();
+				return Promise.reject(error);
+			} catch (refreshError) {
+				isRefreshing = false;
+
+				const isRefreshNetworkError =
+					!(refreshError as AxiosError).response &&
+					((refreshError as AxiosError).code === "ERR_NETWORK" ||
+						(refreshError as AxiosError).message === "Network Error");
+
+				if (isRefreshNetworkError) {
+					toast.error("Server unreachable. Please check your connection.", { position: "top-center" });
+					return Promise.reject(error);
+				}
+
+				// Refresh returned 401/403 - token is invalid, full logout with no toast
+				forceLogout();
+				return Promise.reject(error);
+			}
 		}
 
 		// Show error toast for non-auth endpoints (auth endpoints handle their own errors)
