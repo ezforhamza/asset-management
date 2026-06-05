@@ -88,12 +88,15 @@ export function RegistrationEvent({
 									<p className="text-sm text-muted-foreground mt-1">{formatDate(registration.timestamp)}</p>
 
 									{/* Performed By */}
-									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
+									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground flex-wrap">
 										<User className="h-3.5 w-3.5" />
-										<span>{registration.performedBy.name}</span>
+										<span>{registration.performedBy?.name || "Deleted User"}</span>
 										<StyledBadge color="blue">
-											{getRoleLabel(registration.performedBy.role) || "Field Worker"}
+											{getRoleLabel(registration.performedBy?.role ?? "field_user") || "Field Worker"}
 										</StyledBadge>
+										{registration.performedBy?.phone && (
+											<span className="text-xs">{registration.performedBy.phone}</span>
+										)}
 									</div>
 
 									{/* Quick indicators */}
@@ -162,8 +165,13 @@ export function RegistrationEvent({
 									</div>
 									<div className="space-y-1">
 										<p className="text-xs font-medium text-muted-foreground">Registered By</p>
-										<p className="text-sm">{registration.performedBy.name}</p>
-										<p className="text-xs text-muted-foreground">{registration.performedBy.email}</p>
+										<p className="text-sm">{registration.performedBy?.name || "Deleted User"}</p>
+										{registration.performedBy?.email && (
+											<p className="text-xs text-muted-foreground">{registration.performedBy.email}</p>
+										)}
+										{registration.performedBy?.phone && (
+											<p className="text-xs text-muted-foreground">{registration.performedBy.phone}</p>
+										)}
 									</div>
 								</div>
 

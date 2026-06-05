@@ -116,6 +116,7 @@ export interface HistoryPerformedBy {
 	id: string;
 	name: string;
 	email: string;
+	phone?: string | null;
 	role: "field_user" | "customer_admin" | "system_admin";
 }
 
@@ -123,7 +124,7 @@ export interface RegistrationHistoryItem {
 	id: string;
 	action: "registered";
 	timestamp: string;
-	performedBy: HistoryPerformedBy;
+	performedBy: HistoryPerformedBy | null;
 	photos: string[];
 	location?: {
 		latitude: number;

@@ -160,10 +160,11 @@ export function VerificationCard({
 									</div>
 
 									{/* Verified by */}
-									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground">
+									<div className="flex items-center gap-1.5 mt-2 text-sm text-muted-foreground flex-wrap">
 										<User className="h-3.5 w-3.5" />
 										<span>{verification.verifiedBy?.name || "Unknown"}</span>
 										<StyledBadge color="blue">Field Worker</StyledBadge>
+										{verification.verifiedBy?.phone && <span className="text-xs">{verification.verifiedBy.phone}</span>}
 									</div>
 								</div>
 
@@ -251,6 +252,9 @@ export function VerificationCard({
 											<p className="text-sm font-medium">{verification.verifiedBy?.name || "Unknown"}</p>
 											{verification.verifiedBy?.email && (
 												<p className="text-xs text-muted-foreground">{verification.verifiedBy.email}</p>
+											)}
+											{verification.verifiedBy?.phone && (
+												<p className="text-xs text-muted-foreground">{verification.verifiedBy.phone}</p>
 											)}
 										</div>
 									</div>
