@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { MoreHorizontal, Plus, Trash2, UserCircle } from "lucide-react";
+import { MoreHorizontal, Trash2, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
@@ -13,7 +13,6 @@ import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
 import { formatLabel } from "@/utils/formatLabel";
-import { AddUserModal } from "./AddUserModal";
 import { ConfirmModal } from "./ConfirmModal";
 
 interface CompanyUsersTabProps {
@@ -37,7 +36,6 @@ const ROWS_PER_PAGE = 6;
 export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabProps) {
 	const queryClient = useQueryClient();
 	const currentUser = useUserInfo();
-	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
 
@@ -72,13 +70,6 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 
 	return (
 		<>
-			<div className="flex justify-end mb-3">
-				<Button onClick={() => setAddUserOpen(true)}>
-					<Plus className="h-4 w-4 mr-2" />
-					Add User
-				</Button>
-			</div>
-
 			{isLoading ? (
 				<div className="rounded-md border">
 					<Table>
@@ -117,12 +108,6 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 					<p className="text-sm text-muted-foreground mb-4">
 						{debouncedSearch ? "Try a different name or email." : "This company has no users yet."}
 					</p>
-					{!debouncedSearch && (
-						<Button onClick={() => setAddUserOpen(true)}>
-							<Plus className="h-4 w-4 mr-2" />
-							Add First User
-						</Button>
-					)}
 				</div>
 			) : (
 				<div className="rounded-md border flex flex-col">
@@ -219,8 +204,6 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 					)}
 				</div>
 			)}
-
-			<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
 
 			<ConfirmModal
 				open={!!deleteUser}

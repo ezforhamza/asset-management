@@ -11,6 +11,7 @@ import {
 	Loader2,
 	Mail,
 	Package,
+	Plus,
 	QrCode,
 	Search,
 	Users,
@@ -28,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
 import { getCompanyStatusBadge } from "@/utils/badge-styles";
+import { AddUserModal } from "./components/AddUserModal";
 import { CompanyAssetsTab } from "./components/CompanyAssetsTab";
 import { CompanyQRCodesTab } from "./components/CompanyQRCodesTab";
 import { CompanyUsersTab } from "./components/CompanyUsersTab";
@@ -64,7 +66,8 @@ export default function CompanyDetailPage() {
 	const { companyId } = useParams<{ companyId: string }>();
 	const navigate = useNavigate();
 
-	// Search state (Users tab)
+	// Users tab state
+	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -251,6 +254,12 @@ export default function CompanyDetailPage() {
 								className="w-full pl-9 pr-3 py-1.5 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
 							/>
 						</div>
+						<div className="ml-auto">
+							<Button onClick={() => setAddUserOpen(true)}>
+								<Plus className="h-4 w-4 mr-2" />
+								Add User
+							</Button>
+						</div>
 					</div>
 					<TabsContent value="users" className="flex-1 overflow-hidden mt-4">
 						<CompanyUsersTab companyId={companyId ?? ""} debouncedSearch={debouncedSearch} />
@@ -263,6 +272,7 @@ export default function CompanyDetailPage() {
 					</TabsContent>
 				</Tabs>
 			</div>
+			<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId ?? ""} />
 			{/* Export Modal */}
 			<Dialog open={exportModalOpen} onOpenChange={setExportModalOpen}>
 				<DialogContent>
