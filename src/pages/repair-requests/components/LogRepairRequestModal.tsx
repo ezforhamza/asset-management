@@ -250,19 +250,21 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 						)}
 					</div>
 
-					{/* Notes */}
-					<div className="space-y-1.5">
-						<Label htmlFor="repair-notes">Notes {isCoolingEquipment ? "(optional)" : "(optional)"}</Label>
-						<Textarea
-							id="repair-notes"
-							placeholder="Describe the issue or reason for the repair request..."
-							value={notes}
-							onChange={(e) => setNotes(e.target.value)}
-							maxLength={1000}
-							rows={3}
-						/>
-						<p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
-					</div>
+					{/* Notes — hidden for cooling equipment */}
+					{!isCoolingEquipment && (
+						<div className="space-y-1.5">
+							<Label htmlFor="repair-notes">Notes (optional)</Label>
+							<Textarea
+								id="repair-notes"
+								placeholder="Describe the issue or reason for the repair request..."
+								value={notes}
+								onChange={(e) => setNotes(e.target.value)}
+								maxLength={1000}
+								rows={3}
+							/>
+							<p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
+						</div>
+					)}
 
 					{/* Cooling Equipment extended form */}
 					{isCoolingEquipment && <CoolingRepairForm value={coolingForm} onChange={setCoolingForm} />}
