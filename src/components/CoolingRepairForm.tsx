@@ -43,6 +43,21 @@ function CollapsibleCard({
 	);
 }
 
+function TimeInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+	return (
+		<Input
+			type="time"
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
+			onClick={(e) => {
+				const input = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+				input.showPicker?.();
+			}}
+			className="cursor-pointer"
+		/>
+	);
+}
+
 function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
 	return (
 		<div className="flex gap-1.5 shrink-0">
@@ -64,7 +79,7 @@ function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => 
 				className={cn(
 					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
 					!value
-						? "bg-red-500 text-white border-red-500"
+						? "bg-muted text-foreground border-muted-foreground/30 font-semibold"
 						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
 				)}
 			>
@@ -143,19 +158,11 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 					<div className="grid grid-cols-2 gap-3">
 						<div className="space-y-1">
 							<Label className="text-xs">Trading Hours Start *</Label>
-							<Input
-								type="time"
-								value={value.tradingHoursStart}
-								onChange={(e) => set("tradingHoursStart", e.target.value)}
-							/>
+							<TimeInput value={value.tradingHoursStart} onChange={(v) => set("tradingHoursStart", v)} />
 						</div>
 						<div className="space-y-1">
 							<Label className="text-xs">Trading Hours End *</Label>
-							<Input
-								type="time"
-								value={value.tradingHoursEnd}
-								onChange={(e) => set("tradingHoursEnd", e.target.value)}
-							/>
+							<TimeInput value={value.tradingHoursEnd} onChange={(v) => set("tradingHoursEnd", v)} />
 						</div>
 					</div>
 				</div>
