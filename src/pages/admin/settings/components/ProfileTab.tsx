@@ -73,7 +73,8 @@ export function ProfileTab() {
 			}
 
 			await userService.updateMe({ name: values.name, phone: values.phone || null });
-			updateProfileMutation.mutate(updateData);
+			const { phone: _phone, ...dataWithoutPhone } = updateData;
+			updateProfileMutation.mutate(dataWithoutPhone as ProfileForm & { profilePic?: string });
 		} catch {
 			// handled by apiClient
 		}
