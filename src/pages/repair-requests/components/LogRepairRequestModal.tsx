@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Textarea } from "@/ui/textarea";
-import { CoolingRepairForm } from "./CoolingRepairForm";
+import { CoolingRepairForm } from "@/components/CoolingRepairForm";
 
 const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
 	branchName: "",
