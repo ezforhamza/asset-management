@@ -1,28 +1,84 @@
-import { Checkbox } from "@/ui/checkbox";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
-import { Separator } from "@/ui/separator";
 import { Textarea } from "@/ui/textarea";
-import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
+import { cn } from "@/utils";
 
 interface CoolingRepairFormProps {
 	value: CoolingRepairFormData;
 	onChange: (value: CoolingRepairFormData) => void;
 }
 
-function BooleanCheckbox({
-	label,
-	checked,
-	onCheckedChange,
+function CollapsibleCard({
+	title,
+	defaultOpen = false,
+	children,
 }: {
-	label: string;
-	checked: boolean;
-	onCheckedChange: (v: boolean) => void;
+	title: string;
+	defaultOpen?: boolean;
+	children: React.ReactNode;
 }) {
+	const [open, setOpen] = useState(defaultOpen);
 	return (
-		<div className="flex items-start gap-2">
-			<Checkbox checked={checked} onCheckedChange={(v) => onCheckedChange(!!v)} className="mt-0.5 shrink-0" />
-			<span className="text-sm leading-snug">{label}</span>
+		<div className="border rounded-lg overflow-hidden">
+			<button
+				type="button"
+				onClick={() => setOpen(!open)}
+				className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/30 transition-colors"
+			>
+				<div className="flex items-center gap-3">
+					<span className="w-1 h-4 bg-orange-500 rounded-sm shrink-0" />
+					<span className="font-semibold text-sm">{title}</span>
+				</div>
+				{open ? (
+					<ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+				) : (
+					<ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+				)}
+			</button>
+			{open && <div className="px-4 pb-4 space-y-1">{children}</div>}
+		</div>
+	);
+}
+
+function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+	return (
+		<div className="flex gap-1.5 shrink-0">
+			<button
+				type="button"
+				onClick={() => onChange(true)}
+				className={cn(
+					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
+					value
+						? "bg-green-500 text-white border-green-500"
+						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
+				)}
+			>
+				Yes
+			</button>
+			<button
+				type="button"
+				onClick={() => onChange(false)}
+				className={cn(
+					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
+					!value
+						? "bg-red-500 text-white border-red-500"
+						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
+				)}
+			>
+				No
+			</button>
+		</div>
+	);
+}
+
+function QuestionRow({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+	return (
+		<div className="flex items-start justify-between gap-4 py-2.5 border-b last:border-0">
+			<span className="text-sm leading-snug text-foreground flex-1">{label}</span>
+			<YesNo value={value} onChange={onChange} />
 		</div>
 	);
 }
@@ -41,232 +97,210 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 	) =>
 		onChange({
 			...value,
-			troubleshooting: {
-				...value.troubleshooting,
-				[section]: { ...value.troubleshooting[section], [key]: val },
-			},
+			troubleshooting: { ...value.troubleshooting, [section]: { ...value.troubleshooting[section], [key]: val } },
 		});
 
 	return (
-		<div className="space-y-5">
-			<Separator />
-			<p className="text-sm font-semibold text-foreground">Cooling Equipment Repair Form</p>
-
-			{/* Top-level fields */}
-			<div className="grid grid-cols-2 gap-3">
-				<div className="space-y-1">
-					<Label>Branch Name *</Label>
-					<Input
-						value={value.branchName}
-						onChange={(e) => set("branchName", e.target.value)}
-						placeholder="Branch name"
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label>Invoice Number *</Label>
-					<Input
-						value={value.invoiceNumber}
-						onChange={(e) => set("invoiceNumber", e.target.value)}
-						placeholder="INV-..."
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label>Province *</Label>
-					<Input value={value.province} onChange={(e) => set("province", e.target.value)} placeholder="Province" />
-				</div>
-				<div className="space-y-1">
-					<Label>Contact Person On Site *</Label>
-					<Input
-						value={value.contactPersonOnSite}
-						onChange={(e) => set("contactPersonOnSite", e.target.value)}
-						placeholder="Full name"
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label>Contact Number On Site *</Label>
-					<Input
-						value={value.contactNumberOnSite}
-						onChange={(e) => set("contactNumberOnSite", e.target.value)}
-						placeholder="Phone number"
-					/>
-				</div>
-				<div className="space-y-1">
-					<Label>Trading Hours *</Label>
-					<div className="flex items-center gap-2">
+		<div className="space-y-2">
+			<CollapsibleCard title="Store Details" defaultOpen>
+				<div className="space-y-3 pt-1">
+					<div className="space-y-1">
+						<Label className="text-xs">Branch Name *</Label>
 						<Input
-							type="time"
-							value={value.tradingHoursStart}
-							onChange={(e) => set("tradingHoursStart", e.target.value)}
-							className="flex-1"
+							value={value.branchName}
+							onChange={(e) => set("branchName", e.target.value)}
+							placeholder="Branch Name"
 						/>
-						<span className="text-sm text-muted-foreground">to</span>
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs">Invoice Number *</Label>
 						<Input
-							type="time"
-							value={value.tradingHoursEnd}
-							onChange={(e) => set("tradingHoursEnd", e.target.value)}
-							className="flex-1"
+							value={value.invoiceNumber}
+							onChange={(e) => set("invoiceNumber", e.target.value)}
+							placeholder="Invoice Number"
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs">Province *</Label>
+						<Input value={value.province} onChange={(e) => set("province", e.target.value)} placeholder="Province" />
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs">Contact Person On-Site *</Label>
+						<Input
+							value={value.contactPersonOnSite}
+							onChange={(e) => set("contactPersonOnSite", e.target.value)}
+							placeholder="Contact Person On-Site"
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs">Contact Number On-Site *</Label>
+						<Input
+							value={value.contactNumberOnSite}
+							onChange={(e) => set("contactNumberOnSite", e.target.value)}
+							placeholder="Contact Number On-Site"
+						/>
+					</div>
+					<div className="grid grid-cols-2 gap-3">
+						<div className="space-y-1">
+							<Label className="text-xs">Trading Hours Start *</Label>
+							<Input
+								type="time"
+								value={value.tradingHoursStart}
+								onChange={(e) => set("tradingHoursStart", e.target.value)}
+							/>
+						</div>
+						<div className="space-y-1">
+							<Label className="text-xs">Trading Hours End *</Label>
+							<Input
+								type="time"
+								value={value.tradingHoursEnd}
+								onChange={(e) => set("tradingHoursEnd", e.target.value)}
+							/>
+						</div>
+					</div>
+				</div>
+			</CollapsibleCard>
+
+			<CollapsibleCard title="Problem">
+				<div className="space-y-3 pt-1">
+					<div className="space-y-1">
+						<Label className="text-xs">Describe the problem *</Label>
+						<Textarea
+							value={value.problem}
+							onChange={(e) => set("problem", e.target.value)}
+							placeholder="Describe the problem"
+							rows={3}
+						/>
+					</div>
+					<div className="space-y-1">
+						<Label className="text-xs">General Information *</Label>
+						<Textarea
+							value={value.generalInformation}
+							onChange={(e) => set("generalInformation", e.target.value)}
+							placeholder="General Information"
+							rows={3}
 						/>
 					</div>
 				</div>
-			</div>
+			</CollapsibleCard>
 
-			<div className="space-y-1">
-				<Label>Problem Description *</Label>
-				<Textarea
-					value={value.problem}
-					onChange={(e) => set("problem", e.target.value)}
-					placeholder="Describe the problem..."
-					rows={2}
+			<CollapsibleCard title="Technician Attendance">
+				<QuestionRow
+					label="Must the technician call before attending?"
+					value={value.techCallBeforeAttending}
+					onChange={(v) => set("techCallBeforeAttending", v)}
 				/>
-			</div>
-			<div className="space-y-1">
-				<Label>General Information *</Label>
-				<Textarea
-					value={value.generalInformation}
-					onChange={(e) => set("generalInformation", e.target.value)}
-					placeholder="Any additional information about the unit or store..."
-					rows={2}
+			</CollapsibleCard>
+
+			<CollapsibleCard title="Complaints">
+				<QuestionRow
+					label="Lights not working"
+					value={value.complaints.lightsNotWorking}
+					onChange={(v) => setComplaint("lightsNotWorking", v)}
 				/>
-			</div>
+				<QuestionRow
+					label="Fan not turning"
+					value={value.complaints.fanNotTurning}
+					onChange={(v) => setComplaint("fanNotTurning", v)}
+				/>
+				<QuestionRow
+					label="Cooler tripping the power"
+					value={value.complaints.coolerTrippingPower}
+					onChange={(v) => setComplaint("coolerTrippingPower", v)}
+				/>
+				<QuestionRow
+					label="Cooler not cooling, but compressor is running"
+					value={value.complaints.coolerNotCoolingCompressorRunning}
+					onChange={(v) => setComplaint("coolerNotCoolingCompressorRunning", v)}
+				/>
+				<QuestionRow
+					label="Doors not closing"
+					value={value.complaints.doorsNotClosing}
+					onChange={(v) => setComplaint("doorsNotClosing", v)}
+				/>
+				<QuestionRow
+					label="Cooler leaking water on the bottom"
+					value={value.complaints.coolerLeakingWaterBottom}
+					onChange={(v) => setComplaint("coolerLeakingWaterBottom", v)}
+				/>
+				<QuestionRow
+					label="Cooler leaking water on the inside"
+					value={value.complaints.coolerLeakingWaterInside}
+					onChange={(v) => setComplaint("coolerLeakingWaterInside", v)}
+				/>
+			</CollapsibleCard>
 
-			<BooleanCheckbox
-				label="Tech must call before attending the site"
-				checked={value.techCallBeforeAttending}
-				onCheckedChange={(v) => set("techCallBeforeAttending", v)}
-			/>
+			<CollapsibleCard title="Troubleshooting — Doors not sliding closed">
+				<QuestionRow
+					label="Is the cooler installed on a level surface?"
+					value={value.troubleshooting.doorsNotSlidingClosed.installedOnLevelSurface}
+					onChange={(v) => setTroubleshooting("doorsNotSlidingClosed", "installedOnLevelSurface", v)}
+				/>
+				<QuestionRow
+					label="Are the doors moving freely, not off the rail?"
+					value={value.troubleshooting.doorsNotSlidingClosed.doorsMovingFreely}
+					onChange={(v) => setTroubleshooting("doorsNotSlidingClosed", "doorsMovingFreely", v)}
+				/>
+			</CollapsibleCard>
 
-			{/* Complaints */}
-			<div className="space-y-2">
-				<p className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">Complaints</p>
-				<div className="space-y-2 pl-1">
-					<BooleanCheckbox
-						label="Lights not working"
-						checked={value.complaints.lightsNotWorking}
-						onCheckedChange={(v) => setComplaint("lightsNotWorking", v)}
-					/>
-					<BooleanCheckbox
-						label="Fan not turning"
-						checked={value.complaints.fanNotTurning}
-						onCheckedChange={(v) => setComplaint("fanNotTurning", v)}
-					/>
-					<BooleanCheckbox
-						label="Cooler tripping the power"
-						checked={value.complaints.coolerTrippingPower}
-						onCheckedChange={(v) => setComplaint("coolerTrippingPower", v)}
-					/>
-					<BooleanCheckbox
-						label="Cooler not cooling, but the compressor is running"
-						checked={value.complaints.coolerNotCoolingCompressorRunning}
-						onCheckedChange={(v) => setComplaint("coolerNotCoolingCompressorRunning", v)}
-					/>
-					<BooleanCheckbox
-						label="Doors not closing"
-						checked={value.complaints.doorsNotClosing}
-						onCheckedChange={(v) => setComplaint("doorsNotClosing", v)}
-					/>
-					<BooleanCheckbox
-						label="Cooler leaking WATER on the bottom"
-						checked={value.complaints.coolerLeakingWaterBottom}
-						onCheckedChange={(v) => setComplaint("coolerLeakingWaterBottom", v)}
-					/>
-					<BooleanCheckbox
-						label="Cooler leaking WATER on the inside"
-						checked={value.complaints.coolerLeakingWaterInside}
-						onCheckedChange={(v) => setComplaint("coolerLeakingWaterInside", v)}
-					/>
-				</div>
-			</div>
+			<CollapsibleCard title="Troubleshooting — Not cooling / blowing hot air">
+				<QuestionRow
+					label="Is there sufficient space (18mm) between the wall and the back of the cooler?"
+					value={value.troubleshooting.notCoolingBlowingHotAir.sufficientSpaceBehindCooler}
+					onChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "sufficientSpaceBehindCooler", v)}
+				/>
+				<QuestionRow
+					label="Is any product (crates, merchandise) blocking the airflow front or rear?"
+					value={value.troubleshooting.notCoolingBlowingHotAir.productBlockingAirflow}
+					onChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "productBlockingAirflow", v)}
+				/>
+				<QuestionRow
+					label="Is the condenser blocked? (cleaned in the last 3–6 months?)"
+					value={value.troubleshooting.notCoolingBlowingHotAir.condenserBlocked}
+					onChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "condenserBlocked", v)}
+				/>
+			</CollapsibleCard>
 
-			{/* Troubleshooting */}
-			<div className="space-y-4">
-				<p className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">Troubleshooting</p>
+			<CollapsibleCard title="Troubleshooting — Ice building on evaporator coil">
+				<QuestionRow
+					label="Are the shelves installed at equal intervals?"
+					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.shelvesAtEqualIntervals}
+					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesAtEqualIntervals", v)}
+				/>
+				<QuestionRow
+					label="Are the shelves installed with the protective lip towards the back?"
+					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.shelvesWithProtectiveLip}
+					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesWithProtectiveLip", v)}
+				/>
+				<QuestionRow
+					label="Is the cold air able to flow freely (no blister/6-pack packs blocking)?"
+					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.coldAirFlowingFreely}
+					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "coldAirFlowingFreely", v)}
+				/>
+				<QuestionRow
+					label="Did the customer adjust the thermostat? (can it be set to 2 again?)"
+					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.customerAdjustedThermostat}
+					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "customerAdjustedThermostat", v)}
+				/>
+			</CollapsibleCard>
 
-				<div className="space-y-2">
-					<p className="text-xs font-medium text-muted-foreground">Doors Not Sliding Closed</p>
-					<div className="space-y-2 pl-1">
-						<BooleanCheckbox
-							label="Cooler is installed on a level surface"
-							checked={value.troubleshooting.doorsNotSlidingClosed.installedOnLevelSurface}
-							onCheckedChange={(v) => setTroubleshooting("doorsNotSlidingClosed", "installedOnLevelSurface", v)}
-						/>
-						<BooleanCheckbox
-							label="Doors are moving freely (not off the rail)"
-							checked={value.troubleshooting.doorsNotSlidingClosed.doorsMovingFreely}
-							onCheckedChange={(v) => setTroubleshooting("doorsNotSlidingClosed", "doorsMovingFreely", v)}
-						/>
-					</div>
-				</div>
-
-				<div className="space-y-2">
-					<p className="text-xs font-medium text-muted-foreground">Not Cooling / Blowing Hot Air</p>
-					<div className="space-y-2 pl-1">
-						<BooleanCheckbox
-							label="Sufficient space (18mm) between wall and back of cooler"
-							checked={value.troubleshooting.notCoolingBlowingHotAir.sufficientSpaceBehindCooler}
-							onCheckedChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "sufficientSpaceBehindCooler", v)}
-						/>
-						<BooleanCheckbox
-							label="Product (crates, merchandise) blocking airflow front or rear"
-							checked={value.troubleshooting.notCoolingBlowingHotAir.productBlockingAirflow}
-							onCheckedChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "productBlockingAirflow", v)}
-						/>
-						<BooleanCheckbox
-							label="Condenser is blocked / not cleaned in last 3–6 months"
-							checked={value.troubleshooting.notCoolingBlowingHotAir.condenserBlocked}
-							onCheckedChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "condenserBlocked", v)}
-						/>
-					</div>
-				</div>
-
-				<div className="space-y-2">
-					<p className="text-xs font-medium text-muted-foreground">Ice Building on Evaporator Coil</p>
-					<div className="space-y-2 pl-1">
-						<BooleanCheckbox
-							label="Shelves installed at equal intervals"
-							checked={value.troubleshooting.iceBuildingOnEvaporatorCoil.shelvesAtEqualIntervals}
-							onCheckedChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesAtEqualIntervals", v)}
-						/>
-						<BooleanCheckbox
-							label="Shelves installed with protective lip towards back of cooler"
-							checked={value.troubleshooting.iceBuildingOnEvaporatorCoil.shelvesWithProtectiveLip}
-							onCheckedChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesWithProtectiveLip", v)}
-						/>
-						<BooleanCheckbox
-							label="Cold air able to flow freely (no blister packs / 6-pack plastic blocking)"
-							checked={value.troubleshooting.iceBuildingOnEvaporatorCoil.coldAirFlowingFreely}
-							onCheckedChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "coldAirFlowingFreely", v)}
-						/>
-						<BooleanCheckbox
-							label="Customer adjusted thermostat — can it be set to 2 again?"
-							checked={value.troubleshooting.iceBuildingOnEvaporatorCoil.customerAdjustedThermostat}
-							onCheckedChange={(v) =>
-								setTroubleshooting("iceBuildingOnEvaporatorCoil", "customerAdjustedThermostat", v)
-							}
-						/>
-					</div>
-				</div>
-
-				<div className="space-y-2">
-					<p className="text-xs font-medium text-muted-foreground">Cooler Tripping Power</p>
-					<div className="space-y-2 pl-1">
-						<BooleanCheckbox
-							label="Adequate power supplied (220V per manual)"
-							checked={value.troubleshooting.coolerTrippingPower.adequatePowerSupplied}
-							onCheckedChange={(v) => setTroubleshooting("coolerTrippingPower", "adequatePowerSupplied", v)}
-						/>
-						<BooleanCheckbox
-							label="Cooler plugged directly into wall"
-							checked={value.troubleshooting.coolerTrippingPower.pluggedDirectlyIntoWall}
-							onCheckedChange={(v) => setTroubleshooting("coolerTrippingPower", "pluggedDirectlyIntoWall", v)}
-						/>
-						<BooleanCheckbox
-							label="Cooler plugged into multi-plug shared with other equipment"
-							checked={value.troubleshooting.coolerTrippingPower.pluggedIntoMultiPlug}
-							onCheckedChange={(v) => setTroubleshooting("coolerTrippingPower", "pluggedIntoMultiPlug", v)}
-						/>
-					</div>
-				</div>
-			</div>
+			<CollapsibleCard title="Troubleshooting — Cooler tripping power">
+				<QuestionRow
+					label="Is there adequate power supplied to the cooler (220V)?"
+					value={value.troubleshooting.coolerTrippingPower.adequatePowerSupplied}
+					onChange={(v) => setTroubleshooting("coolerTrippingPower", "adequatePowerSupplied", v)}
+				/>
+				<QuestionRow
+					label="Is the cooler plugged directly into the wall?"
+					value={value.troubleshooting.coolerTrippingPower.pluggedDirectlyIntoWall}
+					onChange={(v) => setTroubleshooting("coolerTrippingPower", "pluggedDirectlyIntoWall", v)}
+				/>
+				<QuestionRow
+					label="Is the cooler plugged into a multi-plug shared with other equipment?"
+					value={value.troubleshooting.coolerTrippingPower.pluggedIntoMultiPlug}
+					onChange={(v) => setTroubleshooting("coolerTrippingPower", "pluggedIntoMultiPlug", v)}
+				/>
+			</CollapsibleCard>
 		</div>
 	);
 }
