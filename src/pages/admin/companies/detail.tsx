@@ -45,17 +45,17 @@ interface StatCardProps {
 function StatCard({ icon, label, value, isLoading, colorClass = "bg-primary/10 text-primary" }: StatCardProps) {
 	return (
 		<Card className="relative overflow-hidden">
-			<CardContent className="p-6">
+			<CardContent className="p-4">
 				<div className="flex items-center justify-between">
-					<div className="space-y-1">
-						<p className="text-sm font-medium text-muted-foreground">{label}</p>
+					<div className="space-y-0.5">
+						<p className="text-xs font-medium text-muted-foreground">{label}</p>
 						{isLoading ? (
-							<Skeleton className="h-8 w-16" />
+							<Skeleton className="h-7 w-14" />
 						) : (
-							<p className="text-3xl font-bold tracking-tight">{value.toLocaleString()}</p>
+							<p className="text-2xl font-bold tracking-tight">{value.toLocaleString()}</p>
 						)}
 					</div>
-					<div className={`h-12 w-12 rounded-xl ${colorClass} flex items-center justify-center`}>{icon}</div>
+					<div className={`h-10 w-10 rounded-xl ${colorClass} flex items-center justify-center`}>{icon}</div>
 				</div>
 			</CardContent>
 		</Card>
@@ -193,31 +193,31 @@ export default function CompanyDetailPage() {
 			</div>
 
 			{/* Stats Grid */}
-			<div className="flex-shrink-0 px-6 py-5">
-				<div className="grid grid-cols-4 gap-4">
+			<div className="flex-shrink-0 px-6 py-3">
+				<div className="grid grid-cols-4 gap-3">
 					<StatCard
-						icon={<Users className="h-6 w-6" />}
+						icon={<Users className="h-5 w-5" />}
 						label="Total Users"
 						value={companyStats?.stats.users.total ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-blue-500/10 text-blue-600"
 					/>
 					<StatCard
-						icon={<Package className="h-6 w-6" />}
+						icon={<Package className="h-5 w-5" />}
 						label="Total Assets"
 						value={companyStats?.stats.assets.total ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-emerald-500/10 text-emerald-600"
 					/>
 					<StatCard
-						icon={<QrCode className="h-6 w-6" />}
+						icon={<QrCode className="h-5 w-5" />}
 						label="QR Codes"
 						value={companyStats?.stats.qrCodes.total ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-purple-500/10 text-purple-600"
 					/>
 					<StatCard
-						icon={<CheckCircle2 className="h-6 w-6" />}
+						icon={<CheckCircle2 className="h-5 w-5" />}
 						label="Verifications"
 						value={companyStats?.stats.verifications.total ?? 0}
 						isLoading={statsLoading}
