@@ -79,7 +79,7 @@ function YesNo({ value, onChange }: { value: boolean | null; onChange: (v: boole
 				className={cn(
 					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
 					value === false
-						? "bg-muted text-foreground border-muted-foreground/30 font-semibold"
+						? "bg-red-500 text-white border-red-500"
 						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
 				)}
 			>

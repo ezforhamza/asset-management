@@ -48,11 +48,11 @@ function StatCard({ icon, label, value, isLoading, colorClass = "bg-primary/10 t
 			<CardContent className="p-4">
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
-						<p className="text-xs font-medium text-muted-foreground">{label}</p>
+						<p className="text-sm font-medium text-muted-foreground">{label}</p>
 						{isLoading ? (
-							<Skeleton className="h-7 w-14" />
+							<Skeleton className="h-8 w-16" />
 						) : (
-							<p className="text-2xl font-bold tracking-tight">{value.toLocaleString()}</p>
+							<p className="text-3xl font-bold tracking-tight">{value.toLocaleString()}</p>
 						)}
 					</div>
 					<div className={`h-10 w-10 rounded-xl ${colorClass} flex items-center justify-center`}>{icon}</div>
