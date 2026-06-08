@@ -12,9 +12,10 @@ import {
 	Mail,
 	Package,
 	QrCode,
+	Search,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import adminService from "@/api/services/adminService";
@@ -62,6 +63,15 @@ function StatCard({ icon, label, value, isLoading, colorClass = "bg-primary/10 t
 export default function CompanyDetailPage() {
 	const { companyId } = useParams<{ companyId: string }>();
 	const navigate = useNavigate();
+
+	// Search state (Users tab)
+	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+
+	useEffect(() => {
+		const t = setTimeout(() => setDebouncedSearch(search), 300);
+		return () => clearTimeout(t);
+	}, [search]);
 
 	// Export state
 	const [exportModalOpen, setExportModalOpen] = useState(false);
@@ -216,22 +226,34 @@ export default function CompanyDetailPage() {
 			{/* Tabs */}
 			<div className="flex-1 overflow-hidden px-6 pb-6">
 				<Tabs defaultValue="users" className="h-full flex flex-col">
-					<TabsList className="w-fit">
-						<TabsTrigger value="users" className="gap-2">
-							<Users className="h-4 w-4" />
-							Users
-						</TabsTrigger>
-						<TabsTrigger value="assets" className="gap-2">
-							<Package className="h-4 w-4" />
-							Assets
-						</TabsTrigger>
-						<TabsTrigger value="qrcodes" className="gap-2">
-							<QrCode className="h-4 w-4" />
-							QR Codes
-						</TabsTrigger>
-					</TabsList>
+					<div className="flex items-center gap-3">
+						<TabsList className="w-fit">
+							<TabsTrigger value="users" className="gap-2">
+								<Users className="h-4 w-4" />
+								Users
+							</TabsTrigger>
+							<TabsTrigger value="assets" className="gap-2">
+								<Package className="h-4 w-4" />
+								Assets
+							</TabsTrigger>
+							<TabsTrigger value="qrcodes" className="gap-2">
+								<QrCode className="h-4 w-4" />
+								QR Codes
+							</TabsTrigger>
+						</TabsList>
+						<div className="relative w-56">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<input
+								type="text"
+								placeholder="Search users..."
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								className="w-full pl-9 pr-3 py-1.5 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+							/>
+						</div>
+					</div>
 					<TabsContent value="users" className="flex-1 overflow-hidden mt-4">
-						<CompanyUsersTab companyId={companyId ?? ""} />
+						<CompanyUsersTab companyId={companyId ?? ""} debouncedSearch={debouncedSearch} />
 					</TabsContent>
 					<TabsContent value="assets" className="flex-1 overflow-hidden mt-4">
 						<CompanyAssetsTab companyId={companyId ?? ""} />

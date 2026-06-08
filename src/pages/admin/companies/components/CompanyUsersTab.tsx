@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { MoreHorizontal, Plus, Search, Trash2, UserCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { MoreHorizontal, Plus, Trash2, UserCircle } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
 import adminService from "@/api/services/adminService";
@@ -18,6 +18,7 @@ import { ConfirmModal } from "./ConfirmModal";
 
 interface CompanyUsersTabProps {
 	companyId: string;
+	debouncedSearch: string;
 }
 
 const getRoleBadge = (role: string) => {
@@ -33,22 +34,12 @@ const getRoleBadge = (role: string) => {
 
 const ROWS_PER_PAGE = 6;
 
-export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
+export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabProps) {
 	const queryClient = useQueryClient();
 	const currentUser = useUserInfo();
 	const [addUserOpen, setAddUserOpen] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [deleteUser, setDeleteUser] = useState<UserInfo | null>(null);
-	const [search, setSearch] = useState("");
-	const [debouncedSearch, setDebouncedSearch] = useState("");
-
-	useEffect(() => {
-		const t = setTimeout(() => {
-			setDebouncedSearch(search);
-			setCurrentPage(1);
-		}, 300);
-		return () => clearTimeout(t);
-	}, [search]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["admin", "company-users", companyId, currentPage, debouncedSearch],
@@ -81,24 +72,11 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 
 	return (
 		<>
-			{/* Add User — floated into the tab bar row */}
-			<div className="flex justify-end -mt-12 mb-4">
+			<div className="flex justify-end mb-3">
 				<Button onClick={() => setAddUserOpen(true)}>
 					<Plus className="h-4 w-4 mr-2" />
 					Add User
 				</Button>
-			</div>
-
-			{/* Search — in the content area, above the table */}
-			<div className="relative mb-3">
-				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-				<input
-					type="text"
-					placeholder="Search by name or email..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					className="w-full pl-9 pr-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-				/>
 			</div>
 
 			{isLoading ? (

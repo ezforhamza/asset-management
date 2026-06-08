@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { SuperUserSearch } from "@/components/super-user-search";
 import { useSettings } from "@/store/settingStore";
 import { cn } from "@/utils";
 import AccountDropdown from "../components/account-dropdown";
@@ -28,7 +27,6 @@ export default function Header({ leftSlot }: HeaderProps) {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<SuperUserSearch />
 				<SettingButton />
 				<AccountDropdown />
 			</div>
