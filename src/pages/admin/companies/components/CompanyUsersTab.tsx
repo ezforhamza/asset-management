@@ -79,88 +79,30 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<div className="rounded-md border">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Name</TableHead>
-							<TableHead>Email</TableHead>
-							<TableHead>Role</TableHead>
-							<TableHead>Last Login</TableHead>
-							<TableHead className="w-[50px]" />
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{["sk1", "sk2", "sk3"].map((k) => (
-							<TableRow key={k}>
-								<TableCell>
-									<Skeleton className="h-5 w-32" />
-								</TableCell>
-								<TableCell>
-									<Skeleton className="h-5 w-40" />
-								</TableCell>
-								<TableCell>
-									<Skeleton className="h-5 w-20" />
-								</TableCell>
-								<TableCell>
-									<Skeleton className="h-5 w-24" />
-								</TableCell>
-								<TableCell>
-									<Skeleton className="h-8 w-8" />
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</div>
-		);
-	}
-
-	if (users.length === 0) {
-		return (
-			<>
-				<div className="flex justify-end -mt-12 mb-4">
-					<Button onClick={() => setAddUserOpen(true)}>
-						<Plus className="h-4 w-4 mr-2" />
-						Add User
-					</Button>
-				</div>
-				<div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
-					<UserCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
-					<h3 className="text-lg font-medium">No users found</h3>
-					<p className="text-sm text-muted-foreground mb-4">This company has no users yet.</p>
-					<Button onClick={() => setAddUserOpen(true)}>
-						<Plus className="h-4 w-4 mr-2" />
-						Add First User
-					</Button>
-				</div>
-				<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
-			</>
-		);
-	}
-
 	return (
 		<>
-			<div className="flex items-center justify-between -mt-12 mb-4">
-				<div className="relative w-64">
-					<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-					<input
-						type="text"
-						placeholder="Search by name or email..."
-						value={search}
-						onChange={(e) => setSearch(e.target.value)}
-						className="w-full pl-9 pr-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-					/>
-				</div>
+			{/* Add User — floated into the tab bar row */}
+			<div className="flex justify-end -mt-12 mb-4">
 				<Button onClick={() => setAddUserOpen(true)}>
 					<Plus className="h-4 w-4 mr-2" />
 					Add User
 				</Button>
 			</div>
-			<div className="rounded-md border flex flex-col">
-				<div className="overflow-auto">
+
+			{/* Search — in the content area, above the table */}
+			<div className="relative mb-3">
+				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+				<input
+					type="text"
+					placeholder="Search by name or email..."
+					value={search}
+					onChange={(e) => setSearch(e.target.value)}
+					className="w-full pl-9 pr-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+				/>
+			</div>
+
+			{isLoading ? (
+				<div className="rounded-md border">
 					<Table>
 						<TableHeader>
 							<TableRow>
@@ -171,87 +113,134 @@ export function CompanyUsersTab({ companyId }: CompanyUsersTabProps) {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{users.map((user) => (
-								<TableRow key={user.id || user.email}>
+							{["sk1", "sk2", "sk3"].map((k) => (
+								<TableRow key={k}>
 									<TableCell>
-										<div className="flex items-center gap-3">
-											<Avatar className="h-9 w-9">
-												<AvatarImage src={user.profilePic || undefined} alt={user.name} />
-												<AvatarFallback className="bg-primary/10 text-primary text-sm">
-													{user.name?.charAt(0).toUpperCase()}
-												</AvatarFallback>
-											</Avatar>
-											<div>
-												<p className="font-medium">{user.name}</p>
-												<p className="text-xs text-muted-foreground">{user.email}</p>
-											</div>
-										</div>
-									</TableCell>
-									<TableCell>{getRoleBadge(user.role)}</TableCell>
-									<TableCell className="text-sm text-muted-foreground">
-										{user.lastLogin ? (
-											<div>
-												<p>{format(new Date(user.lastLogin), "MMM d, yyyy")}</p>
-												<p className="text-xs">{format(new Date(user.lastLogin), "h:mm a")}</p>
-											</div>
-										) : (
-											"Never"
-										)}
+										<Skeleton className="h-5 w-40" />
 									</TableCell>
 									<TableCell>
-										{user.role !== "system_admin" && user.id !== currentUser.id && (
-											<DropdownMenu>
-												<DropdownMenuTrigger asChild>
-													<Button variant="ghost" size="icon" className="h-8 w-8">
-														<MoreHorizontal className="h-4 w-4" />
-													</Button>
-												</DropdownMenuTrigger>
-												<DropdownMenuContent align="end">
-													<DropdownMenuItem
-														onClick={() => setDeleteUser(user)}
-														className="text-red-500 focus:text-red-500"
-													>
-														<Trash2 className="h-4 w-4 mr-2" />
-														Delete User
-													</DropdownMenuItem>
-												</DropdownMenuContent>
-											</DropdownMenu>
-										)}
+										<Skeleton className="h-5 w-20" />
+									</TableCell>
+									<TableCell>
+										<Skeleton className="h-5 w-24" />
+									</TableCell>
+									<TableCell>
+										<Skeleton className="h-8 w-8" />
 									</TableCell>
 								</TableRow>
 							))}
 						</TableBody>
 					</Table>
 				</div>
-				{totalPages > 1 && (
-					<div className="flex items-center justify-between px-4 py-3 border-t">
-						<div className="text-sm text-muted-foreground">
-							Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
-						</div>
-						<div className="flex items-center gap-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setCurrentPage((prev) => prev - 1)}
-								disabled={currentPage === 1}
-							>
-								Previous
-							</Button>
-							<span className="text-sm">
-								Page {currentPage} of {totalPages}
-							</span>
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => setCurrentPage((prev) => prev + 1)}
-								disabled={currentPage === totalPages}
-							>
-								Next
-							</Button>
-						</div>
+			) : users.length === 0 ? (
+				<div className="flex flex-col items-center justify-center py-12 text-center border rounded-lg">
+					<UserCircle className="h-12 w-12 text-muted-foreground/50 mb-4" />
+					<h3 className="text-lg font-medium">{debouncedSearch ? "No users match your search" : "No users found"}</h3>
+					<p className="text-sm text-muted-foreground mb-4">
+						{debouncedSearch ? "Try a different name or email." : "This company has no users yet."}
+					</p>
+					{!debouncedSearch && (
+						<Button onClick={() => setAddUserOpen(true)}>
+							<Plus className="h-4 w-4 mr-2" />
+							Add First User
+						</Button>
+					)}
+				</div>
+			) : (
+				<div className="rounded-md border flex flex-col">
+					<div className="overflow-auto">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>User</TableHead>
+									<TableHead>Role</TableHead>
+									<TableHead>Last Login</TableHead>
+									<TableHead className="w-[50px]" />
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{users.map((user) => (
+									<TableRow key={user.id || user.email}>
+										<TableCell>
+											<div className="flex items-center gap-3">
+												<Avatar className="h-9 w-9">
+													<AvatarImage src={user.profilePic || undefined} alt={user.name} />
+													<AvatarFallback className="bg-primary/10 text-primary text-sm">
+														{user.name?.charAt(0).toUpperCase()}
+													</AvatarFallback>
+												</Avatar>
+												<div>
+													<p className="font-medium">{user.name}</p>
+													<p className="text-xs text-muted-foreground">{user.email}</p>
+												</div>
+											</div>
+										</TableCell>
+										<TableCell>{getRoleBadge(user.role)}</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{user.lastLogin ? (
+												<div>
+													<p>{format(new Date(user.lastLogin), "MMM d, yyyy")}</p>
+													<p className="text-xs">{format(new Date(user.lastLogin), "h:mm a")}</p>
+												</div>
+											) : (
+												"Never"
+											)}
+										</TableCell>
+										<TableCell>
+											{user.role !== "system_admin" && user.id !== currentUser.id && (
+												<DropdownMenu>
+													<DropdownMenuTrigger asChild>
+														<Button variant="ghost" size="icon" className="h-8 w-8">
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													</DropdownMenuTrigger>
+													<DropdownMenuContent align="end">
+														<DropdownMenuItem
+															onClick={() => setDeleteUser(user)}
+															className="text-red-500 focus:text-red-500"
+														>
+															<Trash2 className="h-4 w-4 mr-2" />
+															Delete User
+														</DropdownMenuItem>
+													</DropdownMenuContent>
+												</DropdownMenu>
+											)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
 					</div>
-				)}
-			</div>
+					{totalPages > 1 && (
+						<div className="flex items-center justify-between px-4 py-3 border-t">
+							<div className="text-sm text-muted-foreground">
+								Showing {startIndex + 1} to {Math.min(endIndex, totalResults)} of {totalResults} results
+							</div>
+							<div className="flex items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setCurrentPage((prev) => prev - 1)}
+									disabled={currentPage === 1}
+								>
+									Previous
+								</Button>
+								<span className="text-sm">
+									Page {currentPage} of {totalPages}
+								</span>
+								<Button
+									variant="outline"
+									size="sm"
+									onClick={() => setCurrentPage((prev) => prev + 1)}
+									disabled={currentPage === totalPages}
+								>
+									Next
+								</Button>
+							</div>
+						</div>
+					)}
+				</div>
+			)}
 
 			<AddUserModal open={addUserOpen} onClose={() => setAddUserOpen(false)} companyId={companyId} />
 

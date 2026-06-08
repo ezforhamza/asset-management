@@ -190,13 +190,6 @@ export default function CompanyDetailPage() {
 						colorClass="bg-blue-500/10 text-blue-600"
 					/>
 					<StatCard
-						icon={<Users className="h-6 w-6" />}
-						label="Active Users"
-						value={companyStats?.stats.users.active ?? 0}
-						isLoading={statsLoading}
-						colorClass="bg-blue-500/10 text-blue-600"
-					/>
-					<StatCard
 						icon={<Package className="h-6 w-6" />}
 						label="Total Assets"
 						value={companyStats?.stats.assets.total ?? 0}
@@ -204,37 +197,16 @@ export default function CompanyDetailPage() {
 						colorClass="bg-emerald-500/10 text-emerald-600"
 					/>
 					<StatCard
-						icon={<Package className="h-6 w-6" />}
-						label="Active Assets"
-						value={companyStats?.stats.assets.byStatus.active ?? 0}
-						isLoading={statsLoading}
-						colorClass="bg-emerald-500/10 text-emerald-600"
-					/>
-					<StatCard
 						icon={<QrCode className="h-6 w-6" />}
-						label="Total QR Codes"
+						label="QR Codes"
 						value={companyStats?.stats.qrCodes.total ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-purple-500/10 text-purple-600"
 					/>
 					<StatCard
-						icon={<QrCode className="h-6 w-6" />}
-						label="Allocated QR Codes"
-						value={companyStats?.stats.qrCodes.byStatus.allocated ?? 0}
-						isLoading={statsLoading}
-						colorClass="bg-purple-500/10 text-purple-600"
-					/>
-					<StatCard
 						icon={<CheckCircle2 className="h-6 w-6" />}
-						label="Total Verifications"
+						label="Verifications"
 						value={companyStats?.stats.verifications.total ?? 0}
-						isLoading={statsLoading}
-						colorClass="bg-orange-500/10 text-orange-600"
-					/>
-					<StatCard
-						icon={<CheckCircle2 className="h-6 w-6" />}
-						label="Verifications (30d)"
-						value={companyStats?.stats.verifications.last30Days ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-orange-500/10 text-orange-600"
 					/>
