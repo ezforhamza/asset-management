@@ -55,6 +55,7 @@ export interface CompaniesListRes extends PaginatedResponse<Company> {}
 
 export interface AdminUsersListParams {
 	name?: string;
+	search?: string;
 	companyId?: string;
 	role?: string;
 	status?: string;

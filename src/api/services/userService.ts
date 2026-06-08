@@ -93,6 +93,7 @@ export interface CreateUserReq {
 	role: "field_user" | "customer_admin";
 	adminType?: "full" | "read_only" | null;
 	profilePic?: string;
+	phone?: string | null;
 }
 
 export interface CreateUserRes {

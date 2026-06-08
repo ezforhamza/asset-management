@@ -23,6 +23,7 @@ interface CreateUserForm {
 	email: string;
 	role: string;
 	adminType: string;
+	phone: string;
 }
 
 export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalProps) {
@@ -39,6 +40,7 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 			email: "",
 			role: "field_user",
 			adminType: "full",
+			phone: "",
 		},
 	});
 
@@ -83,6 +85,7 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 				role: values.role as "field_user" | "customer_admin",
 				adminType: values.role === "customer_admin" ? (values.adminType as "full" | "read_only") : null,
 				profilePic: profilePicUrl,
+				phone: values.phone || null,
 			});
 
 			setTempPassword(result.temporaryPassword || null);
@@ -214,6 +217,20 @@ export function CreateUserModal({ open, onClose, onSuccess }: CreateUserModalPro
 										<FormLabel>Email Address</FormLabel>
 										<FormControl>
 											<Input type="email" placeholder="john@company.com" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="phone"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Phone Number (Optional)</FormLabel>
+										<FormControl>
+											<Input type="tel" placeholder="+27 82 555 0001" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

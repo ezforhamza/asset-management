@@ -6,12 +6,12 @@ import type { Asset } from "#/entity";
 import assetService from "@/api/services/assetService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
+import { CoolingRepairForm } from "@/components/CoolingRepairForm";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Textarea } from "@/ui/textarea";
-import { CoolingRepairForm } from "@/components/CoolingRepairForm";
 
 const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
 	branchName: "",
@@ -45,6 +45,7 @@ const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
 			shelvesWithProtectiveLip: false,
 			coldAirFlowingFreely: false,
 			customerAdjustedThermostat: false,
+			canThermostatBeSetTo2: null,
 		},
 		coolerTrippingPower: { adequatePowerSupplied: false, pluggedDirectlyIntoWall: false, pluggedIntoMultiPlug: false },
 	},

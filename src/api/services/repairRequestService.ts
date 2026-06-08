@@ -93,6 +93,7 @@ export interface CoolingRepairFormData {
 			shelvesWithProtectiveLip: boolean;
 			coldAirFlowingFreely: boolean;
 			customerAdjustedThermostat: boolean;
+			canThermostatBeSetTo2?: boolean | null;
 		};
 		coolerTrippingPower: {
 			adequatePowerSupplied: boolean;

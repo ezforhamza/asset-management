@@ -58,7 +58,7 @@ function TimeInput({ value, onChange }: { value: string; onChange: (v: string) =
 	);
 }
 
-function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
+function YesNo({ value, onChange }: { value: boolean | null; onChange: (v: boolean) => void }) {
 	return (
 		<div className="flex gap-1.5 shrink-0">
 			<button
@@ -66,7 +66,7 @@ function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => 
 				onClick={() => onChange(true)}
 				className={cn(
 					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
-					value
+					value === true
 						? "bg-green-500 text-white border-green-500"
 						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
 				)}
@@ -78,7 +78,7 @@ function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => 
 				onClick={() => onChange(false)}
 				className={cn(
 					"px-3 py-1 text-xs rounded-md font-medium transition-colors border",
-					!value
+					value === false
 						? "bg-muted text-foreground border-muted-foreground/30 font-semibold"
 						: "bg-transparent text-muted-foreground border-border hover:bg-muted/50",
 				)}
@@ -89,7 +89,15 @@ function YesNo({ value, onChange }: { value: boolean; onChange: (v: boolean) => 
 	);
 }
 
-function QuestionRow({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function QuestionRow({
+	label,
+	value,
+	onChange,
+}: {
+	label: string;
+	value: boolean | null;
+	onChange: (v: boolean) => void;
+}) {
 	return (
 		<div className="flex items-start justify-between gap-4 py-2.5 border-b last:border-0">
 			<span className="text-sm leading-snug text-foreground flex-1">{label}</span>
@@ -201,37 +209,37 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 
 			<CollapsibleCard title="Complaints">
 				<QuestionRow
-					label="Lights not working"
+					label="Are the lights working?"
 					value={value.complaints.lightsNotWorking}
 					onChange={(v) => setComplaint("lightsNotWorking", v)}
 				/>
 				<QuestionRow
-					label="Fan not turning"
+					label="Is the fan turning on?"
 					value={value.complaints.fanNotTurning}
 					onChange={(v) => setComplaint("fanNotTurning", v)}
 				/>
 				<QuestionRow
-					label="Cooler tripping the power"
+					label="Is the cooler tripping the power?"
 					value={value.complaints.coolerTrippingPower}
 					onChange={(v) => setComplaint("coolerTrippingPower", v)}
 				/>
 				<QuestionRow
-					label="Cooler not cooling, but compressor is running"
+					label="Is the cooler cooling properly while the compressor is running?"
 					value={value.complaints.coolerNotCoolingCompressorRunning}
 					onChange={(v) => setComplaint("coolerNotCoolingCompressorRunning", v)}
 				/>
 				<QuestionRow
-					label="Doors not closing"
+					label="Are the doors closing properly?"
 					value={value.complaints.doorsNotClosing}
 					onChange={(v) => setComplaint("doorsNotClosing", v)}
 				/>
 				<QuestionRow
-					label="Cooler leaking water on the bottom"
+					label="Is water leaking from the bottom of the cooler?"
 					value={value.complaints.coolerLeakingWaterBottom}
 					onChange={(v) => setComplaint("coolerLeakingWaterBottom", v)}
 				/>
 				<QuestionRow
-					label="Cooler leaking water on the inside"
+					label="Is water leaking inside the cooler?"
 					value={value.complaints.coolerLeakingWaterInside}
 					onChange={(v) => setComplaint("coolerLeakingWaterInside", v)}
 				/>
@@ -285,10 +293,32 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "coldAirFlowingFreely", v)}
 				/>
 				<QuestionRow
-					label="Did the customer adjust the thermostat? (can it be set to 2 again?)"
+					label="Did the customer adjust the thermostat?"
 					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.customerAdjustedThermostat}
-					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "customerAdjustedThermostat", v)}
+					onChange={(v) => {
+						setTroubleshooting("iceBuildingOnEvaporatorCoil", "customerAdjustedThermostat", v);
+						if (!v) {
+							onChange({
+								...value,
+								troubleshooting: {
+									...value.troubleshooting,
+									iceBuildingOnEvaporatorCoil: {
+										...value.troubleshooting.iceBuildingOnEvaporatorCoil,
+										customerAdjustedThermostat: false,
+										canThermostatBeSetTo2: null,
+									},
+								},
+							});
+						}
+					}}
 				/>
+				{value.troubleshooting.iceBuildingOnEvaporatorCoil.customerAdjustedThermostat && (
+					<QuestionRow
+						label="Can the thermostat be set to 2 again?"
+						value={value.troubleshooting.iceBuildingOnEvaporatorCoil.canThermostatBeSetTo2 ?? null}
+						onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "canThermostatBeSetTo2", v)}
+					/>
+				)}
 			</CollapsibleCard>
 
 			<CollapsibleCard title="Troubleshooting — Cooler tripping power">

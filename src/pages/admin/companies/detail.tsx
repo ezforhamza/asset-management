@@ -18,7 +18,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import adminService from "@/api/services/adminService";
-import assetService from "@/api/services/assetService";
 import { Button } from "@/ui/button";
 import { Card, CardContent } from "@/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
@@ -96,44 +95,15 @@ export default function CompanyDetailPage() {
 
 	const { data: company, isLoading: companyLoading } = useQuery({
 		queryKey: ["admin", "company", companyId],
-		queryFn: () => adminService.getCompany(companyId!),
+		queryFn: () => adminService.getCompany(companyId ?? ""),
 		enabled: !!companyId,
 	});
 
-	const { data: summaryData, isLoading: summaryLoading } = useQuery({
-		queryKey: ["admin", "companies-summary"],
-		queryFn: () => adminService.getCompanySummary(),
+	const { data: companyStats, isLoading: statsLoading } = useQuery({
+		queryKey: ["admin", "company-stats", companyId],
+		queryFn: () => adminService.getCompanyStats(companyId ?? ""),
 		enabled: !!companyId,
 	});
-
-	const { data: usersData, isLoading: usersLoading } = useQuery({
-		queryKey: ["admin", "company-users", companyId],
-		queryFn: () => adminService.getAdminUsers({ companyId }),
-		enabled: !!companyId,
-	});
-
-	const { data: assetsData, isLoading: assetsLoading } = useQuery({
-		queryKey: ["assets", "company", companyId],
-		queryFn: () => assetService.getAssets({ companyId }),
-		enabled: !!companyId,
-	});
-
-	const { data: qrCodesData, isLoading: qrCodesLoading } = useQuery({
-		queryKey: ["admin", "company-qrcodes", companyId],
-		queryFn: () => adminService.getAdminQRCodes({ companyId }),
-		enabled: !!companyId,
-	});
-
-	const companySummary = summaryData?.companies?.find((c) => c._id === companyId);
-
-	const stats = {
-		totalUsers: usersData?.results?.length ?? companySummary?.userCount ?? 0,
-		totalAssets: assetsData?.results?.length ?? companySummary?.assetCount ?? 0,
-		totalQRCodes: qrCodesData?.results?.length ?? 0,
-		totalVerifications: companySummary?.verificationCount ?? 0,
-	};
-
-	const statsLoading = usersLoading || assetsLoading || qrCodesLoading || summaryLoading;
 
 	if (companyLoading) {
 		return (
@@ -143,8 +113,8 @@ export default function CompanyDetailPage() {
 				</div>
 				<div className="flex-1 p-6 space-y-6">
 					<div className="grid grid-cols-4 gap-4">
-						{Array.from({ length: 4 }).map((_, i) => (
-							<Skeleton key={i} className="h-28 w-full rounded-lg" />
+						{["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8"].map((k) => (
+							<Skeleton key={k} className="h-28 w-full rounded-lg" />
 						))}
 					</div>
 					<Skeleton className="h-64 w-full" />
@@ -192,10 +162,10 @@ export default function CompanyDetailPage() {
 										<Mail className="h-3.5 w-3.5" />
 										{company.contactEmail}
 									</span>
-									{companySummary?.createdAt && (
+									{companyStats?.company?.createdAt && (
 										<span className="flex items-center gap-1.5">
 											<Calendar className="h-3.5 w-3.5" />
-											Joined {format(new Date(companySummary.createdAt), "MMM d, yyyy")}
+											Joined {format(new Date(companyStats.company.createdAt), "MMM d, yyyy")}
 										</span>
 									)}
 								</div>
@@ -215,28 +185,56 @@ export default function CompanyDetailPage() {
 					<StatCard
 						icon={<Users className="h-6 w-6" />}
 						label="Total Users"
-						value={stats.totalUsers}
+						value={companyStats?.stats.users.total ?? 0}
+						isLoading={statsLoading}
+						colorClass="bg-blue-500/10 text-blue-600"
+					/>
+					<StatCard
+						icon={<Users className="h-6 w-6" />}
+						label="Active Users"
+						value={companyStats?.stats.users.active ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-blue-500/10 text-blue-600"
 					/>
 					<StatCard
 						icon={<Package className="h-6 w-6" />}
 						label="Total Assets"
-						value={stats.totalAssets}
+						value={companyStats?.stats.assets.total ?? 0}
+						isLoading={statsLoading}
+						colorClass="bg-emerald-500/10 text-emerald-600"
+					/>
+					<StatCard
+						icon={<Package className="h-6 w-6" />}
+						label="Active Assets"
+						value={companyStats?.stats.assets.byStatus.active ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-emerald-500/10 text-emerald-600"
 					/>
 					<StatCard
 						icon={<QrCode className="h-6 w-6" />}
-						label="QR Codes"
-						value={stats.totalQRCodes}
+						label="Total QR Codes"
+						value={companyStats?.stats.qrCodes.total ?? 0}
+						isLoading={statsLoading}
+						colorClass="bg-purple-500/10 text-purple-600"
+					/>
+					<StatCard
+						icon={<QrCode className="h-6 w-6" />}
+						label="Allocated QR Codes"
+						value={companyStats?.stats.qrCodes.byStatus.allocated ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-purple-500/10 text-purple-600"
 					/>
 					<StatCard
 						icon={<CheckCircle2 className="h-6 w-6" />}
-						label="Verifications"
-						value={stats.totalVerifications}
+						label="Total Verifications"
+						value={companyStats?.stats.verifications.total ?? 0}
+						isLoading={statsLoading}
+						colorClass="bg-orange-500/10 text-orange-600"
+					/>
+					<StatCard
+						icon={<CheckCircle2 className="h-6 w-6" />}
+						label="Verifications (30d)"
+						value={companyStats?.stats.verifications.last30Days ?? 0}
 						isLoading={statsLoading}
 						colorClass="bg-orange-500/10 text-orange-600"
 					/>
@@ -261,13 +259,13 @@ export default function CompanyDetailPage() {
 						</TabsTrigger>
 					</TabsList>
 					<TabsContent value="users" className="flex-1 overflow-hidden mt-4">
-						<CompanyUsersTab companyId={companyId!} />
+						<CompanyUsersTab companyId={companyId ?? ""} />
 					</TabsContent>
 					<TabsContent value="assets" className="flex-1 overflow-hidden mt-4">
-						<CompanyAssetsTab companyId={companyId!} />
+						<CompanyAssetsTab companyId={companyId ?? ""} />
 					</TabsContent>
 					<TabsContent value="qrcodes" className="flex-1 overflow-hidden mt-4">
-						<CompanyQRCodesTab companyId={companyId!} />
+						<CompanyQRCodesTab companyId={companyId ?? ""} />
 					</TabsContent>
 				</Tabs>
 			</div>

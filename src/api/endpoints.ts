@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
 	ADMIN: {
 		HEALTH: "/admin/health",
 		MONITORING: "/admin/monitoring",
+		COMPANY_STATS: (id: string) => `/admin/companies/${id}/stats`,
 	},
 
 	// Audit Logs

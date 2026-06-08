@@ -155,6 +155,25 @@ const getCompanySummary = () =>
 		url: "/admin/companies/summary",
 	});
 
+export interface CompanyStats {
+	company: {
+		id: string;
+		companyName: string;
+		contactEmail: string;
+		isActive: boolean;
+		createdAt: string;
+	};
+	stats: {
+		assets: { total: number; byStatus: { active: number; inactive: number; registered: number } };
+		qrCodes: { total: number; byStatus: { available: number; allocated: number } };
+		users: { total: number; active: number; byRole: { customer_admin: number; field_user: number } };
+		verifications: { total: number; last30Days: number; last7Days: number };
+	};
+}
+
+const getCompanyStats = (companyId: string) =>
+	apiClient.get<CompanyStats>({ url: API_ENDPOINTS.ADMIN.COMPANY_STATS(companyId) });
+
 const createCompany = (data: CreateCompanyReq) =>
 	apiClient.post<{ company: CompanyWithDetails; admin: UserInfo }>({ url: API_ENDPOINTS.COMPANIES.BASE, data });
 
@@ -492,6 +511,7 @@ export default {
 	// Companies
 	getCompanies,
 	getCompany,
+	getCompanyStats,
 	getCompanySummary,
 	createCompany,
 	updateCompany,
