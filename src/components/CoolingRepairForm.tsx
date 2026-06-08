@@ -120,7 +120,7 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 				/>
 			</div>
 			<div className="space-y-1">
-				<Label>General Information</Label>
+				<Label>General Information *</Label>
 				<Textarea
 					value={value.generalInformation}
 					onChange={(e) => set("generalInformation", e.target.value)}

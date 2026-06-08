@@ -106,7 +106,10 @@ export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairM
 			coolingForm.province.trim() &&
 			coolingForm.contactPersonOnSite.trim() &&
 			coolingForm.contactNumberOnSite.trim() &&
-			coolingForm.problem.trim());
+			coolingForm.problem.trim() &&
+			coolingForm.generalInformation.trim() &&
+			coolingForm.tradingHoursStart.trim() &&
+			coolingForm.tradingHoursEnd.trim());
 
 	if (!asset) return null;
 
@@ -116,7 +119,7 @@ export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairM
 				<DialogHeader>
 					<DialogTitle className="flex items-center gap-2">
 						<Wrench className="h-5 w-5" />
-						Request Repair
+						{isCooling ? "Cooling Equipment Repair Form" : "Request Repair"}
 					</DialogTitle>
 					<DialogDescription>
 						Submit a repair request for asset <strong>{asset.serialNumber}</strong>
@@ -124,37 +127,37 @@ export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairM
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
-					{/* Asset Info */}
-					<div className="p-3 bg-muted/50 rounded-md space-y-1">
-						<p className="text-sm text-muted-foreground">
-							Serial Number: <span className="font-medium text-foreground">{asset.serialNumber}</span>
-						</p>
-						<p className="text-sm text-muted-foreground">
-							Make / Model:{" "}
-							<span className="font-medium text-foreground">
-								{asset.make} {asset.model}
-							</span>
-						</p>
-						{asset.category?.name && (
-							<p className="text-sm text-muted-foreground">
-								Category: <span className="font-medium text-foreground">{asset.category.name}</span>
-							</p>
-						)}
-					</div>
-
-					{/* Notes / Explanation */}
-					<div className="space-y-2">
-						<Label htmlFor="explanation">
-							{isCooling ? "Additional Notes (Optional)" : "Repair Explanation (Optional)"}
-						</Label>
-						<Textarea
-							id="explanation"
-							placeholder="Describe the issue or reason for repair..."
-							value={explanation}
-							onChange={(e) => setExplanation(e.target.value)}
-							rows={isCooling ? 2 : 4}
-						/>
-					</div>
+					{/* Non-cooling: show asset info card + notes */}
+					{!isCooling && (
+						<>
+							<div className="p-3 bg-muted/50 rounded-md space-y-1">
+								<p className="text-sm text-muted-foreground">
+									Serial Number: <span className="font-medium text-foreground">{asset.serialNumber}</span>
+								</p>
+								<p className="text-sm text-muted-foreground">
+									Make / Model:{" "}
+									<span className="font-medium text-foreground">
+										{asset.make} {asset.model}
+									</span>
+								</p>
+								{asset.category?.name && (
+									<p className="text-sm text-muted-foreground">
+										Category: <span className="font-medium text-foreground">{asset.category.name}</span>
+									</p>
+								)}
+							</div>
+							<div className="space-y-2">
+								<Label htmlFor="explanation">Repair Explanation (Optional)</Label>
+								<Textarea
+									id="explanation"
+									placeholder="Describe the issue or reason for repair..."
+									value={explanation}
+									onChange={(e) => setExplanation(e.target.value)}
+									rows={4}
+								/>
+							</div>
+						</>
+					)}
 
 					{/* Cooling Equipment extended form */}
 					{isCooling && <CoolingRepairForm value={coolingForm} onChange={setCoolingForm} />}
