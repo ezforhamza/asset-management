@@ -1,5 +1,6 @@
 import type { UserInfo } from "#/entity";
 import apiClient from "../apiClient";
+import API_ENDPOINTS from "../endpoints";
 
 // ============================================
 // Auth Types
@@ -109,6 +110,11 @@ export interface UpdateUserReq {
 	profilePic?: string;
 }
 
+export interface UpdateMeReq {
+	name?: string;
+	phone?: string | null;
+}
+
 // Paginated response from real API
 export interface PaginatedResponse<T> {
 	results: T[];
@@ -183,6 +189,8 @@ const createUser = (data: CreateUserReq) => apiClient.post<CreateUserRes>({ url:
 const updateUser = (userId: string, data: UpdateUserReq) =>
 	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data });
 
+const updateMe = (data: UpdateMeReq) => apiClient.patch<UserInfo>({ url: API_ENDPOINTS.AUTH.ME, data });
+
 const deactivateUser = (userId: string) =>
 	apiClient.patch<UserInfo>({ url: `${UserApi.Users}/${userId}`, data: { status: "inactive" } });
 
@@ -222,6 +230,7 @@ export default {
 	createUser,
 	createFieldWorker: createUser, // Alias for backward compatibility
 	updateUser,
+	updateMe,
 	deactivateUser,
 	activateUser,
 	deleteUser,

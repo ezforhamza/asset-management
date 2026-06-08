@@ -61,8 +61,55 @@ export interface RepairRequestsListRes {
 const getRepairRequests = (params?: RepairRequestsListParams) =>
 	apiClient.get<RepairRequestsListRes>({ url: API_ENDPOINTS.REPAIR_REQUESTS.BASE, params });
 
-const createRepairRequest = (assetId: string, data: { notes?: string }) =>
-	apiClient.post<{ success: boolean; repairRequest: RepairRequest; message: string; emailSent: boolean }>({
+export interface CoolingRepairFormData {
+	branchName: string;
+	invoiceNumber: string;
+	province: string;
+	contactPersonOnSite: string;
+	contactNumberOnSite: string;
+	problem: string;
+	generalInformation: string;
+	tradingHoursStart: string;
+	tradingHoursEnd: string;
+	techCallBeforeAttending: boolean;
+	complaints: {
+		lightsNotWorking: boolean;
+		fanNotTurning: boolean;
+		coolerTrippingPower: boolean;
+		coolerNotCoolingCompressorRunning: boolean;
+		doorsNotClosing: boolean;
+		coolerLeakingWaterBottom: boolean;
+		coolerLeakingWaterInside: boolean;
+	};
+	troubleshooting: {
+		doorsNotSlidingClosed: { installedOnLevelSurface: boolean; doorsMovingFreely: boolean };
+		notCoolingBlowingHotAir: {
+			sufficientSpaceBehindCooler: boolean;
+			productBlockingAirflow: boolean;
+			condenserBlocked: boolean;
+		};
+		iceBuildingOnEvaporatorCoil: {
+			shelvesAtEqualIntervals: boolean;
+			shelvesWithProtectiveLip: boolean;
+			coldAirFlowingFreely: boolean;
+			customerAdjustedThermostat: boolean;
+		};
+		coolerTrippingPower: {
+			adequatePowerSupplied: boolean;
+			pluggedDirectlyIntoWall: boolean;
+			pluggedIntoMultiPlug: boolean;
+		};
+	};
+}
+
+const createRepairRequest = (assetId: string, data: { notes?: string; coolingRepairForm?: CoolingRepairFormData }) =>
+	apiClient.post<{
+		success: boolean;
+		isCoolingEquipment?: boolean;
+		repairRequest: RepairRequest;
+		message: string;
+		emailSent: boolean;
+	}>({
 		url: API_ENDPOINTS.REPAIR_REQUESTS.BY_ASSET(assetId),
 		data,
 	});
@@ -118,12 +165,12 @@ const exportRepairRequests = (params: {
 		});
 };
 
-const downloadCoolingRepairPdf = (verificationId: string, serialNumber: string) => {
+const downloadCoolingRepairPdf = (requestId: string, serialNumber: string) => {
 	const { userToken } = userStore.getState();
 	const token = userToken?.accessToken || "";
 	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";
 
-	return fetch(`${baseUrl}${API_ENDPOINTS.VERIFICATIONS.COOLING_REPAIR_PDF(verificationId)}`, {
+	return fetch(`${baseUrl}${API_ENDPOINTS.REPAIR_REQUESTS.COOLING_REPAIR_PDF(requestId)}`, {
 		headers: { Authorization: `Bearer ${token}` },
 	})
 		.then((res) => {

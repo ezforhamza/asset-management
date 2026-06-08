@@ -21,6 +21,7 @@ export default function SuperUserProfilePage() {
 	const userInfo = useUserInfo();
 	const { setUserInfo } = useUserActions();
 	const [nameValue, setNameValue] = useState(userInfo.name || "");
+	const [phoneValue, setPhoneValue] = useState(userInfo.phone || "");
 	const [isSavingProfile, setIsSavingProfile] = useState(false);
 	const [isChangingPw, setIsChangingPw] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,8 +57,11 @@ export default function SuperUserProfilePage() {
 		if (!nameValue.trim()) return;
 		setIsSavingProfile(true);
 		try {
-			const updated = await adminService.updateUser(userInfo.id ?? "", { name: nameValue } as never);
-			setUserInfo({ ...userInfo, ...updated, name: nameValue } as never);
+			const [updated] = await Promise.all([
+				adminService.updateUser(userInfo.id ?? "", { name: nameValue } as never),
+				userService.updateMe({ name: nameValue, phone: phoneValue || null }),
+			]);
+			setUserInfo({ ...userInfo, ...updated, name: nameValue, phone: phoneValue || null } as never);
 			toast.success("Profile updated");
 		} catch {}
 		setIsSavingProfile(false);
@@ -131,6 +135,20 @@ export default function SuperUserProfilePage() {
 								value={nameValue}
 								onChange={(e) => setNameValue(e.target.value)}
 								placeholder="Your name"
+							/>
+						</div>
+
+						{/* Phone */}
+						<div className="space-y-2">
+							<label htmlFor="profile-phone" className="text-sm font-medium">
+								Phone Number
+							</label>
+							<Input
+								id="profile-phone"
+								type="tel"
+								value={phoneValue}
+								onChange={(e) => setPhoneValue(e.target.value)}
+								placeholder="e.g. +27 11 555 1234"
 							/>
 						</div>
 

@@ -21,6 +21,7 @@ export interface UserInfo {
 	email: string;
 	username?: string;
 	name: string;
+	phone?: string | null;
 	password?: string;
 	avatar?: string;
 	profilePic?: string | null;

@@ -1,6 +1,7 @@
 import type { Asset, Verification } from "#/entity";
 import useUserStore from "@/store/userStore";
 import apiClient from "../apiClient";
+import API_ENDPOINTS from "../endpoints";
 
 // ============================================
 // Asset Types
@@ -282,6 +283,11 @@ const updateInvestigation = (verificationId: string, data: InvestigateReq) =>
 const getAssetHistory = (assetId: string) =>
 	apiClient.get<AssetHistoryRes>({ url: `${AssetApi.Assets}/${assetId}/history` });
 
+const checkAssetCategory = (assetId: string) =>
+	apiClient.get<{ isCoolingEquipment: boolean; categoryName: string }>({
+		url: API_ENDPOINTS.ASSETS.CATEGORY_CHECK(assetId),
+	});
+
 // ============================================
 // Asset Export Service
 // ============================================
@@ -339,4 +345,5 @@ export default {
 	updateInvestigation,
 	// Asset History
 	getAssetHistory,
+	checkAssetCategory,
 };

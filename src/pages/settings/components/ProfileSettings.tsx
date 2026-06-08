@@ -16,6 +16,7 @@ import { Input } from "@/ui/input";
 interface ProfileForm {
 	name: string;
 	email: string;
+	phone: string;
 }
 
 export function ProfileSettings() {
@@ -31,12 +32,13 @@ export function ProfileSettings() {
 		defaultValues: {
 			name: userInfo?.name || "",
 			email: userInfo?.email || "",
+			phone: userInfo?.phone || "",
 		},
 	});
 
 	useEffect(() => {
 		if (userInfo) {
-			form.reset({ name: userInfo.name, email: userInfo.email });
+			form.reset({ name: userInfo.name, email: userInfo.email, phone: userInfo.phone || "" });
 			if (!selectedFile) setProfileImage(userInfo.profilePic || null);
 		}
 	}, [userInfo, form, selectedFile]);
@@ -67,6 +69,7 @@ export function ProfileSettings() {
 			if (imageUrl !== userInfo?.profilePic) {
 				updateData.profilePic = imageUrl || undefined;
 			}
+			await userService.updateMe({ name: values.name, phone: values.phone || null });
 			updateProfileMutation.mutate(updateData);
 		} catch {
 			// handled by apiClient
@@ -150,6 +153,19 @@ export function ProfileSettings() {
 										<FormLabel>Email Address</FormLabel>
 										<FormControl>
 											<Input type="email" placeholder="Enter your email" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="phone"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Phone Number</FormLabel>
+										<FormControl>
+											<Input type="tel" placeholder="e.g. +27 11 555 1234" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>

@@ -4,12 +4,51 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import assetService from "@/api/services/assetService";
+import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Textarea } from "@/ui/textarea";
+import { CoolingRepairForm } from "./CoolingRepairForm";
+
+const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
+	branchName: "",
+	invoiceNumber: "",
+	province: "",
+	contactPersonOnSite: "",
+	contactNumberOnSite: "",
+	problem: "",
+	generalInformation: "",
+	tradingHoursStart: "08:00",
+	tradingHoursEnd: "17:00",
+	techCallBeforeAttending: false,
+	complaints: {
+		lightsNotWorking: false,
+		fanNotTurning: false,
+		coolerTrippingPower: false,
+		coolerNotCoolingCompressorRunning: false,
+		doorsNotClosing: false,
+		coolerLeakingWaterBottom: false,
+		coolerLeakingWaterInside: false,
+	},
+	troubleshooting: {
+		doorsNotSlidingClosed: { installedOnLevelSurface: false, doorsMovingFreely: false },
+		notCoolingBlowingHotAir: {
+			sufficientSpaceBehindCooler: false,
+			productBlockingAirflow: false,
+			condenserBlocked: false,
+		},
+		iceBuildingOnEvaporatorCoil: {
+			shelvesAtEqualIntervals: false,
+			shelvesWithProtectiveLip: false,
+			coldAirFlowingFreely: false,
+			customerAdjustedThermostat: false,
+		},
+		coolerTrippingPower: { adequatePowerSupplied: false, pluggedDirectlyIntoWall: false, pluggedIntoMultiPlug: false },
+	},
+};
 
 interface LogRepairRequestModalProps {
 	open: boolean;
@@ -23,6 +62,8 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 	const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
 	const [dropdownOpen, setDropdownOpen] = useState(false);
 	const [notes, setNotes] = useState("");
+	const [isCoolingEquipment, setIsCoolingEquipment] = useState(false);
+	const [coolingForm, setCoolingForm] = useState<CoolingRepairFormData>(DEFAULT_COOLING_FORM);
 	const containerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -48,15 +89,35 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		enabled: debouncedSearch.length >= 2 && !selectedAsset,
 	});
 
+	const assetId = selectedAsset
+		? (selectedAsset as Asset & { _id?: string }).id || (selectedAsset as Asset & { _id?: string })._id || ""
+		: "";
+
+	const { isFetching: checkingCategory } = useQuery({
+		queryKey: ["category-check", assetId],
+		queryFn: async () => {
+			const res = await assetService.checkAssetCategory(assetId);
+			setIsCoolingEquipment(res.isCoolingEquipment);
+			if (!res.isCoolingEquipment) setCoolingForm(DEFAULT_COOLING_FORM);
+			return res;
+		},
+		enabled: !!assetId,
+	});
+
 	const mutation = useMutation({
 		mutationFn: () => {
 			if (!selectedAsset) throw new Error("No asset selected");
-			const assetId =
-				(selectedAsset as Asset & { _id?: string }).id || (selectedAsset as Asset & { _id?: string })._id || "";
-			return repairRequestService.createRepairRequest(assetId, { notes: notes.trim() || undefined });
+			return repairRequestService.createRepairRequest(assetId, {
+				notes: notes.trim() || undefined,
+				...(isCoolingEquipment ? { coolingRepairForm: coolingForm } : {}),
+			});
 		},
-		onSuccess: () => {
-			toast.success("Repair request logged successfully");
+		onSuccess: (data) => {
+			if (data.isCoolingEquipment) {
+				toast.success("Repair request logged. Cooling repair PDF sent to recipients.");
+			} else {
+				toast.success("Repair request logged successfully");
+			}
 			queryClient.invalidateQueries({ queryKey: ["repair-requests"] });
 			handleClose();
 		},
@@ -71,14 +132,27 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		setSelectedAsset(null);
 		setDropdownOpen(false);
 		setNotes("");
+		setIsCoolingEquipment(false);
+		setCoolingForm(DEFAULT_COOLING_FORM);
 		onClose();
 	};
+
+	const isCoolingFormValid =
+		!isCoolingEquipment ||
+		(coolingForm.branchName.trim() &&
+			coolingForm.invoiceNumber.trim() &&
+			coolingForm.province.trim() &&
+			coolingForm.contactPersonOnSite.trim() &&
+			coolingForm.contactNumberOnSite.trim() &&
+			coolingForm.problem.trim());
 
 	const results = (searchData?.results || []) as Array<Asset & { _id?: string }>;
 
 	return (
 		<Dialog open={open} onOpenChange={handleClose}>
-			<DialogContent className="sm:max-w-[480px]">
+			<DialogContent
+				className={isCoolingEquipment ? "sm:max-w-[640px] max-h-[90vh] overflow-y-auto" : "sm:max-w-[480px]"}
+			>
 				<DialogHeader>
 					<DialogTitle>Log Repair Request</DialogTitle>
 					<DialogDescription>Search for an asset and describe the issue.</DialogDescription>
@@ -102,17 +176,27 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 										</p>
 									</div>
 								</div>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									onClick={() => {
-										setSelectedAsset(null);
-										setSearch("");
-									}}
-								>
-									Change
-								</Button>
+								<div className="flex items-center gap-2">
+									{checkingCategory && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+									{isCoolingEquipment && (
+										<span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-full font-medium">
+											Cooling Equipment
+										</span>
+									)}
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={() => {
+											setSelectedAsset(null);
+											setSearch("");
+											setIsCoolingEquipment(false);
+											setCoolingForm(DEFAULT_COOLING_FORM);
+										}}
+									>
+										Change
+									</Button>
+								</div>
 							</div>
 						) : (
 							<div ref={containerRef} className="relative">
@@ -167,7 +251,7 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 
 					{/* Notes */}
 					<div className="space-y-1.5">
-						<Label htmlFor="repair-notes">Notes (optional)</Label>
+						<Label htmlFor="repair-notes">Notes {isCoolingEquipment ? "(optional)" : "(optional)"}</Label>
 						<Textarea
 							id="repair-notes"
 							placeholder="Describe the issue or reason for the repair request..."
@@ -178,13 +262,19 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 						/>
 						<p className="text-xs text-muted-foreground text-right">{notes.length}/1000</p>
 					</div>
+
+					{/* Cooling Equipment extended form */}
+					{isCoolingEquipment && <CoolingRepairForm value={coolingForm} onChange={setCoolingForm} />}
 				</div>
 
 				<DialogFooter>
 					<Button variant="outline" onClick={handleClose}>
 						Cancel
 					</Button>
-					<Button onClick={() => mutation.mutate()} disabled={!selectedAsset || mutation.isPending}>
+					<Button
+						onClick={() => mutation.mutate()}
+						disabled={!selectedAsset || mutation.isPending || checkingCategory || !isCoolingFormValid}
+					>
 						{mutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 						Submit Repair Request
 					</Button>

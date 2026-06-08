@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
 		RESET_PASSWORD: "/auth/reset-password",
 		VERIFY_EMAIL: "/auth/verify-email",
 		CHANGE_PASSWORD: "/auth/change-password",
+		ME: "/auth/me",
 	},
 
 	// Users
@@ -47,6 +48,7 @@ export const API_ENDPOINTS = {
 		STATS: "/assets/stats",
 		BULK_IMPORT: "/assets/bulk-import",
 		TRANSFER: "/assets/transfer",
+		CATEGORY_CHECK: (id: string) => `/assets/${id}/category-check`,
 	},
 
 	// Verifications
@@ -56,7 +58,6 @@ export const API_ENDPOINTS = {
 		BY_ASSET: (assetId: string) => `/verifications/asset/${assetId}`,
 		FLAGGED: "/verifications/flagged",
 		INVESTIGATE: (id: string) => `/verifications/${id}/investigate`,
-		COOLING_REPAIR_PDF: (id: string) => `/verifications/${id}/cooling-repair-pdf`,
 	},
 
 	// Dashboard
@@ -126,7 +127,11 @@ export const API_ENDPOINTS = {
 		BY_ID: (id: string) => `/repair-requests/${id}`,
 		UPDATE_STATUS: (id: string) => `/repair-requests/${id}/status`,
 		EXPORT: "/repair-requests/export",
+		COOLING_REPAIR_PDF: (id: string) => `/repair-requests/${id}/cooling-repair-pdf`,
 	},
+
+	// Universal Search
+	SEARCH: "/search",
 } as const;
 
 export default API_ENDPOINTS;

@@ -15,10 +15,9 @@ function DownloadPdfButton({ req }: { req: RepairRequest }) {
 	const [loading, setLoading] = useState(false);
 
 	const handleDownload = async () => {
-		if (!req.verificationId) return;
 		setLoading(true);
 		try {
-			await repairRequestService.downloadCoolingRepairPdf(req.verificationId, req.assetSnapshot.serialNumber);
+			await repairRequestService.downloadCoolingRepairPdf(req.id, req.assetSnapshot.serialNumber);
 		} catch {
 			toast.error("Failed to download PDF");
 		} finally {
@@ -183,9 +182,7 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 						</TableCell>
 						<TableCell onClick={(e) => e.stopPropagation()}>
 							<div className="flex items-center gap-1">
-								{req.assetSnapshot.categoryName === "Cooling Equipment" && req.verificationId && (
-									<DownloadPdfButton req={req} />
-								)}
+								{Boolean(req.coolingRepairForm?.branchName) && <DownloadPdfButton req={req} />}
 								<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
 									<Eye className="h-4 w-4" />
 								</Button>
