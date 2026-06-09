@@ -1,8 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Wrench } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
+import assetService from "@/api/services/assetService";
 import notificationService from "@/api/services/notificationService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
@@ -62,17 +63,24 @@ export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairM
 	const [coolingForm, setCoolingForm] = useState<CoolingRepairFormData>(DEFAULT_COOLING_FORM);
 
 	const isCooling = asset?.category?.name?.toLowerCase() === "cooling equipment";
+	const assetId = asset?.id || asset?._id || "";
+
+	const { data: fullAsset } = useQuery({
+		queryKey: ["asset-detail", assetId],
+		queryFn: () => assetService.getAssetById(assetId),
+		enabled: open && isCooling && !!assetId,
+	});
 
 	useEffect(() => {
-		if (open && isCooling && asset) {
+		if (open && isCooling && fullAsset) {
 			setCoolingForm((prev) => ({
 				...prev,
-				branchName: asset.siteName || "",
-				contactPersonOnSite: asset.siteContactPerson || "",
-				contactNumberOnSite: asset.siteContactPhone || "",
+				branchName: fullAsset.siteName || "",
+				contactPersonOnSite: fullAsset.siteContactPerson || "",
+				contactNumberOnSite: fullAsset.siteContactPhone || "",
 			}));
 		}
-	}, [open, isCooling, asset]);
+	}, [open, isCooling, fullAsset]);
 
 	const mutation = useMutation({
 		mutationFn: async () => {

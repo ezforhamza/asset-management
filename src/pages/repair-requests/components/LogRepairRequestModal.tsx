@@ -84,17 +84,6 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		return () => document.removeEventListener("mousedown", handleClick);
 	}, []);
 
-	useEffect(() => {
-		if (isCoolingEquipment && selectedAsset) {
-			setCoolingForm((prev) => ({
-				...prev,
-				branchName: selectedAsset.siteName || "",
-				contactPersonOnSite: selectedAsset.siteContactPerson || "",
-				contactNumberOnSite: selectedAsset.siteContactPhone || "",
-			}));
-		}
-	}, [isCoolingEquipment, selectedAsset]);
-
 	const { data: searchData, isFetching } = useQuery({
 		queryKey: ["repair-log-search", debouncedSearch],
 		queryFn: () => assetService.getAssets({ search: debouncedSearch, limit: 8 }),
@@ -115,6 +104,23 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		},
 		enabled: !!assetId,
 	});
+
+	const { data: fullAsset } = useQuery({
+		queryKey: ["asset-detail", assetId],
+		queryFn: () => assetService.getAssetById(assetId),
+		enabled: !!assetId && isCoolingEquipment,
+	});
+
+	useEffect(() => {
+		if (isCoolingEquipment && fullAsset) {
+			setCoolingForm((prev) => ({
+				...prev,
+				branchName: fullAsset.siteName || "",
+				contactPersonOnSite: fullAsset.siteContactPerson || "",
+				contactNumberOnSite: fullAsset.siteContactPhone || "",
+			}));
+		}
+	}, [isCoolingEquipment, fullAsset]);
 
 	const mutation = useMutation({
 		mutationFn: () => {
