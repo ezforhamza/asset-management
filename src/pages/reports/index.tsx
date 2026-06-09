@@ -208,7 +208,11 @@ export default function ReportsPage() {
 			{/* Count + Pagination */}
 			<div className="flex-shrink-0 flex items-center justify-between px-6 py-1.5 bg-muted/30">
 				<p className="text-xs text-muted-foreground">
-					{isLoading ? "Loading..." : `Showing ${filteredData.length} of ${data?.totalResults || 0} verifications`}
+					{isLoading
+						? "Loading..."
+						: filteredData.length === 0
+							? "No verifications found"
+							: `Showing ${(effectivePage - 1) * 20 + 1}–${Math.min(effectivePage * 20, filteredData.length)} of ${filteredData.length} verifications`}
 				</p>
 				{totalPages > 1 && (
 					<div className="flex items-center gap-1">
