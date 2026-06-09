@@ -94,7 +94,8 @@ export default function SuperUserReportsPage() {
 					v.siteName?.toLowerCase().includes(q) ||
 					v.assetCategory?.name?.toLowerCase().includes(q) ||
 					v.companyName?.toLowerCase().includes(q) ||
-					v.verifiedBy?.name?.toLowerCase().includes(q),
+					v.verifiedBy?.name?.toLowerCase().includes(q) ||
+					v.registeredBy?.name?.toLowerCase().includes(q),
 			);
 		}
 
