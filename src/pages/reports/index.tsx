@@ -43,26 +43,20 @@ export default function ReportsPage() {
 
 	// Build query params - date range filtering is done client-side for nextVerificationDue
 	const queryParams = useMemo(() => {
-		const params: Record<string, string | number | boolean> = { page, limit };
+		const isSearching = searchQuery.trim().length > 0;
+		const params: Record<string, string | number | boolean> = {
+			page: isSearching ? 1 : page,
+			limit: isSearching ? 500 : limit,
+		};
 
-		if (status !== "all") {
-			params.status = status;
-		}
-		if (gpsFilter !== "all") {
-			params.gpsCheckPassed = gpsFilter === "true";
-		}
-		if (conditionFilter !== "all") {
-			params.condition = conditionFilter;
-		}
-		if (operationalFilter !== "all") {
-			params.operationalStatus = operationalFilter;
-		}
-		if (categoryFilter !== "all") {
-			params.categoryId = categoryFilter;
-		}
+		if (status !== "all") params.status = status;
+		if (gpsFilter !== "all") params.gpsCheckPassed = gpsFilter === "true";
+		if (conditionFilter !== "all") params.condition = conditionFilter;
+		if (operationalFilter !== "all") params.operationalStatus = operationalFilter;
+		if (categoryFilter !== "all") params.categoryId = categoryFilter;
 
 		return params;
-	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page]);
+	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, searchQuery]);
 
 	// Fetch verifications
 	const { data, isLoading } = useQuery({
@@ -109,8 +103,7 @@ export default function ReportsPage() {
 					v.makeModel?.toLowerCase().includes(query) ||
 					v.siteName?.toLowerCase().includes(query) ||
 					v.assetCategory?.name?.toLowerCase().includes(query) ||
-					v.verifiedBy?.name?.toLowerCase().includes(query) ||
-					v.registeredBy?.name?.toLowerCase().includes(query)
+					v.verifiedBy?.name?.toLowerCase().includes(query)
 				);
 			});
 		}

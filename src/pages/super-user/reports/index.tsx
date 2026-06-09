@@ -42,7 +42,11 @@ export default function SuperUserReportsPage() {
 	});
 
 	const queryParams = useMemo(() => {
-		const params: Record<string, string | number | boolean> = { page, limit };
+		const isSearching = searchQuery.trim().length > 0;
+		const params: Record<string, string | number | boolean> = {
+			page: isSearching ? 1 : page,
+			limit: isSearching ? 500 : limit,
+		};
 		if (companyId && companyId !== "all") params.companyId = companyId;
 		if (status !== "all") params.status = status;
 		if (gpsFilter !== "all") params.gpsCheckPassed = gpsFilter === "true";
@@ -50,7 +54,7 @@ export default function SuperUserReportsPage() {
 		if (operationalFilter !== "all") params.operationalStatus = operationalFilter;
 		if (categoryFilter !== "all") params.categoryId = categoryFilter;
 		return params;
-	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, companyId]);
+	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, companyId, searchQuery]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["super-user", "reports", "verifications", queryParams],
@@ -89,7 +93,8 @@ export default function SuperUserReportsPage() {
 					v.makeModel?.toLowerCase().includes(q) ||
 					v.siteName?.toLowerCase().includes(q) ||
 					v.assetCategory?.name?.toLowerCase().includes(q) ||
-					v.companyName?.toLowerCase().includes(q),
+					v.companyName?.toLowerCase().includes(q) ||
+					v.verifiedBy?.name?.toLowerCase().includes(q),
 			);
 		}
 
