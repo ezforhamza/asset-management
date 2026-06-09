@@ -78,8 +78,8 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 							<div>
 								<p className="text-muted-foreground">Last Verified</p>
 								<p className="font-medium">
-									{verification.lastVerifiedAt
-										? format(new Date(verification.lastVerifiedAt), "MMM dd, yyyy 'at' hh:mm a")
+									{verification.verificationDate
+										? format(new Date(verification.verificationDate), "MMM dd, yyyy 'at' hh:mm a")
 										: "Never"}
 								</p>
 							</div>
@@ -105,11 +105,11 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 									<p className="font-medium text-muted-foreground">—</p>
 								)}
 							</div>
-							{verification.lastGpsCheckPassed !== undefined && (
+							{verification.gpsCheckPassed !== undefined && (
 								<div>
-									<p className="text-muted-foreground">Last GPS Check</p>
-									<StyledBadge color={verification.lastGpsCheckPassed ? "emerald" : "orange"}>
-										{verification.lastGpsCheckPassed ? "Passed" : "Override"}
+									<p className="text-muted-foreground">GPS Check</p>
+									<StyledBadge color={verification.gpsCheckPassed ? "emerald" : "orange"}>
+										{verification.gpsCheckPassed ? "Passed" : "Override"}
 									</StyledBadge>
 								</div>
 							)}
@@ -117,41 +117,41 @@ export function VerificationDetail({ verification, open, onClose }: Verification
 					</div>
 
 					{/* Condition */}
-					{(verification.lastCondition || verification.lastOperational) && (
+					{(verification.condition || verification.operationalStatus) && (
 						<div className="rounded-lg border p-4">
-							<h3 className="font-semibold mb-3">Last Condition Assessment</h3>
+							<h3 className="font-semibold mb-3">Condition Assessment</h3>
 							<div className="grid grid-cols-2 gap-4 text-sm">
-								{verification.lastCondition && (
+								{verification.condition && (
 									<div>
 										<p className="text-muted-foreground">Condition</p>
 										<StyledBadge
 											color={
-												verification.lastCondition === "excellent"
+												verification.condition === "excellent"
 													? "emerald"
-													: verification.lastCondition === "good"
+													: verification.condition === "good"
 														? "blue"
-														: verification.lastCondition === "fair"
+														: verification.condition === "fair"
 															? "orange"
 															: "red"
 											}
 										>
-											{verification.lastCondition}
+											{verification.condition}
 										</StyledBadge>
 									</div>
 								)}
-								{verification.lastOperational && (
+								{verification.operationalStatus && (
 									<div>
 										<p className="text-muted-foreground">Operational Status</p>
 										<StyledBadge
 											color={
-												verification.lastOperational === "operational"
+												verification.operationalStatus === "operational"
 													? "emerald"
-													: verification.lastOperational === "needs_repair"
+													: verification.operationalStatus === "needs_repair"
 														? "orange"
 														: "red"
 											}
 										>
-											{formatLabel(verification.lastOperational)}
+											{formatLabel(verification.operationalStatus)}
 										</StyledBadge>
 									</div>
 								)}

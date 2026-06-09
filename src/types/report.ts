@@ -15,6 +15,11 @@ export interface VerificationReportItem {
 	makeModel: string;
 	siteName?: string;
 	verificationStatus: "on_time" | "due_soon" | "overdue" | "registered";
+	verificationDate?: string;
+	gpsCheckPassed?: boolean;
+	gpsOverrideUsed?: boolean;
+	condition?: "excellent" | "good" | "fair" | "poor";
+	operationalStatus?: "operational" | "needs_repair" | "non_operational";
 	nextVerificationDue?: string;
 	daysUntilDue?: number;
 	totalVerifications: number;
@@ -28,10 +33,6 @@ export interface VerificationReportItem {
 		name: string;
 		email: string;
 	};
-	lastVerifiedAt?: string;
-	lastGpsCheckPassed?: boolean;
-	lastCondition?: "excellent" | "good" | "fair" | "poor";
-	lastOperational?: "operational" | "needs_repair" | "non_operational";
 	verifiedBy?: {
 		_id: string;
 		name: string;
@@ -60,7 +61,7 @@ export interface VerificationReportParams {
 }
 
 export interface FleetSummary {
-	totalVerifiedAssets: number;
+	totalVerifications: number;
 	condition: {
 		good: number;
 		fair: number;

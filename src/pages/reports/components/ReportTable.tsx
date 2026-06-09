@@ -112,9 +112,9 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 								) : (
 									<span className="text-sm text-muted-foreground">—</span>
 								)
-							) : item.lastGpsCheckPassed !== undefined ? (
-								<StyledBadge color={item.lastGpsCheckPassed ? "emerald" : "red"}>
-									{item.lastGpsCheckPassed ? "Passed" : "Failed"}
+							) : item.gpsCheckPassed !== undefined ? (
+								<StyledBadge color={item.gpsCheckPassed ? "emerald" : "red"}>
+									{item.gpsCheckPassed ? "Passed" : "Failed"}
 								</StyledBadge>
 							) : (
 								<span className="text-sm text-muted-foreground">—</span>
@@ -123,17 +123,17 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						<div className="text-center">
 							{item.verificationStatus === "registered" ? (
 								<span className="text-sm text-muted-foreground">—</span>
-							) : item.lastCondition ? (
+							) : item.condition ? (
 								<StyledBadge
 									color={
-										item.lastCondition === "good" || item.lastCondition === "excellent"
+										item.condition === "good" || item.condition === "excellent"
 											? "emerald"
-											: item.lastCondition === "fair"
+											: item.condition === "fair"
 												? "orange"
 												: "red"
 									}
 								>
-									{item.lastCondition.charAt(0).toUpperCase() + item.lastCondition.slice(1)}
+									{item.condition.charAt(0).toUpperCase() + item.condition.slice(1)}
 								</StyledBadge>
 							) : (
 								<span className="text-sm text-muted-foreground">—</span>
@@ -142,19 +142,19 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						<div className="text-center">
 							{item.verificationStatus === "registered" ? (
 								<span className="text-sm text-muted-foreground">—</span>
-							) : item.lastOperational ? (
+							) : item.operationalStatus ? (
 								<StyledBadge
 									color={
-										item.lastOperational === "operational"
+										item.operationalStatus === "operational"
 											? "emerald"
-											: item.lastOperational === "needs_repair"
+											: item.operationalStatus === "needs_repair"
 												? "orange"
 												: "red"
 									}
 								>
-									{item.lastOperational === "operational"
+									{item.operationalStatus === "operational"
 										? "Operational"
-										: item.lastOperational === "needs_repair"
+										: item.operationalStatus === "needs_repair"
 											? "Needs Repair"
 											: "Non-Operational"}
 								</StyledBadge>
@@ -172,13 +172,13 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						<div className="text-center">
 							{item.verificationStatus === "registered" ? (
 								<span className="text-sm text-muted-foreground">Never</span>
-							) : item.lastVerifiedAt ? (
+							) : item.verificationDate ? (
 								<>
-									<p className="text-sm">{format(new Date(item.lastVerifiedAt), "MMM dd, yyyy")}</p>
-									<p className="text-xs text-muted-foreground">{format(new Date(item.lastVerifiedAt), "hh:mm a")}</p>
+									<p className="text-sm">{format(new Date(item.verificationDate), "MMM dd, yyyy")}</p>
+									<p className="text-xs text-muted-foreground">{format(new Date(item.verificationDate), "hh:mm a")}</p>
 								</>
 							) : (
-								<span className="text-sm text-muted-foreground">Never</span>
+								<span className="text-sm text-muted-foreground">—</span>
 							)}
 						</div>
 						<div className="text-center">

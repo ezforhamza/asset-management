@@ -142,6 +142,7 @@ export function ReportExportModal({ open, onClose }: ReportExportModalProps) {
 								<SelectItem value="on_time">On Time</SelectItem>
 								<SelectItem value="due_soon">Due Soon</SelectItem>
 								<SelectItem value="overdue">Overdue</SelectItem>
+								<SelectItem value="registered">Registered</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
