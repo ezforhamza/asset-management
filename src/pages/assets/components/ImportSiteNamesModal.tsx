@@ -134,7 +134,9 @@ export function ImportSiteNamesModal({ open, onOpenChange }: ImportSiteNamesModa
 			<DialogContent className="max-w-md">
 				<DialogHeader>
 					<DialogTitle>Import Site Names</DialogTitle>
-					<DialogDescription>Upload an XLSX file to bulk import site names</DialogDescription>
+					<DialogDescription>
+						Upload an XLSX file to bulk import site names with optional contact details
+					</DialogDescription>
 				</DialogHeader>
 
 				<div className="space-y-4 py-4">
@@ -202,10 +204,24 @@ export function ImportSiteNamesModal({ open, onOpenChange }: ImportSiteNamesModa
 					</div>
 
 					{/* XLSX Format Info */}
-					<div className="rounded-md bg-muted/50 p-3 text-sm">
-						<p className="font-medium mb-1">XLSX Format</p>
-						<p className="text-muted-foreground text-xs">
-							<strong>Required:</strong> site_name
+					<div className="rounded-md bg-muted/50 p-3 text-sm space-y-1.5">
+						<p className="font-medium">XLSX Columns</p>
+						<div className="grid grid-cols-3 gap-1 text-xs text-center">
+							<div className="bg-background rounded px-2 py-1 border">
+								<p className="font-semibold">Site Name</p>
+								<p className="text-muted-foreground">Required</p>
+							</div>
+							<div className="bg-background rounded px-2 py-1 border">
+								<p className="font-semibold">Contact Person</p>
+								<p className="text-muted-foreground">Optional</p>
+							</div>
+							<div className="bg-background rounded px-2 py-1 border">
+								<p className="font-semibold">Contact Phone</p>
+								<p className="text-muted-foreground">Optional</p>
+							</div>
+						</div>
+						<p className="text-xs text-muted-foreground">
+							Rows with blank contact fields are imported with no contact — editable later.
 						</p>
 					</div>
 				</div>
