@@ -3,8 +3,21 @@ import { useState } from "react";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Textarea } from "@/ui/textarea";
 import { cn } from "@/utils";
+
+const SA_PROVINCES = [
+	"Eastern Cape",
+	"Free State",
+	"Gauteng",
+	"KwaZulu-Natal",
+	"Limpopo",
+	"Mpumalanga",
+	"Northern Cape",
+	"North West",
+	"Western Cape",
+];
 
 interface CoolingRepairFormProps {
 	value: CoolingRepairFormData;
@@ -128,24 +141,27 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 			<CollapsibleCard title="Store Details" defaultOpen>
 				<div className="space-y-3 pt-1">
 					<div className="space-y-1">
-						<Label className="text-xs">Branch Name *</Label>
+						<Label className="text-xs">Sitename *</Label>
 						<Input
 							value={value.branchName}
 							onChange={(e) => set("branchName", e.target.value)}
-							placeholder="Branch Name"
-						/>
-					</div>
-					<div className="space-y-1">
-						<Label className="text-xs">Invoice Number *</Label>
-						<Input
-							value={value.invoiceNumber}
-							onChange={(e) => set("invoiceNumber", e.target.value)}
-							placeholder="Invoice Number"
+							placeholder="Site name"
 						/>
 					</div>
 					<div className="space-y-1">
 						<Label className="text-xs">Province *</Label>
-						<Input value={value.province} onChange={(e) => set("province", e.target.value)} placeholder="Province" />
+						<Select value={value.province} onValueChange={(v) => set("province", v)}>
+							<SelectTrigger>
+								<SelectValue placeholder="Select province" />
+							</SelectTrigger>
+							<SelectContent>
+								{SA_PROVINCES.map((p) => (
+									<SelectItem key={p} value={p}>
+										{p}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 					<div className="space-y-1">
 						<Label className="text-xs">Contact Person On-Site *</Label>
@@ -156,11 +172,11 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 						/>
 					</div>
 					<div className="space-y-1">
-						<Label className="text-xs">Contact Number On-Site *</Label>
+						<Label className="text-xs">Contact Number On-Site</Label>
 						<Input
 							value={value.contactNumberOnSite}
 							onChange={(e) => set("contactNumberOnSite", e.target.value)}
-							placeholder="Contact Number On-Site"
+							placeholder="Enter contact number if not auto-filled"
 						/>
 					</div>
 					<div className="grid grid-cols-2 gap-3">
@@ -188,11 +204,11 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 						/>
 					</div>
 					<div className="space-y-1">
-						<Label className="text-xs">General Information *</Label>
+						<Label className="text-xs">Additional Information *</Label>
 						<Textarea
 							value={value.generalInformation}
 							onChange={(e) => set("generalInformation", e.target.value)}
-							placeholder="General Information"
+							placeholder="Additional Information"
 							rows={3}
 						/>
 					</div>
@@ -270,7 +286,7 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 					onChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "productBlockingAirflow", v)}
 				/>
 				<QuestionRow
-					label="Is the condenser blocked? (cleaned in the last 3–6 months?)"
+					label="Is the condenser blocked?"
 					value={value.troubleshooting.notCoolingBlowingHotAir.condenserBlocked}
 					onChange={(v) => setTroubleshooting("notCoolingBlowingHotAir", "condenserBlocked", v)}
 				/>
@@ -283,17 +299,17 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesAtEqualIntervals", v)}
 				/>
 				<QuestionRow
-					label="Are the shelves installed with the protective lip towards the back?"
+					label="Are all shelves installed correctly?"
 					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.shelvesWithProtectiveLip}
 					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "shelvesWithProtectiveLip", v)}
 				/>
 				<QuestionRow
-					label="Is the cold air able to flow freely (no blister/6-pack packs blocking)?"
+					label="Is the cold air able to flow freely (no product or object blocking the airflow inside the unit)?"
 					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.coldAirFlowingFreely}
 					onChange={(v) => setTroubleshooting("iceBuildingOnEvaporatorCoil", "coldAirFlowingFreely", v)}
 				/>
 				<QuestionRow
-					label="Did the customer adjust the thermostat?"
+					label="Is the thermostat set to the recommended temperature?"
 					value={value.troubleshooting.iceBuildingOnEvaporatorCoil.customerAdjustedThermostat}
 					onChange={(v) => {
 						setTroubleshooting("iceBuildingOnEvaporatorCoil", "customerAdjustedThermostat", v);

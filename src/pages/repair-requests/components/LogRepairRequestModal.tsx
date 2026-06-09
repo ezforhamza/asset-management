@@ -7,6 +7,7 @@ import assetService from "@/api/services/assetService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { CoolingRepairForm } from "@/components/CoolingRepairForm";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
@@ -15,7 +16,7 @@ import { Textarea } from "@/ui/textarea";
 
 const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
 	branchName: "",
-	invoiceNumber: "",
+	invoiceNumber: "-",
 	province: "",
 	contactPersonOnSite: "",
 	contactNumberOnSite: "",
@@ -58,6 +59,7 @@ interface LogRepairRequestModalProps {
 
 export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalProps) {
 	const queryClient = useQueryClient();
+	const currentUser = useUserInfo();
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -83,6 +85,17 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		document.addEventListener("mousedown", handleClick);
 		return () => document.removeEventListener("mousedown", handleClick);
 	}, []);
+
+	useEffect(() => {
+		if (isCoolingEquipment && selectedAsset) {
+			setCoolingForm((prev) => ({
+				...prev,
+				branchName: (selectedAsset as Asset & { siteName?: string | null }).siteName || "",
+				contactPersonOnSite: currentUser.name || "",
+				contactNumberOnSite: currentUser.phone || "",
+			}));
+		}
+	}, [isCoolingEquipment, selectedAsset, currentUser.name, currentUser.phone]);
 
 	const { data: searchData, isFetching } = useQuery({
 		queryKey: ["repair-log-search", debouncedSearch],

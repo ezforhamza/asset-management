@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Wrench } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import notificationService from "@/api/services/notificationService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { CoolingRepairForm } from "@/components/CoolingRepairForm";
+import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Label } from "@/ui/label";
@@ -14,7 +15,7 @@ import { Textarea } from "@/ui/textarea";
 
 const DEFAULT_COOLING_FORM: CoolingRepairFormData = {
 	branchName: "",
-	invoiceNumber: "",
+	invoiceNumber: "-",
 	province: "",
 	contactPersonOnSite: "",
 	contactNumberOnSite: "",
@@ -58,10 +59,22 @@ interface RequestRepairModalProps {
 
 export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairModalProps) {
 	const queryClient = useQueryClient();
+	const currentUser = useUserInfo();
 	const [explanation, setExplanation] = useState("");
 	const [coolingForm, setCoolingForm] = useState<CoolingRepairFormData>(DEFAULT_COOLING_FORM);
 
 	const isCooling = asset?.category?.name?.toLowerCase() === "cooling equipment";
+
+	useEffect(() => {
+		if (open && isCooling && asset) {
+			setCoolingForm((prev) => ({
+				...prev,
+				branchName: asset.siteName || "",
+				contactPersonOnSite: currentUser.name || "",
+				contactNumberOnSite: currentUser.phone || "",
+			}));
+		}
+	}, [open, isCooling, asset, currentUser.name, currentUser.phone]);
 
 	const mutation = useMutation({
 		mutationFn: async () => {
