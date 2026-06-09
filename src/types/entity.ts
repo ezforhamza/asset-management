@@ -157,6 +157,8 @@ export interface Asset {
 	channel?: string | null;
 	siteName?: string | null;
 	siteNameId?: string | null;
+	siteContactPerson?: string | null;
+	siteContactPhone?: string | null;
 	client?: string | null;
 	registeredLocation: { type: string; coordinates: [number, number] } | GeoLocation;
 	location?: {

@@ -7,7 +7,6 @@ import assetService from "@/api/services/assetService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { CoolingRepairForm } from "@/components/CoolingRepairForm";
-import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Input } from "@/ui/input";
@@ -59,7 +58,6 @@ interface LogRepairRequestModalProps {
 
 export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalProps) {
 	const queryClient = useQueryClient();
-	const currentUser = useUserInfo();
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
@@ -90,12 +88,12 @@ export function LogRepairRequestModal({ open, onClose }: LogRepairRequestModalPr
 		if (isCoolingEquipment && selectedAsset) {
 			setCoolingForm((prev) => ({
 				...prev,
-				branchName: (selectedAsset as Asset & { siteName?: string | null }).siteName || "",
-				contactPersonOnSite: currentUser.name || "",
-				contactNumberOnSite: currentUser.phone || "",
+				branchName: selectedAsset.siteName || "",
+				contactPersonOnSite: selectedAsset.siteContactPerson || "",
+				contactNumberOnSite: selectedAsset.siteContactPhone || "",
 			}));
 		}
-	}, [isCoolingEquipment, selectedAsset, currentUser.name, currentUser.phone]);
+	}, [isCoolingEquipment, selectedAsset]);
 
 	const { data: searchData, isFetching } = useQuery({
 		queryKey: ["repair-log-search", debouncedSearch],

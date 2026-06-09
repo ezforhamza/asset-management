@@ -8,6 +8,8 @@ import apiClient from "../apiClient";
 export interface SiteName {
 	id: string;
 	name: string;
+	contactPerson?: string | null;
+	contactPhone?: string | null;
 	companyId: string;
 	createdBy: string;
 	createdAt: string;
@@ -24,10 +26,14 @@ export interface SiteNamesListRes {
 
 export interface CreateSiteNameReq {
 	name: string;
+	contactPerson?: string;
+	contactPhone?: string;
 }
 
 export interface UpdateSiteNameReq {
-	name: string;
+	name?: string;
+	contactPerson?: string | null;
+	contactPhone?: string | null;
 }
 
 export interface BulkImportSiteNameRes {

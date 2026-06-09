@@ -30,12 +30,18 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 	const queryClient = useQueryClient();
 	const canWrite = useCanWrite();
 	const [page, setPage] = useState(1);
-	const [newSiteName, setNewSiteName] = useState("");
 
-	// Rename modal state
-	const [renameModalOpen, setRenameModalOpen] = useState(false);
-	const [renamingSiteName, setRenamingSiteName] = useState<SiteName | null>(null);
-	const [newName, setNewName] = useState("");
+	// Create state
+	const [newSiteName, setNewSiteName] = useState("");
+	const [newContactPerson, setNewContactPerson] = useState("");
+	const [newContactPhone, setNewContactPhone] = useState("");
+
+	// Edit modal state
+	const [editModalOpen, setEditModalOpen] = useState(false);
+	const [editingSiteName, setEditingSiteName] = useState<SiteName | null>(null);
+	const [editName, setEditName] = useState("");
+	const [editContactPerson, setEditContactPerson] = useState("");
+	const [editContactPhone, setEditContactPhone] = useState("");
 
 	// Delete modal state
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -44,42 +50,46 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 	// Import modal state
 	const [importModalOpen, setImportModalOpen] = useState(false);
 
-	// Fetch site names
 	const { data, isLoading } = useQuery({
 		queryKey: ["site-names", page, ROWS_PER_PAGE],
 		queryFn: () => siteNameService.getSiteNames({ page, limit: ROWS_PER_PAGE, sortBy: "name:asc" }),
 		enabled: open,
 	});
 
-	// Create site name mutation
 	const createMutation = useMutation({
-		mutationFn: (name: string) => siteNameService.createSiteName({ name }),
+		mutationFn: () =>
+			siteNameService.createSiteName({
+				name: newSiteName.trim(),
+				contactPerson: newContactPerson.trim() || undefined,
+				contactPhone: newContactPhone.trim() || undefined,
+			}),
 		onSuccess: () => {
 			toast.success("Site name created successfully");
 			queryClient.invalidateQueries({ queryKey: ["site-names"] });
 			setNewSiteName("");
+			setNewContactPerson("");
+			setNewContactPhone("");
 		},
-		onError: () => {
-			// Error toast is handled by apiClient;
-		},
+		onError: () => {},
 	});
 
-	// Update site name mutation
 	const updateMutation = useMutation({
-		mutationFn: ({ siteNameId, data }: { siteNameId: string; data: { name: string } }) =>
-			siteNameService.updateSiteName(siteNameId, data),
+		mutationFn: ({
+			siteNameId,
+			data,
+		}: {
+			siteNameId: string;
+			data: { name?: string; contactPerson?: string | null; contactPhone?: string | null };
+		}) => siteNameService.updateSiteName(siteNameId, data),
 		onSuccess: () => {
 			toast.success("Site name updated successfully");
 			queryClient.invalidateQueries({ queryKey: ["site-names"] });
-			setRenameModalOpen(false);
-			setRenamingSiteName(null);
+			setEditModalOpen(false);
+			setEditingSiteName(null);
 		},
-		onError: () => {
-			// Error toast is handled by apiClient;
-		},
+		onError: () => {},
 	});
 
-	// Delete site name mutation
 	const deleteMutation = useMutation({
 		mutationFn: (siteNameId: string) => siteNameService.deleteSiteName(siteNameId),
 		onSuccess: () => {
@@ -88,9 +98,7 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 			setDeleteModalOpen(false);
 			setDeletingSiteName(null);
 		},
-		onError: () => {
-			// Error toast is handled by apiClient;
-		},
+		onError: () => {},
 	});
 
 	const siteNames = data?.results || [];
@@ -101,18 +109,27 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 			toast.error("Please enter a site name");
 			return;
 		}
-		createMutation.mutate(newSiteName.trim());
+		createMutation.mutate();
 	};
 
-	const handleRenameClick = (siteName: SiteName) => {
-		setRenamingSiteName(siteName);
-		setNewName(siteName.name);
-		setRenameModalOpen(true);
+	const handleEditClick = (siteName: SiteName) => {
+		setEditingSiteName(siteName);
+		setEditName(siteName.name);
+		setEditContactPerson(siteName.contactPerson || "");
+		setEditContactPhone(siteName.contactPhone || "");
+		setEditModalOpen(true);
 	};
 
-	const handleRenameSubmit = () => {
-		if (!renamingSiteName || !newName.trim()) return;
-		updateMutation.mutate({ siteNameId: renamingSiteName.id, data: { name: newName.trim() } });
+	const handleEditSubmit = () => {
+		if (!editingSiteName || !editName.trim()) return;
+		updateMutation.mutate({
+			siteNameId: editingSiteName.id,
+			data: {
+				name: editName.trim(),
+				contactPerson: editContactPerson.trim() || null,
+				contactPhone: editContactPhone.trim() || null,
+			},
+		});
 	};
 
 	const handleDeleteClick = (siteName: SiteName) => {
@@ -126,35 +143,56 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 				<DialogContent className="max-w-2xl">
 					<DialogHeader>
 						<DialogTitle>Site Names</DialogTitle>
-						<DialogDescription>Manage site names for organizing your assets</DialogDescription>
+						<DialogDescription>Manage site names and on-site contact details for your assets</DialogDescription>
 					</DialogHeader>
 
 					{/* Add New Site Name Section */}
 					{canWrite && (
-						<div className="space-y-3 py-2">
+						<div className="space-y-3 py-2 border rounded-md p-3 bg-muted/30">
 							<div className="flex items-center justify-between">
-								<Label>Add New Site Name</Label>
+								<Label className="text-sm font-semibold">Add New Site Name</Label>
 								<Button variant="outline" size="sm" onClick={() => setImportModalOpen(true)}>
 									<Upload className="h-4 w-4 mr-2" />
 									Bulk Import
 								</Button>
 							</div>
-							<div className="flex gap-2">
-								<Input
-									placeholder="Enter site name..."
-									value={newSiteName}
-									onChange={(e) => setNewSiteName(e.target.value)}
-									onKeyDown={(e) => {
-										if (e.key === "Enter") handleCreateSiteName();
-									}}
-								/>
+							<div className="grid grid-cols-2 gap-2">
+								<div className="col-span-2 space-y-1">
+									<Label className="text-xs">Site Name *</Label>
+									<Input
+										placeholder="Enter site name..."
+										value={newSiteName}
+										onChange={(e) => setNewSiteName(e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") handleCreateSiteName();
+										}}
+									/>
+								</div>
+								<div className="space-y-1">
+									<Label className="text-xs">Contact Person (optional)</Label>
+									<Input
+										placeholder="e.g. John Dlamini"
+										value={newContactPerson}
+										onChange={(e) => setNewContactPerson(e.target.value)}
+									/>
+								</div>
+								<div className="space-y-1">
+									<Label className="text-xs">Contact Phone (optional)</Label>
+									<Input
+										placeholder="e.g. +27 82 555 0001"
+										value={newContactPhone}
+										onChange={(e) => setNewContactPhone(e.target.value)}
+									/>
+								</div>
+							</div>
+							<div className="flex justify-end">
 								<Button onClick={handleCreateSiteName} disabled={createMutation.isPending}>
 									{createMutation.isPending ? (
-										<Loader2 className="h-4 w-4 animate-spin" />
+										<Loader2 className="h-4 w-4 animate-spin mr-1" />
 									) : (
-										<Plus className="h-4 w-4" />
+										<Plus className="h-4 w-4 mr-1" />
 									)}
-									<span className="ml-1">Add</span>
+									Add Site Name
 								</Button>
 							</div>
 						</div>
@@ -166,7 +204,8 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 							<TableHeader>
 								<TableRow>
 									<TableHead>Name</TableHead>
-									<TableHead>Created At</TableHead>
+									<TableHead>Contact Person</TableHead>
+									<TableHead>Contact Phone</TableHead>
 									<TableHead className="w-[50px]" />
 								</TableRow>
 							</TableHeader>
@@ -181,13 +220,16 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 												<Skeleton className="h-4 w-20" />
 											</TableCell>
 											<TableCell>
+												<Skeleton className="h-4 w-20" />
+											</TableCell>
+											<TableCell>
 												<Skeleton className="h-8 w-8" />
 											</TableCell>
 										</TableRow>
 									))
 								) : siteNames.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+										<TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
 											No site names found. Create one above.
 										</TableCell>
 									</TableRow>
@@ -195,8 +237,11 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 									siteNames.map((siteName) => (
 										<TableRow key={siteName.id}>
 											<TableCell className="font-medium">{siteName.name}</TableCell>
-											<TableCell className="text-muted-foreground text-sm">
-												{new Date(siteName.createdAt).toLocaleDateString()}
+											<TableCell className="text-sm text-muted-foreground">
+												{siteName.contactPerson || <span className="text-muted-foreground/50">—</span>}
+											</TableCell>
+											<TableCell className="text-sm text-muted-foreground">
+												{siteName.contactPhone || <span className="text-muted-foreground/50">—</span>}
 											</TableCell>
 											<TableCell>
 												<DropdownMenu>
@@ -208,9 +253,9 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 													<DropdownMenuContent align="end">
 														{canWrite ? (
 															<>
-																<DropdownMenuItem onClick={() => handleRenameClick(siteName)}>
+																<DropdownMenuItem onClick={() => handleEditClick(siteName)}>
 																	<Pencil className="h-4 w-4 mr-2" />
-																	Rename
+																	Edit
 																</DropdownMenuItem>
 																<DropdownMenuSeparator />
 																<DropdownMenuItem
@@ -233,7 +278,6 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 							</TableBody>
 						</Table>
 
-						{/* Pagination Footer */}
 						{totalPages > 0 && (
 							<div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
 								<p className="text-sm text-muted-foreground">
@@ -265,32 +309,53 @@ export function SiteNamesModal({ open, onOpenChange }: SiteNamesModalProps) {
 				</DialogContent>
 			</Dialog>
 
-			{/* Rename Modal */}
-			<Dialog open={renameModalOpen} onOpenChange={setRenameModalOpen}>
+			{/* Edit Modal */}
+			<Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Rename Site Name</DialogTitle>
-						<DialogDescription>Enter a new name for the site "{renamingSiteName?.name}"</DialogDescription>
+						<DialogTitle>Edit Site Name</DialogTitle>
+						<DialogDescription>Update the name and contact details for "{editingSiteName?.name}"</DialogDescription>
 					</DialogHeader>
-					<div className="py-4">
-						<Label>New Name</Label>
-						<Input
-							value={newName}
-							onChange={(e) => setNewName(e.target.value)}
-							placeholder="Enter new site name..."
-							className="mt-2"
-							onKeyDown={(e) => {
-								if (e.key === "Enter") handleRenameSubmit();
-							}}
-						/>
+					<div className="space-y-3 py-2">
+						<div className="space-y-1">
+							<Label>Site Name *</Label>
+							<Input
+								value={editName}
+								onChange={(e) => setEditName(e.target.value)}
+								placeholder="Enter site name..."
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleEditSubmit();
+								}}
+							/>
+						</div>
+						<div className="space-y-1">
+							<Label>
+								Contact Person <span className="text-muted-foreground text-xs">(optional)</span>
+							</Label>
+							<Input
+								value={editContactPerson}
+								onChange={(e) => setEditContactPerson(e.target.value)}
+								placeholder="e.g. John Dlamini"
+							/>
+						</div>
+						<div className="space-y-1">
+							<Label>
+								Contact Phone <span className="text-muted-foreground text-xs">(optional)</span>
+							</Label>
+							<Input
+								value={editContactPhone}
+								onChange={(e) => setEditContactPhone(e.target.value)}
+								placeholder="e.g. +27 82 555 0001"
+							/>
+						</div>
 					</div>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setRenameModalOpen(false)}>
+						<Button variant="outline" onClick={() => setEditModalOpen(false)}>
 							Cancel
 						</Button>
-						<Button onClick={handleRenameSubmit} disabled={updateMutation.isPending}>
+						<Button onClick={handleEditSubmit} disabled={updateMutation.isPending}>
 							{updateMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-							Save
+							Save Changes
 						</Button>
 					</DialogFooter>
 				</DialogContent>

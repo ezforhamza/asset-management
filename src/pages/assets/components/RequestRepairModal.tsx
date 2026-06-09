@@ -7,7 +7,6 @@ import notificationService from "@/api/services/notificationService";
 import type { CoolingRepairFormData } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
 import { CoolingRepairForm } from "@/components/CoolingRepairForm";
-import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Label } from "@/ui/label";
@@ -59,7 +58,6 @@ interface RequestRepairModalProps {
 
 export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairModalProps) {
 	const queryClient = useQueryClient();
-	const currentUser = useUserInfo();
 	const [explanation, setExplanation] = useState("");
 	const [coolingForm, setCoolingForm] = useState<CoolingRepairFormData>(DEFAULT_COOLING_FORM);
 
@@ -70,11 +68,11 @@ export function RequestRepairModal({ open, onOpenChange, asset }: RequestRepairM
 			setCoolingForm((prev) => ({
 				...prev,
 				branchName: asset.siteName || "",
-				contactPersonOnSite: currentUser.name || "",
-				contactNumberOnSite: currentUser.phone || "",
+				contactPersonOnSite: asset.siteContactPerson || "",
+				contactNumberOnSite: asset.siteContactPhone || "",
 			}));
 		}
-	}, [open, isCooling, asset, currentUser.name, currentUser.phone]);
+	}, [open, isCooling, asset]);
 
 	const mutation = useMutation({
 		mutationFn: async () => {
