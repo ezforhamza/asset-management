@@ -41,9 +41,9 @@ export default function ReportsPage() {
 		queryFn: () => assetCategoryService.getCategories({ limit: 100 }),
 	});
 
-	// Build query params — search is purely client-side, does not trigger API refetch
+	// Build query params — page/search are client-side only; API always loads full batch
 	const queryParams = useMemo(() => {
-		const params: Record<string, string | number | boolean> = { page, limit };
+		const params: Record<string, string | number | boolean> = { page: 1, limit };
 
 		if (status !== "all") params.status = status;
 		if (gpsFilter !== "all") params.gpsCheckPassed = gpsFilter === "true";
@@ -52,7 +52,7 @@ export default function ReportsPage() {
 		if (categoryFilter !== "all") params.categoryId = categoryFilter;
 
 		return params;
-	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page]);
+	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter]);
 
 	// Fetch verifications
 	const { data, isLoading } = useQuery({
@@ -126,7 +126,9 @@ export default function ReportsPage() {
 		setPage(1);
 	};
 
-	const totalPages = data?.totalPages || 1;
+	const totalPages = Math.max(1, Math.ceil(filteredData.length / 20));
+	const effectivePage = Math.min(page, totalPages);
+	const pageData = filteredData.slice((effectivePage - 1) * 20, effectivePage * 20);
 	const fleetSummary = data?.fleetSummary;
 
 	return (
@@ -213,20 +215,20 @@ export default function ReportsPage() {
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setPage((p) => Math.max(1, p - 1))}
-							disabled={page === 1}
+							onClick={() => setPage(Math.max(1, effectivePage - 1))}
+							disabled={effectivePage === 1}
 							className="h-7 w-7 p-0"
 						>
 							<ChevronLeft className="h-4 w-4" />
 						</Button>
 						<span className="text-xs text-muted-foreground px-1">
-							{page} / {totalPages}
+							{effectivePage} / {totalPages}
 						</span>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-							disabled={page === totalPages}
+							onClick={() => setPage(Math.min(totalPages, effectivePage + 1))}
+							disabled={effectivePage === totalPages}
 							className="h-7 w-7 p-0"
 						>
 							<ChevronRight className="h-4 w-4" />
@@ -238,10 +240,10 @@ export default function ReportsPage() {
 			{/* Table */}
 			<div className="flex-1 min-h-0 overflow-hidden px-6 py-3">
 				<ReportTable
-					data={filteredData}
+					data={pageData}
 					isLoading={isLoading}
 					onViewDetails={handleViewDetails}
-					page={page}
+					page={effectivePage}
 					totalPages={totalPages}
 					onPageChange={setPage}
 				/>
