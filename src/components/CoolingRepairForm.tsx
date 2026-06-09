@@ -141,7 +141,7 @@ export function CoolingRepairForm({ value, onChange }: CoolingRepairFormProps) {
 			<CollapsibleCard title="Store Details" defaultOpen>
 				<div className="space-y-3 pt-1">
 					<div className="space-y-1">
-						<Label className="text-xs">Sitename *</Label>
+						<Label className="text-xs">Site Name *</Label>
 						<Input
 							value={value.branchName}
 							onChange={(e) => set("branchName", e.target.value)}
