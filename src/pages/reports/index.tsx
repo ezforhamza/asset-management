@@ -108,7 +108,9 @@ export default function ReportsPage() {
 					v.model?.toLowerCase().includes(query) ||
 					v.makeModel?.toLowerCase().includes(query) ||
 					v.siteName?.toLowerCase().includes(query) ||
-					v.assetCategory?.name?.toLowerCase().includes(query)
+					v.assetCategory?.name?.toLowerCase().includes(query) ||
+					v.verifiedBy?.name?.toLowerCase().includes(query) ||
+					v.registeredBy?.name?.toLowerCase().includes(query)
 				);
 			});
 		}
