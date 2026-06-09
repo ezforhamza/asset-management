@@ -34,19 +34,16 @@ export default function SuperUserReportsPage() {
 	const [operationalFilter, setOperationalFilter] = useState("all");
 	const [categoryFilter, setCategoryFilter] = useState("all");
 	const [page, setPage] = useState(1);
-	const limit = 20;
+	const limit = 500;
 
 	const { data: categoriesData } = useQuery({
 		queryKey: ["asset-categories", companyId],
 		queryFn: () => assetCategoryService.getCategories({ limit: 100 }),
 	});
 
+	// Build query params — search is purely client-side, does not trigger API refetch
 	const queryParams = useMemo(() => {
-		const isSearching = searchQuery.trim().length > 0;
-		const params: Record<string, string | number | boolean> = {
-			page: isSearching ? 1 : page,
-			limit: isSearching ? 500 : limit,
-		};
+		const params: Record<string, string | number | boolean> = { page, limit };
 		if (companyId && companyId !== "all") params.companyId = companyId;
 		if (status !== "all") params.status = status;
 		if (gpsFilter !== "all") params.gpsCheckPassed = gpsFilter === "true";
@@ -54,7 +51,7 @@ export default function SuperUserReportsPage() {
 		if (operationalFilter !== "all") params.operationalStatus = operationalFilter;
 		if (categoryFilter !== "all") params.categoryId = categoryFilter;
 		return params;
-	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, companyId, searchQuery]);
+	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, companyId]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["super-user", "reports", "verifications", queryParams],

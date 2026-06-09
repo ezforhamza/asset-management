@@ -33,7 +33,7 @@ export default function ReportsPage() {
 	const [operationalFilter, setOperationalFilter] = useState("all");
 	const [categoryFilter, setCategoryFilter] = useState("all");
 	const [page, setPage] = useState(1);
-	const limit = 20;
+	const limit = 500;
 
 	// Fetch categories for filter
 	const { data: categoriesData } = useQuery({
@@ -41,13 +41,9 @@ export default function ReportsPage() {
 		queryFn: () => assetCategoryService.getCategories({ limit: 100 }),
 	});
 
-	// Build query params - date range filtering is done client-side for nextVerificationDue
+	// Build query params — search is purely client-side, does not trigger API refetch
 	const queryParams = useMemo(() => {
-		const isSearching = searchQuery.trim().length > 0;
-		const params: Record<string, string | number | boolean> = {
-			page: isSearching ? 1 : page,
-			limit: isSearching ? 500 : limit,
-		};
+		const params: Record<string, string | number | boolean> = { page, limit };
 
 		if (status !== "all") params.status = status;
 		if (gpsFilter !== "all") params.gpsCheckPassed = gpsFilter === "true";
@@ -56,7 +52,7 @@ export default function ReportsPage() {
 		if (categoryFilter !== "all") params.categoryId = categoryFilter;
 
 		return params;
-	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page, searchQuery]);
+	}, [status, gpsFilter, conditionFilter, operationalFilter, categoryFilter, page]);
 
 	// Fetch verifications
 	const { data, isLoading } = useQuery({
