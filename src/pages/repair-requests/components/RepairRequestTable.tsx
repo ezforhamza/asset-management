@@ -182,7 +182,9 @@ export function RepairRequestTable({ requests, isLoading, onView }: RepairReques
 						</TableCell>
 						<TableCell onClick={(e) => e.stopPropagation()}>
 							<div className="flex items-center gap-1">
-								{req.coolingRepairForm != null && <DownloadPdfButton req={req} />}
+								{req.assetSnapshot.categoryName === "Cooling Equipment" &&
+									!!req.coolingRepairForm &&
+									Object.keys(req.coolingRepairForm).length > 0 && <DownloadPdfButton req={req} />}
 								<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
 									<Eye className="h-4 w-4" />
 								</Button>

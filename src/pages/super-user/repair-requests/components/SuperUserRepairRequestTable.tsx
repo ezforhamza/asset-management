@@ -188,7 +188,9 @@ export function SuperUserRepairRequestTable({ requests, isLoading, onView, canMu
 							<StatusDisplay request={req} canMutate={canMutate} />
 						</TableCell>
 						<TableCell onClick={(e) => e.stopPropagation()} className="flex items-center">
-							{req.coolingRepairForm != null && <DownloadPdfButton req={req} />}
+							{req.assetSnapshot.categoryName === "Cooling Equipment" &&
+								!!req.coolingRepairForm &&
+								Object.keys(req.coolingRepairForm).length > 0 && <DownloadPdfButton req={req} />}
 							<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
 								<Eye className="h-4 w-4" />
 							</Button>
