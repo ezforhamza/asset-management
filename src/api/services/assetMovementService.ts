@@ -27,6 +27,7 @@ export interface AssetMovementLocation {
 
 export interface AssetMovement {
 	id: string;
+	_id?: string;
 	assetId: AssetMovementAsset;
 	companyId: string;
 	companyName?: string;

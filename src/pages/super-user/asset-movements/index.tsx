@@ -136,7 +136,9 @@ export default function SuperUserAssetMovementsPage() {
 		setLoadingDetails(true);
 		setDetailsModalOpen(true);
 		try {
-			const details = await assetMovementService.getAssetMovementById(movement.id);
+			const movementId = movement.id || movement._id;
+			if (!movementId) return;
+			const details = await assetMovementService.getAssetMovementById(movementId);
 			setSelectedMovement(details);
 		} catch {
 			// apiClient handles error toast
@@ -342,7 +344,7 @@ export default function SuperUserAssetMovementsPage() {
 								) : (
 									filteredMovements.map((movement) => (
 										<TableRow
-											key={movement.id}
+											key={movement.id || movement._id}
 											className="cursor-pointer hover:bg-muted/50"
 											onClick={() => handleRowClick(movement)}
 										>
@@ -591,7 +593,10 @@ export default function SuperUserAssetMovementsPage() {
 							variant="destructive"
 							onClick={() =>
 								deletingMovement &&
-								deleteMutation.mutate({ movementId: deletingMovement.id, reason: cancellationReason })
+								deleteMutation.mutate({
+									movementId: deletingMovement.id || deletingMovement._id || "",
+									reason: cancellationReason,
+								})
 							}
 							disabled={deleteMutation.isPending}
 						>
@@ -616,7 +621,9 @@ export default function SuperUserAssetMovementsPage() {
 							Back
 						</Button>
 						<Button
-							onClick={() => startingMovement && startMutation.mutate(startingMovement.id)}
+							onClick={() =>
+								startingMovement && startMutation.mutate(startingMovement.id || startingMovement._id || "")
+							}
 							disabled={startMutation.isPending}
 						>
 							{startMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Start Movement
@@ -657,7 +664,10 @@ export default function SuperUserAssetMovementsPage() {
 						<Button
 							onClick={() =>
 								completingMovement &&
-								completeMutation.mutate({ movementId: completingMovement.id, notes: completionNotes })
+								completeMutation.mutate({
+									movementId: completingMovement.id || completingMovement._id || "",
+									notes: completionNotes,
+								})
 							}
 							disabled={completeMutation.isPending}
 						>
