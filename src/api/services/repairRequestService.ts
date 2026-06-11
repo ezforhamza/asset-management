@@ -4,6 +4,7 @@ import API_ENDPOINTS from "../endpoints";
 
 export interface RepairRequest {
 	id: string;
+	_id?: string;
 	companyId: string;
 	companyName?: string;
 	assetId: {
