@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ChevronDown, Eye } from "lucide-react";
+import { ChevronDown, Eye, FileDown } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { RepairRequest } from "@/api/services/repairRequestService";
 import repairRequestService from "@/api/services/repairRequestService";
@@ -9,6 +10,34 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
 import { StyledBadge } from "@/utils/badge-styles";
+
+function DownloadPdfButton({ req }: { req: RepairRequest }) {
+	const [loading, setLoading] = useState(false);
+
+	const handleDownload = async () => {
+		setLoading(true);
+		try {
+			await repairRequestService.downloadCoolingRepairPdf(req.id, req.assetSnapshot.serialNumber);
+		} catch {
+			toast.error("Failed to download PDF");
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return (
+		<Button
+			variant="ghost"
+			size="icon"
+			className="h-8 w-8"
+			onClick={handleDownload}
+			disabled={loading}
+			title="Download Cooling Repair PDF"
+		>
+			<FileDown className="h-4 w-4" />
+		</Button>
+	);
+}
 
 function SourceBadge({ source }: { source: string }) {
 	if (source === "field_worker") return <StyledBadge color="blue">Field Worker</StyledBadge>;
@@ -158,7 +187,8 @@ export function SuperUserRepairRequestTable({ requests, isLoading, onView, canMu
 						<TableCell onClick={(e) => e.stopPropagation()}>
 							<StatusDisplay request={req} canMutate={canMutate} />
 						</TableCell>
-						<TableCell onClick={(e) => e.stopPropagation()}>
+						<TableCell onClick={(e) => e.stopPropagation()} className="flex items-center">
+							{Boolean(req.coolingRepairForm?.branchName) && <DownloadPdfButton req={req} />}
 							<Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onView(req)}>
 								<Eye className="h-4 w-4" />
 							</Button>
