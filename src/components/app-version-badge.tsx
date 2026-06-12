@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { UserRole } from "#/enum";
 import appVersionService from "@/api/services/appVersionService";
+import { useUserInfo } from "@/store/userStore";
 import { StyledBadge } from "@/utils/badge-styles";
 
 function compareVersions(v1: string, v2: string): number {
@@ -18,15 +20,19 @@ interface AppVersionBadgeProps {
 }
 
 export function AppVersionBadge({ appVersion, appPlatform }: AppVersionBadgeProps) {
+	const userInfo = useUserInfo();
+	const isSystemAdmin = userInfo.role === UserRole.SYSTEM_ADMIN;
+
 	const { data: configs } = useQuery({
 		queryKey: ["app-version"],
 		queryFn: appVersionService.getAll,
 		staleTime: 5 * 60 * 1000,
+		enabled: isSystemAdmin,
 	});
 
 	if (!appVersion) return <span className="text-muted-foreground text-sm">—</span>;
 
-	const config = appPlatform ? configs?.find((c) => c.platform === appPlatform) : undefined;
+	const config = isSystemAdmin && appPlatform ? configs?.find((c) => c.platform === appPlatform) : undefined;
 
 	if (!config) {
 		return <span className="text-sm">{appVersion}</span>;
