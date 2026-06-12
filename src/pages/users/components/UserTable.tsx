@@ -8,6 +8,7 @@ import {
 	LogOut,
 	Mail,
 	MoreHorizontal,
+	Phone,
 	Trash2,
 	UserCheck,
 	UserX,
@@ -136,8 +137,11 @@ export function UserTable({
 						<TableRow>
 							<TableHead>User</TableHead>
 							<TableHead>Role</TableHead>
+							<TableHead>Phone</TableHead>
 							<TableHead>Account Status</TableHead>
 							<TableHead>Online Status</TableHead>
+							<TableHead>App Version</TableHead>
+							<TableHead>Platform</TableHead>
 							<TableHead>Last Login</TableHead>
 							<TableHead className="text-right">Actions</TableHead>
 						</TableRow>
@@ -160,6 +164,16 @@ export function UserTable({
 									</div>
 								</TableCell>
 								<TableCell>{getRoleBadge(user.role, user.adminType)}</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{user.phone ? (
+										<div className="flex items-center gap-1">
+											<Phone className="h-3 w-3" />
+											{user.phone}
+										</div>
+									) : (
+										"—"
+									)}
+								</TableCell>
 								<TableCell>
 									{user.status === "inactive" ? (
 										<StyledBadge color="red">Inactive</StyledBadge>
@@ -181,6 +195,14 @@ export function UserTable({
 											Offline
 										</StyledBadge>
 									)}
+								</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{user.role === "field_user" ? (user.appVersion ?? "—") : "—"}
+								</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{user.role === "field_user" && user.appPlatform
+										? user.appPlatform.charAt(0).toUpperCase() + user.appPlatform.slice(1)
+										: "—"}
 								</TableCell>
 								<TableCell className="text-muted-foreground">
 									{user.lastLogin ? (

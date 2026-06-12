@@ -10,7 +10,9 @@ import {
 	Mail,
 	MapPin,
 	MapPinOff,
+	Phone,
 	RefreshCw,
+	Smartphone,
 	User,
 	Wrench,
 	XCircle,
@@ -118,10 +120,31 @@ export function FieldWorkerPerformance({ userId, user }: FieldWorkerPerformanceP
 									<Mail className="h-4 w-4" />
 									<span className="text-sm">{performanceData?.email || user.email}</span>
 								</div>
+								{user.phone && (
+									<div className="flex items-center gap-2 text-muted-foreground mt-1">
+										<Phone className="h-4 w-4" />
+										<span className="text-sm">{user.phone}</span>
+									</div>
+								)}
 								<Badge variant="secondary" className="mt-2">
 									<User className="h-3 w-3 mr-1" />
 									Field Worker
 								</Badge>
+								{(user.appVersion || user.appPlatform) && (
+									<div className="flex items-center gap-2 text-muted-foreground mt-2">
+										<Smartphone className="h-4 w-4" />
+										<span className="text-sm">
+											{user.appPlatform ? user.appPlatform.charAt(0).toUpperCase() + user.appPlatform.slice(1) : ""}
+											{user.appPlatform && user.appVersion ? " · " : ""}
+											{user.appVersion ?? ""}
+										</span>
+										{user.appVersionLastSeenAt && (
+											<span className="text-xs text-muted-foreground">
+												(last seen {format(new Date(user.appVersionLastSeenAt), "MMM d, yyyy")})
+											</span>
+										)}
+									</div>
+								)}
 							</div>
 						</div>
 						<div className="text-right">

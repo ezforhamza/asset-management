@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { MoreHorizontal, Trash2, UserCircle } from "lucide-react";
+import { MoreHorizontal, Phone, Trash2, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
@@ -77,6 +77,9 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 							<TableRow>
 								<TableHead>User</TableHead>
 								<TableHead>Role</TableHead>
+								<TableHead>Phone</TableHead>
+								<TableHead>App Version</TableHead>
+								<TableHead>Platform</TableHead>
 								<TableHead>Last Login</TableHead>
 								<TableHead className="w-[50px]" />
 							</TableRow>
@@ -89,6 +92,15 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 									</TableCell>
 									<TableCell>
 										<Skeleton className="h-5 w-20" />
+									</TableCell>
+									<TableCell>
+										<Skeleton className="h-5 w-20" />
+									</TableCell>
+									<TableCell>
+										<Skeleton className="h-5 w-16" />
+									</TableCell>
+									<TableCell>
+										<Skeleton className="h-5 w-16" />
 									</TableCell>
 									<TableCell>
 										<Skeleton className="h-5 w-24" />
@@ -117,6 +129,9 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 								<TableRow>
 									<TableHead>User</TableHead>
 									<TableHead>Role</TableHead>
+									<TableHead>Phone</TableHead>
+									<TableHead>App Version</TableHead>
+									<TableHead>Platform</TableHead>
 									<TableHead>Last Login</TableHead>
 									<TableHead className="w-[50px]" />
 								</TableRow>
@@ -139,6 +154,24 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 											</div>
 										</TableCell>
 										<TableCell>{getRoleBadge(user.role)}</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{user.phone ? (
+												<div className="flex items-center gap-1">
+													<Phone className="h-3 w-3" />
+													{user.phone}
+												</div>
+											) : (
+												"—"
+											)}
+										</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{user.role === "field_user" ? (user.appVersion ?? "—") : "—"}
+										</TableCell>
+										<TableCell className="text-sm text-muted-foreground">
+											{user.role === "field_user" && user.appPlatform
+												? user.appPlatform.charAt(0).toUpperCase() + user.appPlatform.slice(1)
+												: "—"}
+										</TableCell>
 										<TableCell className="text-sm text-muted-foreground">
 											{user.lastLogin ? (
 												<div>

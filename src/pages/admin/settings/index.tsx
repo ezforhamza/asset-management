@@ -1,11 +1,16 @@
-import { Key, Settings as SettingsIcon, User } from "lucide-react";
+import { Key, Settings as SettingsIcon, Smartphone, User } from "lucide-react";
 import { useState } from "react";
+import { UserRole } from "#/enum";
+import { useUserInfo } from "@/store/userStore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/ui/tabs";
+import { AppVersionTab } from "./components/AppVersionTab";
 import { PasswordTab } from "./components/PasswordTab";
 import { ProfileTab } from "./components/ProfileTab";
 
 export default function AdminSettingsPage() {
 	const [activeTab, setActiveTab] = useState("profile");
+	const userInfo = useUserInfo();
+	const isSystemAdmin = userInfo.role === UserRole.SYSTEM_ADMIN;
 
 	return (
 		<div className="h-screen flex flex-col bg-background">
@@ -31,7 +36,7 @@ export default function AdminSettingsPage() {
 				<div className="px-6 py-6 pb-16">
 					<div className="max-w-5xl mx-auto">
 						<Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-							<TabsList className="grid w-full grid-cols-2">
+							<TabsList className={`grid w-full ${isSystemAdmin ? "grid-cols-3" : "grid-cols-2"}`}>
 								<TabsTrigger value="profile" className="flex items-center gap-2">
 									<User className="h-4 w-4" />
 									Profile
@@ -40,6 +45,12 @@ export default function AdminSettingsPage() {
 									<Key className="h-4 w-4" />
 									Password
 								</TabsTrigger>
+								{isSystemAdmin && (
+									<TabsTrigger value="app-version" className="flex items-center gap-2">
+										<Smartphone className="h-4 w-4" />
+										App Versions
+									</TabsTrigger>
+								)}
 							</TabsList>
 
 							<TabsContent value="profile" className="space-y-6">
@@ -49,6 +60,12 @@ export default function AdminSettingsPage() {
 							<TabsContent value="password" className="space-y-6">
 								<PasswordTab />
 							</TabsContent>
+
+							{isSystemAdmin && (
+								<TabsContent value="app-version" className="space-y-6">
+									<AppVersionTab />
+								</TabsContent>
+							)}
 						</Tabs>
 					</div>
 				</div>

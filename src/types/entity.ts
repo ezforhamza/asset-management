@@ -36,6 +36,9 @@ export interface UserInfo {
 	devicePlatform?: string | null;
 	isDefaultAdmin?: boolean;
 	lastLogin?: string;
+	appVersion?: string | null;
+	appPlatform?: string | null;
+	appVersionLastSeenAt?: string | null;
 	roles?: Role[];
 	permissions?: Permission[];
 	menu?: MenuTree[];

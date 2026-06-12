@@ -81,6 +81,7 @@ export function getFrontendDashboardRoutes(): RouteObject[] {
 				{ path: "companies", element: Component("/pages/super-user/companies") },
 				{ path: "companies/:companyId/assets", element: Component("/pages/super-user/assets") },
 				{ path: "companies/:companyId/assets/:assetId", element: Component("/pages/super-user/assets/detail") },
+				{ path: "companies/:companyId/users", element: Component("/pages/super-user/companies/users") },
 				{ path: "asset-movements", element: Component("/pages/super-user/asset-movements") },
 				{ path: "reports", element: Component("/pages/super-user/reports") },
 				{ path: "map", element: Component("/pages/super-user/map") },
