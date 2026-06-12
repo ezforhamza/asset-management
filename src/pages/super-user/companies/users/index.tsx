@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router";
 import type { UserInfo } from "#/entity";
 import adminService from "@/api/services/adminService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { AppVersionBadge } from "@/components/app-version-badge";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Skeleton } from "@/ui/skeleton";
@@ -162,7 +163,11 @@ export default function SuperUserCompanyUsersPage() {
 												)}
 											</TableCell>
 											<TableCell className="text-sm text-muted-foreground">
-												{user.role === "field_user" ? (user.appVersion ?? "—") : "—"}
+												{user.role === "field_user" ? (
+													<AppVersionBadge appVersion={user.appVersion} appPlatform={user.appPlatform} />
+												) : (
+													<span className="text-muted-foreground">—</span>
+												)}
 											</TableCell>
 											<TableCell className="text-sm text-muted-foreground">
 												{user.role === "field_user" && user.appPlatform

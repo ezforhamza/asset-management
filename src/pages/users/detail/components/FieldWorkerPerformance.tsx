@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import type { UserInfo } from "#/entity";
 import reportService from "@/api/services/reportService";
+import { AppVersionBadge } from "@/components/app-version-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -130,21 +131,20 @@ export function FieldWorkerPerformance({ userId, user }: FieldWorkerPerformanceP
 									<User className="h-3 w-3 mr-1" />
 									Field Worker
 								</Badge>
-								{(user.appVersion || user.appPlatform) && (
-									<div className="flex items-center gap-2 text-muted-foreground mt-2">
-										<Smartphone className="h-4 w-4" />
+								<div className="flex items-center gap-2 text-muted-foreground mt-2">
+									<Smartphone className="h-4 w-4" />
+									{user.appPlatform && (
 										<span className="text-sm">
-											{user.appPlatform ? user.appPlatform.charAt(0).toUpperCase() + user.appPlatform.slice(1) : ""}
-											{user.appPlatform && user.appVersion ? " · " : ""}
-											{user.appVersion ?? ""}
+											{user.appPlatform.charAt(0).toUpperCase() + user.appPlatform.slice(1)}
 										</span>
-										{user.appVersionLastSeenAt && (
-											<span className="text-xs text-muted-foreground">
-												(last seen {format(new Date(user.appVersionLastSeenAt), "MMM d, yyyy")})
-											</span>
-										)}
-									</div>
-								)}
+									)}
+									<AppVersionBadge appVersion={user.appVersion} appPlatform={user.appPlatform} />
+									{user.appVersionLastSeenAt && (
+										<span className="text-xs">
+											· last seen {format(new Date(user.appVersionLastSeenAt), "MMM d, yyyy")}
+										</span>
+									)}
+								</div>
 							</div>
 						</div>
 						<div className="text-right">

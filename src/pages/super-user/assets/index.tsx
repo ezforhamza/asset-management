@@ -1,6 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, MoreHorizontal, Pencil, Search, X } from "lucide-react";
+import {
+	AlertTriangle,
+	ChevronLeft,
+	ChevronRight,
+	LayoutGrid,
+	MapPin,
+	MoreHorizontal,
+	Pencil,
+	Search,
+	Users,
+	X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import type { Asset } from "#/entity";
@@ -103,19 +114,14 @@ export default function SuperUserAssetsPage() {
 				<div className="flex items-center justify-between">
 					<h1 className="text-xl font-semibold">{companyName} — Assets</h1>
 					<div className="flex items-center gap-2">
-						<button
-							type="button"
-							className="inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium"
-						>
+						<Button variant="default" size="sm">
+							<LayoutGrid className="h-4 w-4 mr-2" />
 							Assets
-						</button>
-						<button
-							type="button"
-							onClick={() => navigate(`/super-user/companies/${companyId}/users`)}
-							className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted transition-colors"
-						>
+						</Button>
+						<Button variant="outline" size="sm" onClick={() => navigate(`/super-user/companies/${companyId}/users`)}>
+							<Users className="h-4 w-4 mr-2" />
 							Users
-						</button>
+						</Button>
 					</div>
 				</div>
 			</div>

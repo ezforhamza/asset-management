@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { UserInfo } from "#/entity";
 import adminService from "@/api/services/adminService";
+import { AppVersionBadge } from "@/components/app-version-badge";
 import { useUserInfo } from "@/store/userStore";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
@@ -165,7 +166,11 @@ export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabP
 											)}
 										</TableCell>
 										<TableCell className="text-sm text-muted-foreground">
-											{user.role === "field_user" ? (user.appVersion ?? "—") : "—"}
+											{user.role === "field_user" ? (
+												<AppVersionBadge appVersion={user.appVersion} appPlatform={user.appPlatform} />
+											) : (
+												<span className="text-muted-foreground">—</span>
+											)}
 										</TableCell>
 										<TableCell className="text-sm text-muted-foreground">
 											{user.role === "field_user" && user.appPlatform

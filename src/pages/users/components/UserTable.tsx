@@ -18,6 +18,7 @@ import {
 import { useMemo, useState } from "react";
 import type { UserInfo } from "#/entity";
 import { AdminType, UserRole } from "#/enum";
+import { AppVersionBadge } from "@/components/app-version-badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
@@ -196,8 +197,12 @@ export function UserTable({
 										</StyledBadge>
 									)}
 								</TableCell>
-								<TableCell className="text-sm text-muted-foreground">
-									{user.role === "field_user" ? (user.appVersion ?? "—") : "—"}
+								<TableCell>
+									{user.role === "field_user" ? (
+										<AppVersionBadge appVersion={user.appVersion} appPlatform={user.appPlatform} />
+									) : (
+										<span className="text-muted-foreground text-sm">—</span>
+									)}
 								</TableCell>
 								<TableCell className="text-sm text-muted-foreground">
 									{user.role === "field_user" && user.appPlatform
