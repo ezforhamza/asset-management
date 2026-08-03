@@ -156,11 +156,6 @@ export function NotificationSettings() {
 			toast.error("Please enter a phone number");
 			return;
 		}
-		if (!formReceiveAll && formTypes.length === 0) {
-			toast.error("Select at least one notification type or enable 'Receive All'");
-			return;
-		}
-
 		if (editingEmail) {
 			updateMutation.mutate({
 				email: trimmedEmail,
@@ -355,6 +350,11 @@ export function NotificationSettings() {
 											</div>
 										</button>
 									))}
+									{formTypes.length === 0 && (
+										<p className="text-xs text-muted-foreground italic">
+											No types selected — this person will not receive any notification emails.
+										</p>
+									)}
 								</div>
 							)}
 
