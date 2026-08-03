@@ -24,3 +24,6 @@ dist-ssr
 
 # vite build stats
 stats.html
+
+# Server credentials — never commit
+VPS_REFERENCE.md
