@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
+import adminService from "@/api/services/adminService";
 import assetService, { type UpdateAssetReq } from "@/api/services/assetService";
-import companyService from "@/api/services/companyService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
@@ -38,13 +38,20 @@ type FormValues = Pick<
 export function EditAssetModal({ asset, open, onClose, queryKeysToInvalidate = [] }: EditAssetModalProps) {
 	const queryClient = useQueryClient();
 
-	// The asset may belong to a different company than the logged-in super-user's own,
-	// so resolve region options from the asset's own company rather than "my company".
-	const { data: assetCompany } = useQuery({
-		queryKey: ["company", asset?.companyId],
-		queryFn: () => companyService.getCompanyById(asset?.companyId as string),
-		enabled: !!asset?.companyId && open,
+	// The asset may belong to a different company than the logged-in super-user's own, so resolve
+	// region options from the asset's own company rather than "my company". Super-users don't have
+	// permission for GET /companies/:id (manageCompanySettings), only the list endpoint
+	// (viewAllCompanies) — same pattern already used on the super-user Assets list page.
+	const { data: companiesData } = useQuery({
+		queryKey: ["super-user", "companies-list", "for-edit-asset-modal"],
+		queryFn: () => adminService.getCompanies({ limit: 100 }),
+		enabled: open,
 	});
+	const assetCompany = companiesData?.results?.find(
+		(c) =>
+			(c as typeof c & { _id?: string }).id === asset?.companyId ||
+			(c as typeof c & { _id?: string })._id === asset?.companyId,
+	);
 	const regionOptions = getRegionOptions(assetCompany?.country);
 
 	const form = useForm<FormValues>({
