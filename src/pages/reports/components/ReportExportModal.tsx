@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import assetCategoryService from "@/api/services/assetCategoryService";
+import type { ExportReportParams } from "#/report";
 import adminService from "@/api/services/adminService";
+import assetCategoryService from "@/api/services/assetCategoryService";
 import reportService from "@/api/services/reportService";
 import { useUserInfo } from "@/store/userStore";
 import { Button } from "@/ui/button";
@@ -12,7 +13,6 @@ import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
-import type { ExportReportParams } from "#/report";
 
 interface ReportExportModalProps {
 	open: boolean;
@@ -34,6 +34,7 @@ export function ReportExportModal({ open, onClose }: ReportExportModalProps) {
 	const [gpsFilter, setGpsFilter] = useState("all");
 	const [categoryId, setCategoryId] = useState("all");
 	const [operationalStatus, setOperationalStatus] = useState("all");
+	const [region, setRegion] = useState("all");
 	const [format, setFormat] = useState<"xlsx" | "pdf">("xlsx");
 	const [isExporting, setIsExporting] = useState(false);
 
@@ -49,8 +50,19 @@ export function ReportExportModal({ open, onClose }: ReportExportModalProps) {
 		enabled: open && isSuperUser,
 	});
 
+	// Lightweight sample fetch purely to derive available Region options for the dropdown
+	const { data: regionSampleData } = useQuery({
+		queryKey: ["export-report-regions", isSuperUser ? companyId : undefined],
+		queryFn: () =>
+			reportService.getVerificationReport({ limit: 500, ...(isSuperUser && companyId !== "all" ? { companyId } : {}) }),
+		enabled: open,
+	});
+
 	const categories = categoriesData?.results?.filter((c) => c.status === "active") || [];
 	const companies = companiesData?.results || [];
+	const regionOptions = [
+		...new Set((regionSampleData?.results || []).map((v) => v.region).filter(Boolean)),
+	] as string[];
 
 	const handleExport = async () => {
 		setIsExporting(true);
@@ -68,6 +80,7 @@ export function ReportExportModal({ open, onClose }: ReportExportModalProps) {
 			if (categoryId !== "all") params.categoryId = categoryId;
 			if (operationalStatus !== "all")
 				params.operationalStatus = operationalStatus as ExportReportParams["operationalStatus"];
+			if (region !== "all") params.region = region;
 			if (isSuperUser && companyId !== "all") params.companyId = companyId;
 
 			await reportService.exportReport(params);
@@ -206,6 +219,24 @@ export function ReportExportModal({ open, onClose }: ReportExportModalProps) {
 								{categories.map((c) => (
 									<SelectItem key={c.id} value={c.id}>
 										{c.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+
+					{/* Region */}
+					<div className="space-y-1.5">
+						<Label>Region</Label>
+						<Select value={region} onValueChange={setRegion}>
+							<SelectTrigger>
+								<SelectValue placeholder="All regions" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All</SelectItem>
+								{regionOptions.map((r) => (
+									<SelectItem key={r} value={r}>
+										{r}
 									</SelectItem>
 								))}
 							</SelectContent>

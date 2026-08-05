@@ -20,6 +20,7 @@ export interface AssetsListParams {
 	client?: string;
 	siteName?: string;
 	channel?: string;
+	region?: string;
 	sortBy?: string;
 	page?: number;
 	limit?: number;
@@ -46,6 +47,7 @@ export interface UpdateAssetReq {
 	channel?: string;
 	siteName?: string;
 	siteNameId?: string;
+	region?: string;
 	categoryId?: string;
 	locationDescription?: string;
 }
@@ -55,6 +57,8 @@ export interface ExportAssetsParams {
 	status?: "active" | "retired" | "transferred";
 	registrationState?: boolean;
 	categoryId?: string;
+	region?: string;
+	companyId?: string;
 }
 
 export interface CreateAssetReq {
@@ -70,6 +74,7 @@ export interface CreateAssetReq {
 	siteName?: string;
 	siteNameId?: string;
 	client?: string;
+	region?: string;
 	geofenceThreshold?: number;
 }
 
@@ -298,6 +303,8 @@ const exportAssets = (params: ExportAssetsParams) => {
 	if (params.status) queryParams.append("status", params.status);
 	if (params.registrationState !== undefined) queryParams.append("registrationState", String(params.registrationState));
 	if (params.categoryId) queryParams.append("categoryId", params.categoryId);
+	if (params.region) queryParams.append("region", params.region);
+	if (params.companyId) queryParams.append("companyId", params.companyId);
 
 	const { userToken } = useUserStore.getState();
 	const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || "/api/v1";

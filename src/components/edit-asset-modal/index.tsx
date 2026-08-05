@@ -1,16 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import assetService, { type UpdateAssetReq } from "@/api/services/assetService";
+import companyService from "@/api/services/companyService";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Textarea } from "@/ui/textarea";
+import { getRegionOptions } from "@/utils/countryRegion";
 
 interface EditAssetModalProps {
 	asset: Asset | null;
@@ -28,12 +30,22 @@ type FormValues = Pick<
 	| "client"
 	| "channel"
 	| "siteName"
+	| "region"
 	| "verificationFrequency"
 	| "geofenceThreshold"
 >;
 
 export function EditAssetModal({ asset, open, onClose, queryKeysToInvalidate = [] }: EditAssetModalProps) {
 	const queryClient = useQueryClient();
+
+	// The asset may belong to a different company than the logged-in super-user's own,
+	// so resolve region options from the asset's own company rather than "my company".
+	const { data: assetCompany } = useQuery({
+		queryKey: ["company", asset?.companyId],
+		queryFn: () => companyService.getCompanyById(asset?.companyId as string),
+		enabled: !!asset?.companyId && open,
+	});
+	const regionOptions = getRegionOptions(assetCompany?.country);
 
 	const form = useForm<FormValues>({
 		defaultValues: {
@@ -44,6 +56,7 @@ export function EditAssetModal({ asset, open, onClose, queryKeysToInvalidate = [
 			client: "",
 			channel: "",
 			siteName: "",
+			region: "",
 			verificationFrequency: undefined,
 			geofenceThreshold: undefined,
 		},
@@ -59,6 +72,7 @@ export function EditAssetModal({ asset, open, onClose, queryKeysToInvalidate = [
 				client: asset.client || "",
 				channel: asset.channel || "",
 				siteName: asset.siteName || "",
+				region: asset.region || "",
 				verificationFrequency: asset.verificationFrequency ?? undefined,
 				geofenceThreshold: asset.geofenceThreshold ?? undefined,
 			});
@@ -192,6 +206,39 @@ export function EditAssetModal({ asset, open, onClose, queryKeysToInvalidate = [
 									<FormControl>
 										<Input placeholder="Site name" {...field} />
 									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="region"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Region</FormLabel>
+									<Select
+										value={field.value || ""}
+										onValueChange={field.onChange}
+										disabled={regionOptions.length === 0}
+									>
+										<FormControl>
+											<SelectTrigger>
+												<SelectValue
+													placeholder={
+														regionOptions.length === 0 ? "Set a country on the company first" : "Select a region"
+													}
+												/>
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{regionOptions.map((r) => (
+												<SelectItem key={r.value} value={r.value}>
+													{r.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 									<FormMessage />
 								</FormItem>
 							)}

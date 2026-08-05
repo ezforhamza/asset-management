@@ -21,6 +21,7 @@ export interface Company {
 	contactEmail: string;
 	phone?: string;
 	address?: string;
+	country?: string;
 	logo?: string;
 	settings: CompanySettings;
 	isActive: boolean;
@@ -54,6 +55,7 @@ export interface CompanyWithStats extends Company {
 export interface CreateCompanyReq {
 	companyName: string;
 	contactEmail: string;
+	country?: string;
 	settings?: Partial<CompanySettings>;
 	admin: {
 		name: string;
@@ -78,6 +80,7 @@ export interface UpdateCompanyReq {
 	contactEmail?: string;
 	phone?: string;
 	address?: string;
+	country?: string;
 	settings?: Partial<CompanySettings>;
 	isActive?: boolean;
 }
@@ -88,6 +91,7 @@ export interface UpdateProfileReq {
 	contactEmail?: string;
 	phone?: string;
 	address?: string;
+	country?: string;
 	logo?: string;
 }
 

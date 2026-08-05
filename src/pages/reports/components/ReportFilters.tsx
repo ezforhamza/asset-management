@@ -26,6 +26,9 @@ interface ReportFiltersProps {
 	categoryFilter: string;
 	setCategoryFilter: (value: string) => void;
 	categories: AssetCategory[];
+	regionFilter: string;
+	setRegionFilter: (value: string) => void;
+	regions: string[];
 	onClearFilters: () => void;
 	compact?: boolean;
 }
@@ -46,6 +49,9 @@ export function ReportFilters({
 	categoryFilter,
 	setCategoryFilter,
 	categories,
+	regionFilter,
+	setRegionFilter,
+	regions,
 	onClearFilters,
 	compact = false,
 }: ReportFiltersProps) {
@@ -57,7 +63,8 @@ export function ReportFilters({
 		gpsFilter !== "all" ||
 		conditionFilter !== "all" ||
 		operationalFilter !== "all" ||
-		categoryFilter !== "all";
+		categoryFilter !== "all" ||
+		regionFilter !== "all";
 
 	const lbl = (text: string) => (!compact ? <Label className="text-sm font-medium mb-2 block">{text}</Label> : null);
 
@@ -193,6 +200,24 @@ export function ReportFilters({
 						{categories.map((cat) => (
 							<SelectItem key={cat.id} value={cat.id}>
 								{cat.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{/* Region */}
+			<div>
+				{lbl("Region")}
+				<Select value={regionFilter} onValueChange={setRegionFilter}>
+					<SelectTrigger className="w-[140px]">
+						<SelectValue placeholder="Region" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Regions</SelectItem>
+						{regions.map((region) => (
+							<SelectItem key={region} value={region}>
+								{region}
 							</SelectItem>
 						))}
 					</SelectContent>

@@ -59,7 +59,7 @@ enum SiteNameApi {
 // Site Name Service
 // ============================================
 
-const getSiteNames = (params?: { page?: number; limit?: number; sortBy?: string; name?: string }) =>
+const getSiteNames = (params?: { page?: number; limit?: number; sortBy?: string; name?: string; companyId?: string }) =>
 	apiClient.get<SiteNamesListRes>({ url: SiteNameApi.SiteNames, params });
 
 const getSiteNameById = (siteNameId: string) =>

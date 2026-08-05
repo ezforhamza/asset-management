@@ -61,11 +61,12 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 					className="grid py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
 					style={{
 						gridTemplateColumns:
-							"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
+							"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
 					}}
 				>
 					<div className="text-center">Asset</div>
 					<div className="text-center">Site</div>
+					<div className="text-center">Region</div>
 					<div className="text-center">Category</div>
 					<div className="text-center">Status</div>
 					<div className="text-center">GPS</div>
@@ -87,7 +88,7 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						className="grid w-full text-left py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
 						style={{
 							gridTemplateColumns:
-								"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
+								"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
 						}}
 						onClick={() => onViewDetails(item)}
 					>
@@ -97,6 +98,9 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 						</div>
 						<div className="text-center">
 							<p className="text-sm">{item.siteName || "—"}</p>
+						</div>
+						<div className="text-center">
+							<p className="text-sm">{item.region || "—"}</p>
 						</div>
 						<div className="text-center">
 							<p className="text-sm">{item.assetCategory?.name || "—"}</p>

@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { PasswordInput } from "@/ui/password-input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+import { getCountryOptions } from "@/utils/countryRegion";
 
 interface CreateCompanyModalProps {
 	open: boolean;
@@ -19,6 +21,7 @@ interface CreateCompanyModalProps {
 interface FormValues {
 	companyName: string;
 	contactEmail: string;
+	country: string;
 	adminName: string;
 	adminEmail: string;
 	adminPassword: string;
@@ -39,11 +42,14 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 		defaultValues: {
 			companyName: "",
 			contactEmail: "",
+			country: "",
 			adminName: "",
 			adminEmail: "",
 			adminPassword: "",
 		},
 	});
+
+	const countryOptions = getCountryOptions();
 
 	const mutation = useMutation({
 		mutationFn: adminService.createCompany,
@@ -73,6 +79,7 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 		mutation.mutate({
 			companyName: values.companyName,
 			contactEmail: values.contactEmail,
+			country: values.country || undefined,
 			admin: {
 				name: values.adminName,
 				email: values.adminEmail,
@@ -208,6 +215,31 @@ export function CreateCompanyModal({ open, onClose }: CreateCompanyModalProps) {
 										<FormControl>
 											<Input type="email" placeholder="contact@company.com" {...field} />
 										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="country"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Country</FormLabel>
+										<Select value={field.value} onValueChange={field.onChange}>
+											<FormControl>
+												<SelectTrigger className="w-full">
+													<SelectValue placeholder="Select a country" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												{countryOptions.map((c) => (
+													<SelectItem key={c.value} value={c.value}>
+														{c.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
 										<FormMessage />
 									</FormItem>
 								)}

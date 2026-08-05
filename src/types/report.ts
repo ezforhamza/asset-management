@@ -14,6 +14,7 @@ export interface VerificationReportItem {
 	model: string;
 	makeModel: string;
 	siteName?: string;
+	region?: string;
 	verificationStatus: "on_time" | "due_soon" | "overdue" | "registered";
 	verificationDate?: string;
 	gpsCheckPassed?: boolean;
@@ -55,6 +56,7 @@ export interface VerificationReportParams {
 	condition?: "excellent" | "good" | "fair" | "poor";
 	operationalStatus?: "operational" | "needs_repair" | "non_operational";
 	categoryId?: string;
+	region?: string;
 	companyId?: string;
 	limit?: number;
 	page?: number;
@@ -176,5 +178,6 @@ export interface ExportReportParams {
 	gpsCheckPassed?: boolean;
 	categoryId?: string;
 	operationalStatus?: "operational" | "needsRepair" | "nonOperational";
+	region?: string;
 	companyId?: string;
 }

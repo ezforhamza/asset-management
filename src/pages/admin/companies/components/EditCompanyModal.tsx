@@ -11,6 +11,8 @@ import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/ui/form";
 import { Input } from "@/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
+import { getCountryOptions } from "@/utils/countryRegion";
 
 interface EditCompanyModalProps {
 	company: Company | null;
@@ -21,6 +23,7 @@ interface EditCompanyModalProps {
 interface FormValues {
 	companyName: string;
 	contactEmail: string;
+	country?: string;
 	logo?: string;
 }
 
@@ -34,15 +37,19 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 		defaultValues: {
 			companyName: "",
 			contactEmail: "",
+			country: "",
 			logo: "",
 		},
 	});
+
+	const countryOptions = getCountryOptions();
 
 	useEffect(() => {
 		if (company) {
 			form.reset({
 				companyName: company.companyName || "",
 				contactEmail: company.contactEmail || "",
+				country: company.country || "",
 				logo: company.logo || "",
 			});
 			setLogoPreview(company.logo || null);
@@ -181,6 +188,31 @@ export function EditCompanyModal({ company, open, onClose }: EditCompanyModalPro
 									<FormControl>
 										<Input type="email" placeholder="admin@company.com" {...field} />
 									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="country"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Country</FormLabel>
+									<Select value={field.value} onValueChange={field.onChange}>
+										<FormControl>
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder="Select a country" />
+											</SelectTrigger>
+										</FormControl>
+										<SelectContent>
+											{countryOptions.map((c) => (
+												<SelectItem key={c.value} value={c.value}>
+													{c.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 									<FormMessage />
 								</FormItem>
 							)}

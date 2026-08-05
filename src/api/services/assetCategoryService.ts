@@ -48,7 +48,7 @@ enum AssetCategoryApi {
 // Asset Category Service
 // ============================================
 
-const getCategories = (params?: { page?: number; limit?: number }) =>
+const getCategories = (params?: { page?: number; limit?: number; companyId?: string }) =>
 	apiClient.get<AssetCategoriesListRes>({ url: AssetCategoryApi.Categories, params });
 
 const createCategory = (data: CreateAssetCategoryReq) =>

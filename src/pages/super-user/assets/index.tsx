@@ -40,6 +40,7 @@ export default function SuperUserAssetsPage() {
 	const [verificationFilter, setVerificationFilter] = useState("");
 	const [registrationFilter, setRegistrationFilter] = useState("");
 	const [categoryFilter, setCategoryFilter] = useState("");
+	const [regionFilter, setRegionFilter] = useState("");
 	const [gpsModalAsset, setGpsModalAsset] = useState<Asset | null>(null);
 	const [editModalAsset, setEditModalAsset] = useState<Asset | null>(null);
 	const limit = 20;
@@ -77,8 +78,18 @@ export default function SuperUserAssetsPage() {
 		if (verificationFilter) params.verificationStatus = verificationFilter;
 		if (registrationFilter) params.registrationState = registrationFilter;
 		if (categoryFilter) params.categoryId = categoryFilter;
+		if (regionFilter) params.region = regionFilter;
 		return params;
-	}, [page, debouncedSearch, statusFilter, verificationFilter, registrationFilter, categoryFilter, companyId]);
+	}, [
+		page,
+		debouncedSearch,
+		statusFilter,
+		verificationFilter,
+		registrationFilter,
+		categoryFilter,
+		regionFilter,
+		companyId,
+	]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["super-user", "assets", companyId, queryParams],
@@ -86,11 +97,22 @@ export default function SuperUserAssetsPage() {
 		enabled: !!companyId,
 	});
 
+	// Fetch a broader batch purely to derive distinct Region values for the filter dropdown
+	const { data: allAssetsData } = useQuery({
+		queryKey: ["super-user", "assets-all-for-filters", companyId],
+		queryFn: () => assetService.getAssets({ companyId, page: 1, limit: 1000 }),
+		enabled: !!companyId,
+	});
+	const regionOptions = useMemo(() => {
+		const allAssets = allAssetsData?.results || [];
+		return [...new Set(allAssets.map((a) => a.region).filter(Boolean))] as string[];
+	}, [allAssetsData]);
+
 	const assets = data?.results || [];
 	const totalPages = data?.totalPages || 1;
 	const totalResults = data?.totalResults || 0;
 	const companyName = companyData?.companyName || "Company";
-	const hasFilters = !!(statusFilter || verificationFilter || registrationFilter || categoryFilter);
+	const hasFilters = !!(statusFilter || verificationFilter || registrationFilter || categoryFilter || regionFilter);
 
 	const getAssetId = (asset: Asset) => asset.id || asset._id || "";
 
@@ -212,6 +234,28 @@ export default function SuperUserAssetsPage() {
 						</SelectContent>
 					</Select>
 
+					<Select
+						value={regionFilter}
+						onValueChange={(v) => {
+							setRegionFilter(v);
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className="w-[140px]">
+							<SelectValue placeholder="Region" />
+						</SelectTrigger>
+						<SelectContent>
+							{regionOptions.map((region) => (
+								<SelectItem key={region} value={region}>
+									{region}
+								</SelectItem>
+							))}
+							{regionOptions.length === 0 && (
+								<div className="px-2 py-1.5 text-sm text-muted-foreground">No regions</div>
+							)}
+						</SelectContent>
+					</Select>
+
 					{hasFilters && (
 						<Button
 							variant="ghost"
@@ -221,6 +265,7 @@ export default function SuperUserAssetsPage() {
 								setVerificationFilter("");
 								setRegistrationFilter("");
 								setCategoryFilter("");
+								setRegionFilter("");
 								setPage(1);
 							}}
 						>
@@ -247,6 +292,7 @@ export default function SuperUserAssetsPage() {
 									<TableHead>Make / Model</TableHead>
 									<TableHead>Category</TableHead>
 									<TableHead>Site Name</TableHead>
+									<TableHead>Region</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Registration</TableHead>
 									<TableHead>Verification</TableHead>
@@ -260,7 +306,7 @@ export default function SuperUserAssetsPage() {
 									Array.from({ length: 10 }).map((_, i) => (
 										// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 										<TableRow key={i}>
-											{Array.from({ length: isReadWrite ? 10 : 9 }).map((_, j) => (
+											{Array.from({ length: isReadWrite ? 11 : 10 }).map((_, j) => (
 												// biome-ignore lint/suspicious/noArrayIndexKey: skeleton
 												<TableCell key={j}>
 													<Skeleton className="h-4 w-20" />
@@ -270,7 +316,7 @@ export default function SuperUserAssetsPage() {
 									))
 								) : assets.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={isReadWrite ? 10 : 9} className="text-center py-12 text-muted-foreground">
+										<TableCell colSpan={isReadWrite ? 11 : 10} className="text-center py-12 text-muted-foreground">
 											No assets found
 										</TableCell>
 									</TableRow>
@@ -290,6 +336,7 @@ export default function SuperUserAssetsPage() {
 											</TableCell>
 											<TableCell className="text-muted-foreground">{asset.category?.name || "—"}</TableCell>
 											<TableCell className="text-muted-foreground">{asset.siteName || "—"}</TableCell>
+											<TableCell className="text-muted-foreground">{asset.region || "—"}</TableCell>
 											<TableCell>{getAssetStatusBadge(asset.status)}</TableCell>
 											<TableCell>
 												{asset.registrationState === "unregistered" || !asset.registrationState ? (

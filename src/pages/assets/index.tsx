@@ -28,7 +28,9 @@ import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService, { type AssetsListParams, type UpdateAssetReq } from "@/api/services/assetService";
+import companyService from "@/api/services/companyService";
 import siteNameService from "@/api/services/siteNameService";
+import { CorrectGpsModal } from "@/components/correct-gps-modal";
 import { useCanWrite } from "@/store/userStore";
 import { Button } from "@/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/ui/dialog";
@@ -44,8 +46,8 @@ import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/ui/table";
-import { CorrectGpsModal } from "@/components/correct-gps-modal";
 import { StyledBadge } from "@/utils/badge-styles";
+import { getRegionOptions } from "@/utils/countryRegion";
 import { formatLabel } from "@/utils/formatLabel";
 import { CategoriesModal } from "./components/CategoriesModal";
 import { CreateAssetModal } from "./components/CreateAssetModal";
@@ -86,6 +88,7 @@ export default function AssetsPage() {
 	const [siteNameFilter, setSiteNameFilter] = useState<string>("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [channelFilter, setChannelFilter] = useState<string>("");
+	const [regionFilter, setRegionFilter] = useState<string>("");
 
 	// Edit modal state
 	const [editModalOpen, setEditModalOpen] = useState(false);
@@ -144,8 +147,9 @@ export default function AssetsPage() {
 		if (siteNameFilter) params.siteName = siteNameFilter;
 		if (statusFilter) params.status = statusFilter;
 		if (channelFilter) params.channel = channelFilter;
+		if (regionFilter) params.region = regionFilter;
 		return params;
-	}, [page, debouncedSearch, categoryFilter, clientFilter, siteNameFilter, statusFilter, channelFilter]);
+	}, [page, debouncedSearch, categoryFilter, clientFilter, siteNameFilter, statusFilter, channelFilter, regionFilter]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["assets", queryParams],
@@ -157,6 +161,13 @@ export default function AssetsPage() {
 		queryKey: ["asset-categories", 1, 100],
 		queryFn: () => assetCategoryService.getCategories({ page: 1, limit: 100 }),
 	});
+
+	// Fetch current company profile to resolve country -> region options for asset forms
+	const { data: companyProfile } = useQuery({
+		queryKey: ["company-profile"],
+		queryFn: () => companyService.getProfile(),
+	});
+	const regionOptions = useMemo(() => getRegionOptions(companyProfile?.country), [companyProfile?.country]);
 
 	// Fetch site names from API for filter dropdown
 	const { data: siteNamesData } = useQuery({
@@ -175,7 +186,8 @@ export default function AssetsPage() {
 		const allAssets = allAssetsData?.results || [];
 		const clients = [...new Set(allAssets.map((a) => a.client).filter(Boolean))] as string[];
 		const channels = [...new Set(allAssets.map((a) => a.channel).filter(Boolean))] as string[];
-		return { clients, channels };
+		const regions = [...new Set(allAssets.map((a) => a.region).filter(Boolean))] as string[];
+		return { clients, channels, regions };
 	}, [allAssetsData]);
 
 	const updateMutation = useMutation({
@@ -272,6 +284,7 @@ export default function AssetsPage() {
 			channel: asset.channel ?? "",
 			siteNameId: asset.siteNameId ?? "",
 			client: asset.client ?? "",
+			region: asset.region ?? "",
 			categoryId: asset.category?.id ?? "",
 			locationDescription: asset.locationDescription ?? "",
 		});
@@ -311,6 +324,7 @@ export default function AssetsPage() {
 			verificationFrequency: editForm.verificationFrequency,
 			client: editForm.client || "",
 			channel: editForm.channel || "",
+			region: editForm.region || "",
 			locationDescription: editForm.locationDescription || "",
 		};
 
@@ -367,8 +381,9 @@ export default function AssetsPage() {
 	const handleExport = async (format: "xlsx" | "pdf") => {
 		setExporting(true);
 		try {
-			const params: { format: "xlsx" | "pdf"; categoryId?: string } = { format };
+			const params: { format: "xlsx" | "pdf"; categoryId?: string; region?: string } = { format };
 			if (categoryFilter) params.categoryId = categoryFilter;
+			if (regionFilter) params.region = regionFilter;
 
 			await assetService.exportAssets(params);
 			toast.success(`Assets exported as ${format.toUpperCase()}`);
@@ -563,8 +578,31 @@ export default function AssetsPage() {
 						</SelectContent>
 					</Select>
 
+					{/* Region Filter */}
+					<Select
+						value={regionFilter}
+						onValueChange={(val) => {
+							setRegionFilter(val);
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className="w-[140px]">
+							<SelectValue placeholder="Region" />
+						</SelectTrigger>
+						<SelectContent>
+							{filterOptions.regions.map((region) => (
+								<SelectItem key={region} value={region}>
+									{region}
+								</SelectItem>
+							))}
+							{filterOptions.regions.length === 0 && (
+								<div className="px-2 py-1.5 text-sm text-muted-foreground">No regions</div>
+							)}
+						</SelectContent>
+					</Select>
+
 					{/* Clear Filters */}
-					{(categoryFilter || clientFilter || siteNameFilter || statusFilter || channelFilter) && (
+					{(categoryFilter || clientFilter || siteNameFilter || statusFilter || channelFilter || regionFilter) && (
 						<Button
 							variant="ghost"
 							size="sm"
@@ -574,6 +612,7 @@ export default function AssetsPage() {
 								setSiteNameFilter("");
 								setStatusFilter("");
 								setChannelFilter("");
+								setRegionFilter("");
 								setPage(1);
 							}}
 						>
@@ -607,6 +646,7 @@ export default function AssetsPage() {
 									<TableHead className="max-w-[110px]">Location</TableHead>
 									<TableHead className="max-w-[80px]">Channel</TableHead>
 									<TableHead className="max-w-[80px]">Client</TableHead>
+									<TableHead className="max-w-[100px]">Region</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Verification</TableHead>
 									<TableHead>Registration</TableHead>
@@ -646,6 +686,9 @@ export default function AssetsPage() {
 												<Skeleton className="h-4 w-16" />
 											</TableCell>
 											<TableCell>
+												<Skeleton className="h-4 w-16" />
+											</TableCell>
+											<TableCell>
 												<Skeleton className="h-5 w-16" />
 											</TableCell>
 											<TableCell>
@@ -658,7 +701,7 @@ export default function AssetsPage() {
 									))
 								) : filteredAssets.length === 0 ? (
 									<TableRow>
-										<TableCell colSpan={13} className="text-center py-12 text-muted-foreground">
+										<TableCell colSpan={14} className="text-center py-12 text-muted-foreground">
 											No assets found
 										</TableCell>
 									</TableRow>
@@ -714,6 +757,11 @@ export default function AssetsPage() {
 											<TableCell className="text-muted-foreground max-w-[80px]">
 												<span className="block truncate" title={asset.client || ""}>
 													{asset.client || "—"}
+												</span>
+											</TableCell>
+											<TableCell className="text-muted-foreground max-w-[100px]">
+												<span className="block truncate" title={asset.region || ""}>
+													{asset.region || "—"}
 												</span>
 											</TableCell>
 											<TableCell>{getStatusBadge(asset.status)}</TableCell>
@@ -915,6 +963,27 @@ export default function AssetsPage() {
 							/>
 						</div>
 						<div className="space-y-2">
+							<Label>Region</Label>
+							<Select
+								value={editForm.region || ""}
+								onValueChange={(value) => setEditForm({ ...editForm, region: value })}
+								disabled={regionOptions.length === 0}
+							>
+								<SelectTrigger>
+									<SelectValue
+										placeholder={regionOptions.length === 0 ? "Set a country on the company first" : "Select a region"}
+									/>
+								</SelectTrigger>
+								<SelectContent>
+									{regionOptions.map((r) => (
+										<SelectItem key={r.value} value={r.value}>
+											{r.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="space-y-2">
 							<Label>Location</Label>
 							<Input
 								placeholder="e.g., Main Building - Floor 2"
@@ -1035,7 +1104,11 @@ export default function AssetsPage() {
 			<ImportAssetsModal open={importModalOpen} onOpenChange={setImportModalOpen} />
 
 			{/* Create Asset Modal */}
-			<CreateAssetModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
+			<CreateAssetModal
+				open={createModalOpen}
+				onOpenChange={setCreateModalOpen}
+				companyCountry={companyProfile?.country}
+			/>
 
 			{/* Detach QR Code Confirmation Modal */}
 			<Dialog open={detachQrModalOpen} onOpenChange={setDetachQrModalOpen}>

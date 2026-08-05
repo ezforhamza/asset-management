@@ -32,6 +32,7 @@ export default function ReportsPage() {
 	const [conditionFilter, setConditionFilter] = useState("all");
 	const [operationalFilter, setOperationalFilter] = useState("all");
 	const [categoryFilter, setCategoryFilter] = useState("all");
+	const [regionFilter, setRegionFilter] = useState("all");
 	const [page, setPage] = useState(1);
 	const limit = 500;
 
@@ -105,8 +106,19 @@ export default function ReportsPage() {
 			});
 		}
 
+		// Filter by region
+		if (regionFilter !== "all") {
+			results = results.filter((v: VerificationReportItem) => v.region === regionFilter);
+		}
+
 		return results;
-	}, [data, searchQuery, dateRange]);
+	}, [data, searchQuery, dateRange, regionFilter]);
+
+	// Distinct region values from the currently-loaded batch, for the Region filter dropdown
+	const regionOptions = useMemo(() => {
+		const results = data?.results || [];
+		return [...new Set(results.map((v: VerificationReportItem) => v.region).filter(Boolean))] as string[];
+	}, [data]);
 
 	const handleViewDetails = (verification: VerificationReportItem) => {
 		// Navigate to Asset History page - highlight latest verification
@@ -123,6 +135,7 @@ export default function ReportsPage() {
 		setConditionFilter("all");
 		setOperationalFilter("all");
 		setCategoryFilter("all");
+		setRegionFilter("all");
 		setPage(1);
 	};
 
@@ -200,6 +213,9 @@ export default function ReportsPage() {
 					categoryFilter={categoryFilter}
 					setCategoryFilter={setCategoryFilter}
 					categories={categoriesData?.results || []}
+					regionFilter={regionFilter}
+					setRegionFilter={setRegionFilter}
+					regions={regionOptions}
 					onClearFilters={handleClearFilters}
 					compact
 				/>

@@ -163,6 +163,7 @@ export interface Asset {
 	siteContactPerson?: string | null;
 	siteContactPhone?: string | null;
 	client?: string | null;
+	region?: string | null;
 	registeredLocation: { type: string; coordinates: [number, number] } | GeoLocation;
 	location?: {
 		longitude: number;
@@ -272,6 +273,7 @@ export interface Company {
 	contactEmail: string;
 	phone?: string;
 	address?: string;
+	country?: string;
 	logo?: string;
 	settings?: CompanySettings;
 	isActive: boolean;

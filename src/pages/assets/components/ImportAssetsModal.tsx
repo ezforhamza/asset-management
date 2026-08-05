@@ -218,7 +218,7 @@ export function ImportAssetsModal({ open, onOpenChange }: ImportAssetsModalProps
 						</p>
 						<p className="text-muted-foreground text-xs">
 							<strong>Optional:</strong> condition, verification_frequency, location, notes, channel, site_name, client,
-							geofence_threshold
+							geofence_threshold, region
 						</p>
 					</div>
 				</div>

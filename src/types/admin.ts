@@ -19,6 +19,7 @@ export interface PaginatedResponse<T> {
 export interface CreateCompanyReq {
 	companyName: string;
 	contactEmail: string;
+	country?: string;
 	settings?: {
 		verificationFrequency?: number;
 		geofenceThreshold?: number;
@@ -36,6 +37,7 @@ export interface CreateCompanyReq {
 export interface UpdateCompanyReq {
 	companyName?: string;
 	contactEmail?: string;
+	country?: string;
 	logo?: string;
 	settings?: {
 		verificationFrequency?: number;

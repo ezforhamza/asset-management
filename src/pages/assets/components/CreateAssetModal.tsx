@@ -11,10 +11,12 @@ import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Textarea } from "@/ui/textarea";
+import { getRegionOptions } from "@/utils/countryRegion";
 
 interface CreateAssetModalProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	companyCountry?: string;
 }
 
 const initialFormState: CreateAssetReq = {
@@ -30,12 +32,14 @@ const initialFormState: CreateAssetReq = {
 	siteName: "",
 	siteNameId: "",
 	client: "",
+	region: "",
 	geofenceThreshold: undefined,
 };
 
-export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) {
+export function CreateAssetModal({ open, onOpenChange, companyCountry }: CreateAssetModalProps) {
 	const queryClient = useQueryClient();
 	const [form, setForm] = useState<CreateAssetReq>(initialFormState);
+	const regionOptions = getRegionOptions(companyCountry);
 
 	// Fetch categories for dropdown
 	const { data: categoriesData } = useQuery({
@@ -115,6 +119,9 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 		}
 		if (form.client?.trim()) {
 			requestData.client = form.client.trim();
+		}
+		if (form.region?.trim()) {
+			requestData.region = form.region.trim();
 		}
 		if (form.geofenceThreshold) {
 			requestData.geofenceThreshold = form.geofenceThreshold;
@@ -298,6 +305,29 @@ export function CreateAssetModal({ open, onOpenChange }: CreateAssetModalProps) 
 								}
 							/>
 						</div>
+					</div>
+
+					{/* Region - Optional, filtered by the company's country */}
+					<div className="space-y-2">
+						<Label>Region</Label>
+						<Select
+							value={form.region || ""}
+							onValueChange={(value) => setForm({ ...form, region: value })}
+							disabled={regionOptions.length === 0}
+						>
+							<SelectTrigger>
+								<SelectValue
+									placeholder={regionOptions.length === 0 ? "Set a country on the company first" : "Select a region"}
+								/>
+							</SelectTrigger>
+							<SelectContent>
+								{regionOptions.map((r) => (
+									<SelectItem key={r.value} value={r.value}>
+										{r.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
 				</div>
 
