@@ -18,6 +18,8 @@ const TYPE_LABELS: Record<string, { label: string; description: string }> = {
 	repair: { label: "Repair", description: "Asset repair, poor condition, GPS failure alerts" },
 	movement: { label: "Movement", description: "Asset movement requested/started/completed" },
 	overdue: { label: "Overdue", description: "Overdue verification & due-soon reminders" },
+	registration: { label: "Registration", description: "New asset registered" },
+	verification: { label: "Verification", description: "Clean/passed verification (no issues found)" },
 };
 
 export function NotificationSettings() {
@@ -38,6 +40,8 @@ export function NotificationSettings() {
 		overdueAlertsEnabled: true,
 		repairAlertsEnabled: true,
 		movementAlertsEnabled: true,
+		registrationAlertsEnabled: false,
+		verificationAlertsEnabled: false,
 	});
 	const [prefsDirty, setPrefsDirty] = useState(false);
 
@@ -54,7 +58,13 @@ export function NotificationSettings() {
 
 	const isLoading = isLoadingPrefs || isLoadingEmails;
 	const emails = emailsData?.notificationEmails ?? [];
-	const availableTypes = emailsData?.availableTypes ?? ["repair", "movement", "overdue"];
+	const availableTypes = emailsData?.availableTypes ?? [
+		"repair",
+		"movement",
+		"overdue",
+		"registration",
+		"verification",
+	];
 
 	// Sync prefs from server
 	useEffect(() => {
@@ -247,6 +257,28 @@ export function NotificationSettings() {
 						<Switch
 							checked={prefsForm.movementAlertsEnabled}
 							onCheckedChange={(v) => handlePrefsChange("movementAlertsEnabled", v)}
+						/>
+					</div>
+					<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+						<div className="space-y-1 pr-4">
+							<p className="text-sm font-medium leading-none">Registration Alerts</p>
+							<p className="text-xs text-muted-foreground">Get notified every time a new asset is registered</p>
+						</div>
+						<Switch
+							checked={prefsForm.registrationAlertsEnabled}
+							onCheckedChange={(v) => handlePrefsChange("registrationAlertsEnabled", v)}
+						/>
+					</div>
+					<div className="flex items-center justify-between rounded-lg border p-4 bg-card">
+						<div className="space-y-1 pr-4">
+							<p className="text-sm font-medium leading-none">Verification Alerts</p>
+							<p className="text-xs text-muted-foreground">
+								Get notified every time an asset is verified with no issues found
+							</p>
+						</div>
+						<Switch
+							checked={prefsForm.verificationAlertsEnabled}
+							onCheckedChange={(v) => handlePrefsChange("verificationAlertsEnabled", v)}
 						/>
 					</div>
 

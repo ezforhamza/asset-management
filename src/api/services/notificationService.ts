@@ -7,6 +7,8 @@ export interface NotificationPreferences {
 	overdueAlertsEnabled: boolean;
 	repairAlertsEnabled: boolean;
 	movementAlertsEnabled: boolean;
+	registrationAlertsEnabled: boolean;
+	verificationAlertsEnabled: boolean;
 }
 
 export interface NotificationPreferencesResponse {
