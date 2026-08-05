@@ -32,7 +32,7 @@ const getRoleBadge = (role: string) => {
 	}
 };
 
-const ROWS_PER_PAGE = 6;
+const ROWS_PER_PAGE = 5;
 
 export function CompanyUsersTab({ companyId, debouncedSearch }: CompanyUsersTabProps) {
 	const queryClient = useQueryClient();

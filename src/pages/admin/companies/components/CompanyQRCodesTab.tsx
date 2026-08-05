@@ -27,7 +27,7 @@ const getStatusBadge = (status: string) => {
 	}
 };
 
-const ROWS_PER_PAGE = 6;
+const ROWS_PER_PAGE = 5;
 
 export function CompanyQRCodesTab({ companyId }: CompanyQRCodesTabProps) {
 	const [currentPage, setCurrentPage] = useState(1);

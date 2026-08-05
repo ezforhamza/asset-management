@@ -44,7 +44,7 @@ const getVerificationBadge = (status: string) => {
 	}
 };
 
-const ROWS_PER_PAGE = 6;
+const ROWS_PER_PAGE = 5;
 
 export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	const [page, setPage] = useState(1);
