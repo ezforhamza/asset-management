@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileSpreadsheet, FileText, Loader2, MapPin, Package, Search, X } from "lucide-react";
+import { MapPin, Package, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import assetCategoryService from "@/api/services/assetCategoryService";
 import assetService from "@/api/services/assetService";
 import siteNameService from "@/api/services/siteNameService";
 import { Button } from "@/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/ui/dropdown-menu";
 import { Input } from "@/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/ui/select";
 import { Skeleton } from "@/ui/skeleton";
@@ -46,7 +44,7 @@ const getVerificationBadge = (status: string) => {
 	}
 };
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 6;
 
 export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	const [page, setPage] = useState(1);
@@ -58,7 +56,6 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	const [statusFilter, setStatusFilter] = useState("");
 	const [channelFilter, setChannelFilter] = useState("");
 	const [regionFilter, setRegionFilter] = useState("");
-	const [exporting, setExporting] = useState(false);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -139,26 +136,6 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 		setChannelFilter("");
 		setRegionFilter("");
 		setPage(1);
-	};
-
-	const handleExport = async (format: "xlsx" | "pdf") => {
-		setExporting(true);
-		try {
-			const params: { format: "xlsx" | "pdf"; categoryId?: string; region?: string; companyId: string } = {
-				format,
-				companyId,
-			};
-			if (categoryFilter) params.categoryId = categoryFilter;
-			if (regionFilter) params.region = regionFilter;
-
-			await assetService.exportAssets(params);
-			toast.success(`Assets exported as ${format.toUpperCase()}`);
-		} catch (error) {
-			console.error("Export error:", error);
-			toast.error("Failed to export assets");
-		} finally {
-			setTimeout(() => setExporting(false), 1000);
-		}
 	};
 
 	return (
@@ -310,27 +287,6 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 						Clear Filters
 					</Button>
 				)}
-
-				<div className="ml-auto">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" size="sm" disabled={exporting}>
-								{exporting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
-								Export
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onClick={() => handleExport("xlsx")}>
-								<FileSpreadsheet className="h-4 w-4 mr-2" />
-								Export as Excel
-							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => handleExport("pdf")}>
-								<FileText className="h-4 w-4 mr-2" />
-								Export as PDF
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
 			</div>
 
 			{/* Table */}
