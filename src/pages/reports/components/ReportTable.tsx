@@ -6,6 +6,13 @@ import { Skeleton } from "@/ui/skeleton";
 import { StyledBadge } from "@/utils/badge-styles";
 import { formatLabel } from "@/utils/formatLabel";
 
+// Fixed pixel widths (not fr/minmax) so every row and the header share the exact same column
+// sizing — each row is its own independent CSS grid, so content-based sizing (e.g. max-content)
+// would let columns drift out of alignment between rows. Generous enough that content doesn't
+// wrap/clip; the shared scroll container handles horizontal scrolling once this total exceeds
+// the viewport instead of squeezing columns down.
+const REPORT_TABLE_GRID_TEMPLATE = "170px 120px 120px 110px 100px 110px 90px 120px 120px 110px 110px 100px 60px";
+
 interface ReportTableProps {
 	data: VerificationReportItem[];
 	isLoading: boolean;
@@ -55,170 +62,168 @@ export function ReportTable({ data, isLoading, onViewDetails, page, totalPages, 
 
 	return (
 		<div className="rounded-xl border bg-card flex flex-col h-full max-h-full overflow-hidden">
-			{/* Fixed Header */}
-			<div className="flex-shrink-0 border-b bg-muted/50 px-4">
-				<div
-					className="grid py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
-					style={{
-						gridTemplateColumns:
-							"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
-					}}
-				>
-					<div className="text-center">Asset</div>
-					<div className="text-center">Site</div>
-					<div className="text-center">Region</div>
-					<div className="text-center">Category</div>
-					<div className="text-center">Status</div>
-					<div className="text-center">GPS</div>
-					<div className="text-center">Condition</div>
-					<div className="text-center">Operational</div>
-					<div className="text-center">Verified By</div>
-					<div className="text-center">Last Verified</div>
-					<div className="text-center">Next Due</div>
-					<div className="text-center">Days</div>
-					<div className="text-right">Total</div>
-				</div>
-			</div>
-			{/* Scrollable Body */}
-			<div className="flex-1 min-h-0 overflow-y-auto">
-				{data.map((item) => (
-					<button
-						key={item._id}
-						type="button"
-						className="grid w-full text-left py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
-						style={{
-							gridTemplateColumns:
-								"minmax(130px, 1.4fr) minmax(80px, 0.9fr) minmax(80px, 0.9fr) minmax(70px, 0.8fr) 70px 60px 75px 90px minmax(90px, 1fr) 90px 90px 40px 38px",
-						}}
-						onClick={() => onViewDetails(item)}
-					>
-						<div className="text-center">
-							<p className="font-medium">{item.serialNumber || "N/A"}</p>
-							<p className="text-sm text-muted-foreground">{item.makeModel}</p>
+			{/* Shared horizontal + vertical scroll container so header and rows scroll in sync */}
+			<div className="flex-1 min-h-0 overflow-auto">
+				<div className="inline-block min-w-full align-top">
+					{/* Sticky Header */}
+					<div className="sticky top-0 z-10 border-b bg-muted/50 px-4">
+						<div
+							className="grid w-full py-3 text-sm font-medium text-muted-foreground gap-3 items-center"
+							style={{ gridTemplateColumns: REPORT_TABLE_GRID_TEMPLATE }}
+						>
+							<div className="text-center">Asset</div>
+							<div className="text-center">Site</div>
+							<div className="text-center">Region</div>
+							<div className="text-center">Category</div>
+							<div className="text-center">Status</div>
+							<div className="text-center">GPS</div>
+							<div className="text-center">Condition</div>
+							<div className="text-center">Operational</div>
+							<div className="text-center">Verified By</div>
+							<div className="text-center">Last Verified</div>
+							<div className="text-center">Next Due</div>
+							<div className="text-center">Days</div>
+							<div className="text-right">Total</div>
 						</div>
-						<div className="text-center">
-							<p className="text-sm">{item.siteName || "—"}</p>
-						</div>
-						<div className="text-center">
-							<p className="text-sm">{item.region || "—"}</p>
-						</div>
-						<div className="text-center">
-							<p className="text-sm">{item.assetCategory?.name || "—"}</p>
-						</div>
-						<div className="text-center">{getStatusBadge(item.verificationStatus)}</div>
-						<div className="text-center">
-							{item.verificationStatus === "registered" ? (
-								item.registeredLocation ? (
-									<span className="text-xs text-muted-foreground">
-										{item.registeredLocation.coordinates[1].toFixed(4)},{" "}
-										{item.registeredLocation.coordinates[0].toFixed(4)}
+					</div>
+					{data.map((item) => (
+						<button
+							key={item._id}
+							type="button"
+							className="grid w-full text-left py-3 px-4 border-b last:border-0 items-center gap-3 hover:bg-muted/50 transition-colors cursor-pointer"
+							style={{ gridTemplateColumns: REPORT_TABLE_GRID_TEMPLATE }}
+							onClick={() => onViewDetails(item)}
+						>
+							<div className="text-center">
+								<p className="font-medium">{item.serialNumber || "N/A"}</p>
+								<p className="text-sm text-muted-foreground">{item.makeModel}</p>
+							</div>
+							<div className="text-center">
+								<p className="text-sm">{item.siteName || "—"}</p>
+							</div>
+							<div className="text-center">
+								<p className="text-sm">{item.region || "—"}</p>
+							</div>
+							<div className="text-center">
+								<p className="text-sm">{item.assetCategory?.name || "—"}</p>
+							</div>
+							<div className="text-center">{getStatusBadge(item.verificationStatus)}</div>
+							<div className="text-center">
+								{item.verificationStatus === "registered" ? (
+									item.registeredLocation ? (
+										<span className="text-xs text-muted-foreground">
+											{item.registeredLocation.coordinates[1].toFixed(4)},{" "}
+											{item.registeredLocation.coordinates[0].toFixed(4)}
+										</span>
+									) : (
+										<span className="text-sm text-muted-foreground">—</span>
+									)
+								) : item.gpsCheckPassed !== undefined ? (
+									<StyledBadge color={item.gpsCheckPassed ? "emerald" : "red"}>
+										{item.gpsCheckPassed ? "Passed" : "Failed"}
+									</StyledBadge>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)}
+							</div>
+							<div className="text-center">
+								{item.verificationStatus === "registered" ? (
+									<span className="text-sm text-muted-foreground">—</span>
+								) : item.condition ? (
+									<StyledBadge
+										color={
+											item.condition === "good" || item.condition === "excellent"
+												? "emerald"
+												: item.condition === "fair"
+													? "orange"
+													: "red"
+										}
+									>
+										{item.condition.charAt(0).toUpperCase() + item.condition.slice(1)}
+									</StyledBadge>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)}
+							</div>
+							<div className="text-center">
+								{item.verificationStatus === "registered" ? (
+									<span className="text-sm text-muted-foreground">—</span>
+								) : item.operationalStatus ? (
+									<StyledBadge
+										color={
+											item.operationalStatus === "operational"
+												? "emerald"
+												: item.operationalStatus === "needs_repair"
+													? "orange"
+													: "red"
+										}
+									>
+										{item.operationalStatus === "operational"
+											? "Operational"
+											: item.operationalStatus === "needs_repair"
+												? "Needs Repair"
+												: "Non-Operational"}
+									</StyledBadge>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)}
+							</div>
+							<div className="text-center">
+								<p className="text-sm">
+									{item.verificationStatus === "registered"
+										? (item.registeredBy?.name ?? "—")
+										: (item.verifiedBy?.name ?? "—")}
+								</p>
+							</div>
+							<div className="text-center">
+								{item.verificationStatus === "registered" ? (
+									<span className="text-sm text-muted-foreground">Never</span>
+								) : item.verificationDate ? (
+									<>
+										<p className="text-sm">{format(new Date(item.verificationDate), "MMM dd, yyyy")}</p>
+										<p className="text-xs text-muted-foreground">
+											{format(new Date(item.verificationDate), "hh:mm a")}
+										</p>
+									</>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)}
+							</div>
+							<div className="text-center">
+								{item.nextVerificationDue ? (
+									<>
+										<p className="text-sm">{format(new Date(item.nextVerificationDue), "MMM dd, yyyy")}</p>
+										<p className="text-xs text-muted-foreground">
+											{format(new Date(item.nextVerificationDue), "hh:mm a")}
+										</p>
+									</>
+								) : (
+									<span className="text-sm text-muted-foreground">—</span>
+								)}
+							</div>
+							<div className="text-center">
+								{item.daysUntilDue != null ? (
+									<span
+										className={`text-sm font-medium ${
+											item.daysUntilDue < 0
+												? "text-red-500"
+												: item.daysUntilDue < 7
+													? "text-orange-500"
+													: "text-emerald-500"
+										}`}
+									>
+										{item.daysUntilDue < 0
+											? `${Math.abs(item.daysUntilDue).toFixed(0)}d overdue`
+											: `${item.daysUntilDue.toFixed(0)}d`}
 									</span>
 								) : (
 									<span className="text-sm text-muted-foreground">—</span>
-								)
-							) : item.gpsCheckPassed !== undefined ? (
-								<StyledBadge color={item.gpsCheckPassed ? "emerald" : "red"}>
-									{item.gpsCheckPassed ? "Passed" : "Failed"}
-								</StyledBadge>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-center">
-							{item.verificationStatus === "registered" ? (
-								<span className="text-sm text-muted-foreground">—</span>
-							) : item.condition ? (
-								<StyledBadge
-									color={
-										item.condition === "good" || item.condition === "excellent"
-											? "emerald"
-											: item.condition === "fair"
-												? "orange"
-												: "red"
-									}
-								>
-									{item.condition.charAt(0).toUpperCase() + item.condition.slice(1)}
-								</StyledBadge>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-center">
-							{item.verificationStatus === "registered" ? (
-								<span className="text-sm text-muted-foreground">—</span>
-							) : item.operationalStatus ? (
-								<StyledBadge
-									color={
-										item.operationalStatus === "operational"
-											? "emerald"
-											: item.operationalStatus === "needs_repair"
-												? "orange"
-												: "red"
-									}
-								>
-									{item.operationalStatus === "operational"
-										? "Operational"
-										: item.operationalStatus === "needs_repair"
-											? "Needs Repair"
-											: "Non-Operational"}
-								</StyledBadge>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-center">
-							<p className="text-sm">
-								{item.verificationStatus === "registered"
-									? (item.registeredBy?.name ?? "—")
-									: (item.verifiedBy?.name ?? "—")}
-							</p>
-						</div>
-						<div className="text-center">
-							{item.verificationStatus === "registered" ? (
-								<span className="text-sm text-muted-foreground">Never</span>
-							) : item.verificationDate ? (
-								<>
-									<p className="text-sm">{format(new Date(item.verificationDate), "MMM dd, yyyy")}</p>
-									<p className="text-xs text-muted-foreground">{format(new Date(item.verificationDate), "hh:mm a")}</p>
-								</>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-center">
-							{item.nextVerificationDue ? (
-								<>
-									<p className="text-sm">{format(new Date(item.nextVerificationDue), "MMM dd, yyyy")}</p>
-									<p className="text-xs text-muted-foreground">
-										{format(new Date(item.nextVerificationDue), "hh:mm a")}
-									</p>
-								</>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-center">
-							{item.daysUntilDue != null ? (
-								<span
-									className={`text-sm font-medium ${
-										item.daysUntilDue < 0
-											? "text-red-500"
-											: item.daysUntilDue < 7
-												? "text-orange-500"
-												: "text-emerald-500"
-									}`}
-								>
-									{item.daysUntilDue < 0
-										? `${Math.abs(item.daysUntilDue).toFixed(0)}d overdue`
-										: `${item.daysUntilDue.toFixed(0)}d`}
-								</span>
-							) : (
-								<span className="text-sm text-muted-foreground">—</span>
-							)}
-						</div>
-						<div className="text-sm text-right">{item.totalVerifications}</div>
-					</button>
-				))}
+								)}
+							</div>
+							<div className="text-sm text-right">{item.totalVerifications}</div>
+						</button>
+					))}
+				</div>
 			</div>
 
 			{/* Pagination Footer - Always visible */}

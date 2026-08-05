@@ -634,19 +634,19 @@ export default function AssetsPage() {
 			<div className="flex-1 min-h-0 overflow-hidden px-6 py-4">
 				<div className="rounded-md border flex flex-col h-full max-h-full overflow-hidden">
 					<div className="flex-1 min-h-0 overflow-auto">
-						<Table>
+						<Table className="whitespace-nowrap">
 							<TableHeader className="sticky top-0 bg-background z-10">
 								<TableRow>
 									<TableHead>Serial Number</TableHead>
-									<TableHead className="max-w-[130px]">Make / Model</TableHead>
+									<TableHead>Make / Model</TableHead>
 									<TableHead>Category</TableHead>
 									<TableHead>QR Code</TableHead>
 									<TableHead>Registered GPS</TableHead>
-									<TableHead className="max-w-[100px]">Site Name</TableHead>
-									<TableHead className="max-w-[110px]">Location</TableHead>
-									<TableHead className="max-w-[80px]">Channel</TableHead>
-									<TableHead className="max-w-[80px]">Client</TableHead>
-									<TableHead className="max-w-[100px]">Region</TableHead>
+									<TableHead>Site Name</TableHead>
+									<TableHead>Location</TableHead>
+									<TableHead>Channel</TableHead>
+									<TableHead>Client</TableHead>
+									<TableHead>Region</TableHead>
 									<TableHead>Status</TableHead>
 									<TableHead>Verification</TableHead>
 									<TableHead>Registration</TableHead>
@@ -717,10 +717,8 @@ export default function AssetsPage() {
 											}}
 										>
 											<TableCell className="font-mono text-sm">{asset.serialNumber}</TableCell>
-											<TableCell className="max-w-[130px]">
-												<span className="block truncate" title={`${asset.make} ${asset.model}`}>
-													{asset.make} {asset.model}
-												</span>
+											<TableCell>
+												{asset.make} {asset.model}
 											</TableCell>
 											<TableCell className="text-muted-foreground">{asset.category?.name || "Not assigned"}</TableCell>
 											<TableCell className="font-mono text-xs">{asset.qrCode?.code || "Not linked"}</TableCell>
@@ -739,31 +737,11 @@ export default function AssetsPage() {
 													<span className="text-muted-foreground text-sm">No GPS</span>
 												)}
 											</TableCell>
-											<TableCell className="text-muted-foreground max-w-[100px]">
-												<span className="block truncate" title={asset.siteName || ""}>
-													{asset.siteName || "—"}
-												</span>
-											</TableCell>
-											<TableCell className="text-muted-foreground max-w-[110px]">
-												<span className="block truncate" title={asset.locationDescription || ""}>
-													{asset.locationDescription || "—"}
-												</span>
-											</TableCell>
-											<TableCell className="text-muted-foreground max-w-[80px]">
-												<span className="block truncate" title={asset.channel || ""}>
-													{asset.channel || "—"}
-												</span>
-											</TableCell>
-											<TableCell className="text-muted-foreground max-w-[80px]">
-												<span className="block truncate" title={asset.client || ""}>
-													{asset.client || "—"}
-												</span>
-											</TableCell>
-											<TableCell className="text-muted-foreground max-w-[100px]">
-												<span className="block truncate" title={asset.region || ""}>
-													{asset.region || "—"}
-												</span>
-											</TableCell>
+											<TableCell className="text-muted-foreground">{asset.siteName || "—"}</TableCell>
+											<TableCell className="text-muted-foreground">{asset.locationDescription || "—"}</TableCell>
+											<TableCell className="text-muted-foreground">{asset.channel || "—"}</TableCell>
+											<TableCell className="text-muted-foreground">{asset.client || "—"}</TableCell>
+											<TableCell className="text-muted-foreground">{asset.region || "—"}</TableCell>
 											<TableCell>{getStatusBadge(asset.status)}</TableCell>
 											<TableCell>{getVerificationBadge(asset.verificationStatus || "never_verified")}</TableCell>
 											<TableCell>
