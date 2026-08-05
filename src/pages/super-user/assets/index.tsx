@@ -4,7 +4,11 @@ import {
 	AlertTriangle,
 	ChevronLeft,
 	ChevronRight,
+	Download,
+	FileSpreadsheet,
+	FileText,
 	LayoutGrid,
+	Loader2,
 	MapPin,
 	MoreHorizontal,
 	Pencil,
@@ -14,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 import type { Asset } from "#/entity";
 import adminService from "@/api/services/adminService";
 import assetCategoryService from "@/api/services/assetCategoryService";
@@ -43,6 +48,7 @@ export default function SuperUserAssetsPage() {
 	const [regionFilter, setRegionFilter] = useState("");
 	const [gpsModalAsset, setGpsModalAsset] = useState<Asset | null>(null);
 	const [editModalAsset, setEditModalAsset] = useState<Asset | null>(null);
+	const [exporting, setExporting] = useState(false);
 	const limit = 20;
 
 	const userInfo = useUserInfo();
@@ -116,6 +122,26 @@ export default function SuperUserAssetsPage() {
 
 	const getAssetId = (asset: Asset) => asset.id || asset._id || "";
 
+	const handleExport = async (format: "xlsx" | "pdf") => {
+		setExporting(true);
+		try {
+			const params: { format: "xlsx" | "pdf"; companyId?: string; categoryId?: string; region?: string } = {
+				format,
+				companyId,
+			};
+			if (categoryFilter) params.categoryId = categoryFilter;
+			if (regionFilter) params.region = regionFilter;
+
+			await assetService.exportAssets(params);
+			toast.success(`Assets exported as ${format.toUpperCase()}`);
+		} catch (error) {
+			console.error("Export error:", error);
+			toast.error("Failed to export assets");
+		} finally {
+			setTimeout(() => setExporting(false), 1000);
+		}
+	};
+
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
 			{/* Header / Breadcrumb */}
@@ -136,6 +162,28 @@ export default function SuperUserAssetsPage() {
 				<div className="flex items-center justify-between">
 					<h1 className="text-xl font-semibold">{companyName} — Assets</h1>
 					<div className="flex items-center gap-2">
+						<DropdownMenu modal={false}>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" size="sm" disabled={exporting}>
+									{exporting ? (
+										<Loader2 className="h-4 w-4 mr-2 animate-spin" />
+									) : (
+										<Download className="h-4 w-4 mr-2" />
+									)}
+									Export
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onClick={() => handleExport("xlsx")}>
+									<FileSpreadsheet className="h-4 w-4 mr-2" />
+									Export as Excel
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => handleExport("pdf")}>
+									<FileText className="h-4 w-4 mr-2" />
+									Export as PDF
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<Button variant="default" size="sm">
 							<LayoutGrid className="h-4 w-4 mr-2" />
 							Assets
