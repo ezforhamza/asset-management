@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asset Guard — Milestone Report</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 40px 48px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .report-header {
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 14px;
+      margin-bottom: 28px;
+    }
+    .report-header h1 { font-size: 20px; font-weight: 700; }
+    .report-header .meta { margin-top: 5px; font-size: 12px; color: #666; }
+
+    .portal { margin-bottom: 30px; }
+    .portal-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .portal-header h2 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 1px 7px;
+      border-radius: 3px;
+      border: 1px solid;
+    }
+    .badge-new   { color: #166534; background: #f0fdf4; border-color: #bbf7d0; }
+    .badge-exist { color: #1e3a5f; background: #eff6ff; border-color: #bfdbfe; }
+    .badge-fix   { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    thead tr { background: #f5f5f5; }
+    th {
+      text-align: left;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #555;
+      border-bottom: 1px solid #ddd;
+    }
+    td {
+      padding: 7px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { font-weight: 600; white-space: nowrap; }
+
+    .report-footer {
+      margin-top: 32px;
+      padding-top: 12px;
+      border-top: 1px solid #ddd;
+      font-size: 11px;
+      color: #999;
+      display: flex;
+      justify-content: space-between;
+    }
+    @media print {
+      body { padding: 20px 28px; }
+      .portal { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-header">
+    <h1>Asset Guard — Development Milestone Report</h1>
+    <div class="meta">June 2026 &nbsp;·&nbsp; Development Team</div>
+  </div>
+
+  <!-- 1. Super User Portal -->
+  <div class="portal">
+    <div class="portal-header">
+      <h2>Super User / Support Team Portal</h2>
+      <span class="badge badge-new">New Portal — derived from the company portal with multi-company support</span>
+    </div>
+    <table>
+      <thead><tr><th style="width:28%">Page</th><th>Overview</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard</td><td>Stats and assigned companies list scoped to the support member's assigned companies</td></tr>
+        <tr><td>Companies</td><td>View and search all companies assigned to this support member</td></tr>
+        <tr><td>Company Assets</td><td>Browse and filter a company's assets; GPS correction and edit asset available to read-write members</td></tr>
+        <tr><td>Asset Detail &amp; History</td><td>Full asset information and complete verification/registration history</td></tr>
+        <tr><td>Asset Movements</td><td>View movement requests across all assigned companies</td></tr>
+        <tr><td>Reports</td><td>Verification report across assigned companies with condition/operational summary and full filter set</td></tr>
+        <tr><td>Map</td><td>Live asset map across assigned companies with status filter pills and company selector</td></tr>
+        <tr><td>Repair Requests</td><td>View repair requests across assigned companies with company, date, source, and status filters</td></tr>
+        <tr><td>Profile</td><td>Manage name, profile picture, and password</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 2. System Admin Portal -->
+  <div class="portal">
+    <div class="portal-header">
+      <h2>System Admin Portal</h2>
+      <span class="badge badge-exist">Existing — Additions</span>
+    </div>
+    <table>
+      <thead><tr><th style="width:28%">Page</th><th>Overview</th></tr></thead>
+      <tbody>
+        <tr><td>Support Team <em style="font-weight:400;color:#888;font-size:11px">— new page</em></td><td>Manage all support team members — create, assign companies, set type (read-only / read-write), change password, activate/deactivate, delete</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. Customer Admin Portal -->
+  <div class="portal">
+    <div class="portal-header">
+      <h2>Customer / Company Admin Portal</h2>
+      <span class="badge badge-exist">Existing — Additions</span>
+    </div>
+    <table>
+      <thead><tr><th style="width:28%">Page</th><th>Overview</th></tr></thead>
+      <tbody>
+        <tr><td>Repair Requests <em style="font-weight:400;color:#888;font-size:11px">— new page</em></td><td>View, manually log, and export repair requests; inline status updates per request</td></tr>
+        <tr><td>Assets <em style="font-weight:400;color:#888;font-size:11px">— new feature</em></td><td>GPS lat/long correction — fix registered coordinates without affecting verification history</td></tr>
+        <tr><td>Reports <em style="font-weight:400;color:#888;font-size:11px">— new feature</em></td><td>Export modal extended with condition, GPS check, operational status, and category filters</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4. Minor Fixes -->
+  <div class="portal">
+    <div class="portal-header">
+      <h2>Minor Fixes</h2>
+      <span class="badge badge-fix">Fixes</span>
+    </div>
+    <table>
+      <thead><tr><th style="width:28%">Area</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Repair Requests — Date Filter</td><td>Same-day date range now returns data correctly</td></tr>
+        <tr><td>Reports — Table &amp; Layout</td><td>Column widths corrected; fleet stats moved inline with header for more table space</td></tr>
+        <tr><td>Reports — Filter Labels</td><td>Truncated filter labels corrected; "Non-Op" changed to "Non-Operational"</td></tr>
+        <tr><td>Map</td><td>Company filter repositioned; status pill click now resets map zoom to fit filtered pins</td></tr>
+        <tr><td>Sidebar</td><td>Nav width reduced ~15% for more content space</td></tr>
+        <tr><td>Profile Avatar</td><td>Top nav avatar updates immediately after saving a new photo</td></tr>
+        <tr><td>Assign Companies Modal</td><td>Company search added; fixed checkbox and 403 error on load</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="report-footer">
+    <span>Asset Guard — Confidential</span>
+    <span>June 2026</span>
+  </div>
+
+</body>
+</html>
