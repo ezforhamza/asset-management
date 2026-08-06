@@ -62,6 +62,9 @@ enum SiteNameApi {
 const getSiteNames = (params?: { page?: number; limit?: number; sortBy?: string; name?: string; companyId?: string }) =>
 	apiClient.get<SiteNamesListRes>({ url: SiteNameApi.SiteNames, params });
 
+const getAllSiteNames = (params?: { companyId?: string }) =>
+	apiClient.get<{ results: SiteName[] }>({ url: `${SiteNameApi.SiteNames}/all`, params });
+
 const getSiteNameById = (siteNameId: string) =>
 	apiClient.get<SiteName>({ url: `${SiteNameApi.SiteNames}/${siteNameId}` });
 
@@ -110,6 +113,7 @@ const downloadImportTemplate = () => {
 
 export default {
 	getSiteNames,
+	getAllSiteNames,
 	getSiteNameById,
 	createSiteName,
 	updateSiteName,

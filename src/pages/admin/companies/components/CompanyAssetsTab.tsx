@@ -98,8 +98,8 @@ export function CompanyAssetsTab({ companyId }: CompanyAssetsTabProps) {
 	});
 
 	const { data: siteNamesData } = useQuery({
-		queryKey: ["site-names", "company", companyId],
-		queryFn: () => siteNameService.getSiteNames({ page: 1, limit: 100, sortBy: "name:asc", companyId }),
+		queryKey: ["site-names-all", "company", companyId],
+		queryFn: () => siteNameService.getAllSiteNames({ companyId }),
 	});
 
 	// Fetch a broader batch purely to derive distinct filter values (client, channel, region)

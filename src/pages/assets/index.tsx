@@ -171,8 +171,8 @@ export default function AssetsPage() {
 
 	// Fetch site names from API for filter dropdown
 	const { data: siteNamesData } = useQuery({
-		queryKey: ["site-names", 1, 100],
-		queryFn: () => siteNameService.getSiteNames({ page: 1, limit: 100, sortBy: "name:asc" }),
+		queryKey: ["site-names-all"],
+		queryFn: () => siteNameService.getAllSiteNames(),
 	});
 
 	// Fetch all assets to extract unique filter values (client, channel)

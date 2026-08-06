@@ -50,8 +50,8 @@ export function CreateAssetModal({ open, onOpenChange, companyCountry }: CreateA
 
 	// Fetch site names for dropdown
 	const { data: siteNamesData } = useQuery({
-		queryKey: ["site-names", 1, 100],
-		queryFn: () => siteNameService.getSiteNames({ page: 1, limit: 100, sortBy: "name:asc" }),
+		queryKey: ["site-names-all"],
+		queryFn: () => siteNameService.getAllSiteNames(),
 		enabled: open,
 	});
 
