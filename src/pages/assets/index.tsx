@@ -13,6 +13,7 @@ import {
 	MoreHorizontal,
 	PauseCircle,
 	Pencil,
+	PlayCircle,
 	Plus,
 	Search,
 	Trash2,
@@ -122,6 +123,8 @@ export default function AssetsPage() {
 	// Inactivate modal state
 	const [inactivateModalOpen, setInactivateModalOpen] = useState(false);
 	const [inactivatingAsset, setInactivatingAsset] = useState<Asset | null>(null);
+	const [activateModalOpen, setActivateModalOpen] = useState(false);
+	const [activatingAsset, setActivatingAsset] = useState<Asset | null>(null);
 
 	// Request repair modal state
 	const [repairModalOpen, setRepairModalOpen] = useState(false);
@@ -267,6 +270,21 @@ export default function AssetsPage() {
 		},
 	});
 
+	const activateMutation = useMutation({
+		mutationFn: (assetId: string) => assetService.updateAsset(assetId, { status: "active" }),
+		onSuccess: () => {
+			toast.success("Asset activated successfully");
+			// Invalidate queries to refresh asset data
+			queryClient.invalidateQueries({ queryKey: ["assets"] });
+			queryClient.invalidateQueries({ queryKey: ["assets-all-for-filters"] });
+			setActivateModalOpen(false);
+			setActivatingAsset(null);
+		},
+		onError: () => {
+			// Error toast is handled by apiClient
+		},
+	});
+
 	const assets = data?.results || [];
 	const totalPages = data?.totalPages || 1;
 	const totalResults = data?.totalResults || 0;
@@ -309,6 +327,11 @@ export default function AssetsPage() {
 	const handleInactivateClick = (asset: Asset) => {
 		setInactivatingAsset(asset);
 		setInactivateModalOpen(true);
+	};
+
+	const handleActivateClick = (asset: Asset) => {
+		setActivatingAsset(asset);
+		setActivateModalOpen(true);
 	};
 
 	const handleRequestRepairClick = (asset: Asset) => {
@@ -780,13 +803,20 @@ export default function AssetsPage() {
 																	<Truck className="h-4 w-4 mr-2" />
 																	Request Movement
 																</DropdownMenuItem>
-																<DropdownMenuItem
-																	onClick={() => handleInactivateClick(asset)}
-																	disabled={asset.status === "inactive" || asset.status === "retired"}
-																>
-																	<PauseCircle className="h-4 w-4 mr-2" />
-																	Inactivate
-																</DropdownMenuItem>
+																{asset.status === "inactive" ? (
+																	<DropdownMenuItem onClick={() => handleActivateClick(asset)}>
+																		<PlayCircle className="h-4 w-4 mr-2" />
+																		Activate
+																	</DropdownMenuItem>
+																) : (
+																	<DropdownMenuItem
+																		onClick={() => handleInactivateClick(asset)}
+																		disabled={asset.status === "retired"}
+																	>
+																		<PauseCircle className="h-4 w-4 mr-2" />
+																		Inactivate
+																	</DropdownMenuItem>
+																)}
 																<DropdownMenuItem
 																	onClick={() => handleRequestRepairClick(asset)}
 																	disabled={asset.status === "retired"}
@@ -1149,6 +1179,31 @@ export default function AssetsPage() {
 						>
 							{inactivateMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
 							Inactivate Asset
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Activate Confirmation Modal */}
+			<Dialog open={activateModalOpen} onOpenChange={setActivateModalOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Activate Asset</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to activate asset <strong>{activatingAsset?.serialNumber}</strong>? This will mark
+							the asset as active again.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setActivateModalOpen(false)}>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => activatingAsset && activateMutation.mutate(getAssetId(activatingAsset))}
+							disabled={activateMutation.isPending}
+						>
+							{activateMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+							Activate Asset
 						</Button>
 					</DialogFooter>
 				</DialogContent>
